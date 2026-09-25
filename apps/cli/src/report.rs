@@ -20,6 +20,7 @@ fn pf(x: Option<f64>) -> String {
 }
 
 pub fn print(r: &Report, symbol: &str, interval: Interval) {
+    let rp = r;
     let m = &r.metrics;
     println!();
     println!(
@@ -38,6 +39,20 @@ pub fn print(r: &Report, symbol: &str, interval: Interval) {
     println!("  Expectancy     {:>12}      Fees paid      {:>12}", money(m.expectancy), money(m.fees_paid));
     println!("  Time in market    {:>9.1}%     Avg bars held     {:>9.1}", m.exposure_pct, m.avg_bars_held);
     println!("  Liquidations      {:>9}      Worst losing run  {:>9}", m.liquidations, m.longest_losing_streak);
+    let opt = |x: Option<f64>, unit: &str| x.map_or("n/a".to_string(), |v| format!("{v:.2}{unit}"));
+    println!("  Average R         {:>9}      Kelly (risk/trade){:>9}", opt(m.avg_r, "R"), opt(m.kelly_risk_pct, "%"));
+    if let Some(ts) = rp.risk.halted_at {
+        println!("  Money management: max-drawdown rule stopped trading on {}", time::format(ts));
+    }
+    if !rp.risk.blocked_entries.is_empty() || rp.risk.forced_exits > 0 {
+        let b: Vec<String> = rp.risk.blocked_entries.iter().map(|(k, v)| format!("{v} by {k}")).collect();
+        println!(
+            "  Money management: {} entries blocked ({}), {} positions closed early",
+            rp.risk.blocked_entries.values().sum::<u32>(),
+            b.join(", "),
+            rp.risk.forced_exits
+        );
+    }
     println!();
     println!(
         "  First 70% of data: {:+.2}% over {} trades (PF {})   Last 30%: {:+.2}% over {} trades (PF {})",
