@@ -3,6 +3,7 @@
 //! | Route | |
 //! |---|---|
 //! | `GET /` | the app |
+//! | `GET /lab.js` | the chart lab's script |
 //! | `GET /api/catalog` | indicators, price fields, operators, intervals |
 //! | `GET /api/templates` | built-in strategies |
 //! | `POST /api/check` | validate a strategy and explain it in plain English |
@@ -31,6 +32,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 const INDEX: &str = include_str!("../../../ui/index.html");
+const LAB: &str = include_str!("../../../ui/lab.js");
 const CHARTS: &str = include_str!("../../../ui/vendor/lightweight-charts.js");
 const SCHEMA: &str = include_str!("../../../schema/strategy.schema.json");
 
@@ -44,6 +46,7 @@ pub fn serve(listen: &str, ui_dir: Option<PathBuf>, cache: PathBuf, api: String)
     let app = Arc::new(App { cache, api, ui_dir });
     let router = Router::new()
         .route("/", get(index))
+        .route("/lab.js", get(lab))
         .route("/vendor/lightweight-charts.js", get(charts))
         .route("/schema.json", get(|| async { ([(header::CONTENT_TYPE, "application/json")], SCHEMA) }))
         .route("/api/catalog", get(catalog))
@@ -82,6 +85,10 @@ fn ui_file(app: &App, name: &str, builtin: &'static str) -> String {
 
 async fn index(State(app): State<Arc<App>>) -> Html<String> {
     Html(ui_file(&app, "index.html", INDEX))
+}
+
+async fn lab(State(app): State<Arc<App>>) -> impl IntoResponse {
+    ([(header::CONTENT_TYPE, "application/javascript; charset=utf-8")], ui_file(&app, "lab.js", LAB))
 }
 
 async fn charts() -> impl IntoResponse {

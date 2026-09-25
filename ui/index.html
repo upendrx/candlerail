@@ -362,6 +362,7 @@ input.w-expr { width: 170px; font-family: var(--mono); font-size: 13px; }
     <button data-tab="start" aria-selected="true">Start</button>
     <button data-tab="strategies" aria-selected="false">Strategies</button>
     <button data-tab="build" aria-selected="false">Build</button>
+    <button data-tab="lab" aria-selected="false">Chart Lab <span class="badge">New</span></button>
     <button data-tab="ai" aria-selected="false">Ask AI</button>
     <button data-tab="results" aria-selected="false">Results</button>
     <button data-tab="pa" aria-selected="false">Price action</button>
@@ -381,7 +382,7 @@ input.w-expr { width: 170px; font-family: var(--mono); font-size: 13px; }
       <div class="eyebrow">Welcome</div>
       <h1 class="big">Turn a trading idea into a <em>tested strategy</em> in minutes.</h1>
       <p class="lede">Pick a template, change it with dropdowns, or describe it in your own words. candlerail replays years of real prices through your rules, with fees, slippage and leverage, and tells you plainly whether the idea holds up.</p>
-      <div class="row" style="margin-top:16px"><button class="btn primary" data-go="strategies">Browse strategies</button><button class="btn" data-go="build">Build my own</button><button class="btn ghost" data-go="pa">Learn price action</button></div>
+      <div class="row" style="margin-top:16px"><button class="btn primary" data-go="strategies">Browse strategies</button><button class="btn" data-go="lab">Open the Chart Lab</button><button class="btn" data-go="build">Build my own</button><button class="btn ghost" data-go="pa">Learn price action</button></div>
     </div>
   </div>
   <div class="grid path">
@@ -525,6 +526,107 @@ input.w-expr { width: 170px; font-family: var(--mono); font-size: 13px; }
   </div>
 </section>
 
+<!-- CHART LAB -->
+<section class="tab" id="t-lab" hidden>
+  <div class="row" style="justify-content:space-between;align-items:end">
+    <div>
+      <div class="eyebrow">Chart Lab</div>
+      <h1>Find a setup on the chart, then test it</h1>
+      <p class="lede">Drag across the candles you like and the lab turns their shape into rules. It marks every time the same thing happened, shows what price did next, and backtests it on any market and timeframe.</p>
+    </div>
+    <div class="row"><button class="btn small ghost" id="lab-help-btn">How it works</button></div>
+  </div>
+
+  <div class="panel" id="lab-help" hidden>
+    <div class="grid four" style="margin:0">
+      <div class="qcard"><span class="num">1</span><h3>Load a chart</h3><p>Any Binance pair, any timeframe from 1 minute to 1 week, any period. Or open a CSV of your own candles.</p></div>
+      <div class="qcard"><span class="num">2</span><h3>Pick candles</h3><p>Choose <b>Select</b> (<span class="kbd">S</span>) and drag across 1 to 5 candles. Their shape becomes rules you can switch on and off.</p></div>
+      <div class="qcard"><span class="num">3</span><h3>Add context</h3><p>Require support or resistance, the trend, yesterday's range, a volume spike, or a level you drew (<span class="kbd">L</span>).</p></div>
+      <div class="qcard"><span class="num">4</span><h3>Test it everywhere</h3><p>See every match and what followed, backtest with a stop and target, then re-test on other timeframes and coins.</p></div>
+    </div>
+    <p class="hint">Mark swing highs and lows yourself with <b>Mark swings</b> (<span class="kbd">M</span>), and the lab finds the swing setting that sees the chart the way you do. <span class="kbd">V</span> returns to moving the chart, <span class="kbd">Esc</span> clears the selection.</p>
+  </div>
+
+  <div class="panel lab-bar">
+    <div class="grp"><span class="lbl">Market</span><input type="text" id="lab-symbol" class="w-sym" value="BTCUSDT" list="lab-symbols" spellcheck="false"><datalist id="lab-symbols"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option></datalist></div>
+    <div class="grp"><span class="lbl">Timeframe</span><div class="segc" id="lab-tf"></div></div>
+    <div class="grp"><span class="lbl">Period</span><div class="segc" id="lab-range"></div></div>
+    <span class="spacer"></span>
+    <label class="btn small ghost" title="Use candles from a CSV file">CSV<input type="file" id="lab-csv" accept=".csv,text/csv" hidden></label>
+    <button class="btn primary" id="lab-load">Load chart</button>
+  </div>
+
+  <div class="lab-grid">
+    <div class="panel lab-main">
+      <div class="lab-tools">
+        <div class="segc" id="lab-tool">
+          <button data-tool="move" class="on" title="Move and zoom the chart (V)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>Move</button>
+          <button data-tool="select" title="Drag across candles to use as a setup (S)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="14" rx="2" stroke-dasharray="3 2"/><path d="M9 9v6M15 8v8"/></svg>Select candles</button>
+          <button data-tool="mark" title="Click candles to mark swing highs and lows (M)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-8 4 5 4-9 5 10"/></svg>Mark swings</button>
+          <button data-tool="level" title="Click to draw a horizontal level; drag to move it (L)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18"/><circle cx="7" cy="12" r="2"/></svg>Draw level</button>
+        </div>
+        <label class="opt"><input type="checkbox" id="lab-zz" checked> Swings</label>
+        <label class="opt" title="How many candles on each side a swing must stand out from">left <input type="number" id="lab-left" value="3" min="1" max="20"> right <input type="number" id="lab-right" value="3" min="1" max="20"></label>
+        <label class="opt">Levels <select id="lab-period"><option value="">none</option><option value="1440" selected>previous day</option><option value="10080">previous week</option><option value="43200">previous month</option></select></label>
+        <label class="opt">Pattern <select id="lab-pattern"><option value="">none</option></select></label>
+        <label class="opt"><input type="checkbox" id="lab-vol" checked> Volume</label>
+      </div>
+      <div class="lab-chart-wrap" id="lab-wrap">
+        <div id="lab-chart"></div>
+        <div class="sel-box" id="lab-sel" hidden><span></span></div>
+        <div class="lab-hint" id="lab-hint"></div>
+        <div class="lab-empty" id="lab-empty"><div><div class="num" style="margin:0 auto 10px">1</div><b>Load a chart to begin</b><br><span class="hint">Pick a market, timeframe and period above.</span></div></div>
+      </div>
+      <div class="lab-foot" id="lab-foot"></div>
+    </div>
+
+    <aside class="lab-side">
+      <div class="panel stepc" id="lab-s1">
+        <div class="sh"><span class="num">1</span><h2>Your setup</h2><span class="spacer"></span><button class="btn small ghost" id="lab-clear" hidden>Clear</button></div>
+        <div id="lab-pick"><div class="empty-state">Choose <b>Select candles</b> and drag across <b>1 to 5 candles</b> on the chart: a rejection wick, an engulfing, a breakout candle, anything you'd trade.</div></div>
+      </div>
+      <div class="panel stepc dim" id="lab-s2">
+        <div class="sh"><span class="num">2</span><h2>Rules</h2><span class="spacer"></span><div class="segc" id="lab-dir"><button data-dir="long" class="on">Long</button><button data-dir="short">Short</button></div></div>
+        <div class="rl" id="lab-rules"></div>
+        <div class="addrule"><input type="text" id="lab-add" placeholder="add a rule, e.g. close > 1.01 * high[1]" spellcheck="false"><button class="btn small" id="lab-add-btn">Add</button></div>
+        <p class="hint" id="lab-add-err" style="color:var(--down)"></p>
+      </div>
+      <div class="panel stepc dim" id="lab-s3">
+        <div class="sh"><span class="num">3</span><h2>Every time it happened</h2></div>
+        <div class="bigcount"><b id="lab-count">0</b><span id="lab-count-sub">matches</span><span class="spacer"></span><button class="btn small" id="lab-prev" title="Previous match">‹</button><button class="btn small" id="lab-next" title="Next match">›</button></div>
+        <div class="optrow"><span>After</span><div class="row" style="align-items:center;gap:8px"><input type="range" id="lab-h" min="1" max="60" value="10" style="flex:1"><b id="lab-h-v" style="min-width:74px;text-align:right">10 candles</b></div></div>
+        <div class="stat-grid" id="lab-stats"></div>
+        <div id="lab-path"></div>
+        <p class="hint">Measured from the next candle's open, as a real trade would enter. No stops or costs here; the backtest below adds them.</p>
+      </div>
+      <div class="panel stepc dim" id="lab-s4">
+        <div class="sh"><span class="num">4</span><h2>Trade it</h2></div>
+        <div class="optrow"><span>Stop</span><div class="segc" id="lab-stop"><button data-v="setup" class="on" title="Just beyond the lowest (or highest) candle of the setup">Setup</button><button data-v="candle" title="Just beyond the signal candle">Signal</button><button data-v="atr" title="1.5 × the 14-candle ATR from the entry">1.5 ATR</button></div></div>
+        <div class="optrow"><span>Target</span><div class="segc" id="lab-target"><button data-v="1">1R</button><button data-v="2" class="on">2R</button><button data-v="3">3R</button><button data-v="swing">Next swing</button></div></div>
+        <p class="hint" id="lab-stop-hint" style="margin:-2px 0 8px"></p>
+        <div class="optrow"><span>Time limit</span><div class="row" style="align-items:center;gap:8px"><input type="number" id="lab-maxbars" value="24" min="1"><span class="hint" style="margin:0">candles</span></div></div>
+        <div class="row" style="margin-top:6px"><button class="btn primary" id="lab-bt">Backtest</button><button class="btn" id="lab-tfs">All timeframes</button><button class="btn" id="lab-coins">Other coins</button></div>
+        <div id="lab-bt-out"></div>
+        <div id="lab-cmp"></div>
+        <div class="row" style="margin-top:12px"><button class="btn small" id="lab-open">Open in builder</button><button class="btn small" id="lab-copy">Copy JSON</button><button class="btn small" id="lab-save">Save setup</button></div>
+        <details style="margin-top:10px"><summary class="hint" style="cursor:pointer;margin:0">Strategy file</summary><pre class="code-block" id="lab-json" style="margin-top:8px;max-height:260px"></pre></details>
+      </div>
+      <div class="panel stepc" id="lab-marks" hidden>
+        <div class="sh"><h2>Your swing marks</h2><span class="spacer"></span><button class="btn small ghost" id="lab-marks-clear">Clear</button></div>
+        <p id="lab-marks-out" style="margin:0;font-size:13.5px;color:var(--ink2)"></p>
+      </div>
+      <div class="panel stepc" id="lab-levels" hidden>
+        <div class="sh"><h2>Your levels</h2></div>
+        <div id="lab-levels-list"></div>
+      </div>
+      <div class="panel stepc" id="lab-saved-box" hidden>
+        <div class="sh"><h2>Saved setups</h2></div>
+        <div class="saved" id="lab-saved"></div>
+      </div>
+    </aside>
+  </div>
+</section>
+
 <!-- AI -->
 <section class="tab" id="t-ai" hidden>
   <div>
@@ -567,6 +669,10 @@ input.w-expr { width: 170px; font-family: var(--mono); font-size: 13px; }
     <div class="eyebrow">Price action</div>
     <h1>Trade what the candles say</h1>
     <p class="lede">Price action trading reads raw price, with no indicators. Where are buyers and sellers defending (support and resistance)? Which way is the market stepping (structure)? What did this candle just show (its shape)? Every rule below is plain price, so you can build any setup you'd spot on a chart.</p>
+  </div>
+  <div class="cta-lab">
+    <div><h2>Try it on a real chart</h2><p>In the Chart Lab you select candles you like, mark swings and draw levels. It turns what you see into rules, shows every time it happened and what came next, and backtests it on any timeframe.</p></div>
+    <button class="btn" data-go="lab">Open the Chart Lab →</button>
   </div>
   <div class="grid two">
     <div class="panel">
@@ -1590,5 +1696,6 @@ $("cm-file").onchange = async e => { const f = e.target.files[0]; if (f) { const
   loadStrategy(structuredClone(TEMPLATES.find(t => t.id === "rsi-dip-uptrend")?.strategy || TEMPLATES[0].strategy));
 })();
 </script>
+<script src="/lab.js"></script>
 </body>
 </html>
