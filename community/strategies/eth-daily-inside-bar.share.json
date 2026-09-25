@@ -1,0 +1,73 @@
+{
+  "candlerail_share": 1,
+  "author": "upendrx",
+  "notes": "Long-only version of the inside bar template on ETH daily candles.",
+  "strategy": {
+    "name": "ETH daily inside bar, long only",
+    "description": "Inside bar breakouts on the daily chart, buying only.",
+    "market": {
+      "symbol": "ETHUSDT",
+      "interval": "1d"
+    },
+    "indicators": {
+      "pa": {
+        "type": "patterns"
+      }
+    },
+    "entry": {
+      "long": {
+        "all": [
+          {
+            "left": "pa.inside_bar[1]",
+            "op": "==",
+            "right": 1.0
+          },
+          {
+            "left": "close",
+            "op": ">",
+            "right": "high[1]"
+          }
+        ]
+      }
+    },
+    "exit": {
+      "stop_loss": {
+        "below": "low[1]"
+      },
+      "take_profit": {
+        "risk_multiple": 2.0
+      }
+    },
+    "sizing": {
+      "type": "risk_percent",
+      "value": 1.0
+    },
+    "leverage": 1.0,
+    "costs": {
+      "fee_bps": 10.0,
+      "slippage_bps": 2.0,
+      "maintenance_margin_percent": 0.5
+    },
+    "risk": {
+      "max_drawdown_percent": 20.0
+    }
+  },
+  "result": {
+    "symbol": "ETHUSDT",
+    "interval": "1d",
+    "from": "2021-01-01 00:00",
+    "to": "2026-09-24 00:00",
+    "bars": 2093,
+    "trades": 52,
+    "return_pct": -16.96,
+    "buy_hold_pct": 265.02,
+    "max_drawdown_pct": 20.02,
+    "win_rate_pct": 23.08,
+    "profit_factor": 0.57,
+    "sharpe": -0.76,
+    "avg_r": -0.35,
+    "fees_paid": 195.51,
+    "starting_balance": 10000.0,
+    "version": "0.1.0"
+  }
+}

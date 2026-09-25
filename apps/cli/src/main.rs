@@ -10,6 +10,7 @@
 //! candlerail fetch --symbol BTCUSDT --interval 1h   download candles into the cache
 //! ```
 
+mod community;
 mod prompt;
 mod report;
 mod server;
@@ -76,6 +77,21 @@ enum Cmd {
     Indicators,
     /// Print instructions to paste into an AI assistant so it writes valid strategies.
     Prompt,
+    /// Backtest a strategy and write a share file with the result, for others to load and verify.
+    Share {
+        strategy: String,
+        #[command(flatten)]
+        market: MarketArgs,
+        #[command(flatten)]
+        data: DataArgs,
+        /// Output file (default: <strategy name>.share.json)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+        #[arg(long)]
+        author: Option<String>,
+        #[arg(long)]
+        notes: Option<String>,
+    },
 }
 
 #[derive(Args, Clone)]
@@ -282,6 +298,30 @@ fn main() -> Result<()> {
         }
         Cmd::Prompt => {
             print!("{}", prompt::build());
+            Ok(())
+        }
+        Cmd::Share { strategy, market, data, output, author, notes } => {
+            let s = load_strategy(&strategy)?;
+            ensure_valid(&s)?;
+            let l = load_candles(Some(&s), &market, &data)?;
+            let cfg = BacktestConfig { capital: market.capital, interval: l.interval, ..BacktestConfig::default() };
+            let r = candlerail_core::run(&s, &l.candles, &cfg).map_err(|e| anyhow::anyhow!(e.join("\n")))?;
+            let mut sh = candlerail_core::share::Share::new(&s, &r, &l.symbol, l.interval, env!("CARGO_PKG_VERSION"));
+            sh.author = author;
+            sh.notes = notes;
+            let path = output.unwrap_or_else(|| {
+                PathBuf::from(format!(
+                    "{}.share.json",
+                    s.name.to_lowercase().replace(|c: char| !c.is_alphanumeric(), "-")
+                ))
+            });
+            std::fs::write(&path, serde_json::to_string_pretty(&sh)?)?;
+            report::print(&r, &l.symbol, l.interval);
+            println!(
+                "\nshare file written to {}. Anyone can load it, or re-run it with: candlerail backtest {}",
+                path.display(),
+                path.display()
+            );
             Ok(())
         }
     }

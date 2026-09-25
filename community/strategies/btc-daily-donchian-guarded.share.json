@@ -1,0 +1,79 @@
+{
+  "candlerail_share": 1,
+  "author": "upendrx",
+  "notes": "Shows how account-level loss limits change a trend-following system.",
+  "strategy": {
+    "name": "BTC daily Donchian with money-management guards",
+    "description": "Turtle-style breakouts with Elder's 6% monthly loss limit and a 20% drawdown halt.",
+    "market": {
+      "symbol": "BTCUSDT",
+      "interval": "1d"
+    },
+    "indicators": {
+      "atr": {
+        "period": 20,
+        "type": "atr"
+      },
+      "entry_ch": {
+        "period": 20,
+        "type": "donchian"
+      },
+      "exit_ch": {
+        "period": 10,
+        "type": "donchian"
+      }
+    },
+    "entry": {
+      "long": {
+        "left": "close",
+        "op": ">",
+        "right": "entry_ch.upper[1]"
+      }
+    },
+    "exit": {
+      "long": {
+        "left": "close",
+        "op": "<",
+        "right": "exit_ch.lower[1]"
+      },
+      "stop_loss": {
+        "atr": 2.0,
+        "indicator": "atr"
+      }
+    },
+    "sizing": {
+      "type": "risk_percent",
+      "value": 1.0
+    },
+    "leverage": 1.0,
+    "costs": {
+      "fee_bps": 10.0,
+      "slippage_bps": 2.0,
+      "maintenance_margin_percent": 0.5
+    },
+    "risk": {
+      "max_drawdown_percent": 20.0,
+      "monthly_loss_percent": 6.0,
+      "pause_after_losses": 4,
+      "pause_bars": 10
+    }
+  },
+  "result": {
+    "symbol": "BTCUSDT",
+    "interval": "1d",
+    "from": "2020-01-01 00:00",
+    "to": "2026-09-24 00:00",
+    "bars": 2459,
+    "trades": 37,
+    "return_pct": 96.82,
+    "buy_hold_pct": 1073.14,
+    "max_drawdown_pct": 11.2,
+    "win_rate_pct": 40.54,
+    "profit_factor": 4.27,
+    "sharpe": 1.12,
+    "avg_r": 2.21,
+    "fees_paid": 195.18,
+    "starting_balance": 10000.0,
+    "version": "0.1.0"
+  }
+}
