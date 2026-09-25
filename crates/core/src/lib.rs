@@ -5,11 +5,14 @@
 //! ```text
 //! candles ──▶ indicators ──▶ strategy rules ──▶ paper broker ──▶ report
 //! ```
+pub mod backtest;
 pub mod broker;
 pub mod candle;
 pub mod indicators;
+pub mod metrics;
 pub mod spec;
 pub mod time;
 
+pub use backtest::{BacktestConfig, Report, run};
 pub use candle::{Candle, Interval};
 pub use spec::Strategy;
