@@ -7,16 +7,19 @@
 //! | `GET /api/templates` | built-in strategies |
 //! | `POST /api/check` | validate a strategy and explain it in plain English |
 //! | `POST /api/backtest` | run a backtest; returns the report and the candles |
+//! | `POST /api/share` | run a backtest and return a share file with the result |
+//! | `GET /api/community` | strategies shared by the community, with their results |
 //! | `GET /api/prompt` | instructions for an AI assistant |
 //! | `GET /schema.json` | JSON Schema for strategy files |
 
-use crate::{default_span, now_ms, prompt, templates};
+use crate::{community, default_span, now_ms, prompt, templates};
 use axum::extract::State;
 use axum::http::{StatusCode, header};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use candlerail_core::indicators::CATALOG;
+use candlerail_core::share::Share;
 use candlerail_core::spec::PRICE_FIELDS;
 use candlerail_core::{BacktestConfig, Interval, Strategy, explain, time};
 use candlerail_data::{Query, binance};
@@ -49,6 +52,8 @@ pub fn serve(listen: &str, ui_dir: Option<PathBuf>, cache: PathBuf, api: String)
         )
         .route("/api/check", post(check))
         .route("/api/backtest", post(backtest))
+        .route("/api/share", post(share))
+        .route("/api/community", get(community))
         .with_state(app);
     let rt = tokio::runtime::Builder::new_multi_thread().worker_threads(2).enable_all().build()?;
     rt.block_on(async {
@@ -80,7 +85,7 @@ async fn catalog() -> Json<Value> {
     Json(json!({
         "indicators": CATALOG,
         "price_fields": PRICE_FIELDS,
-        "ops": [">", "<", ">=", "<=", "crosses_above", "crosses_below", "rising", "falling"],
+        "ops": [">", "<", ">=", "<=", "==", "!=", "crosses_above", "crosses_below", "rising", "falling"],
         "intervals": Interval::ALL.iter().map(|i| i.as_str()).collect::<Vec<_>>(),
     }))
 }
@@ -133,20 +138,18 @@ fn err(status: StatusCode, msgs: Vec<String>) -> Response {
     (status, Json(json!({ "ok": false, "errors": msgs }))).into_response()
 }
 
-async fn backtest(State(app): State<Arc<App>>, Json(req): Json<BacktestReq>) -> Response {
-    let s = match parse_strategy(&req.strategy) {
-        Ok(s) => s,
-        Err(e) => return err(StatusCode::BAD_REQUEST, vec![e]),
-    };
+/// Loads candles and runs the backtest a request describes.
+async fn run_request(
+    app: Arc<App>,
+    req: BacktestReq,
+) -> Result<(Strategy, String, Interval, candlerail_core::Report, Vec<candlerail_core::Candle>), Response> {
+    let s = parse_strategy(&req.strategy).map_err(|e| err(StatusCode::BAD_REQUEST, vec![e]))?;
     let problems = s.validate();
     if !problems.is_empty() {
-        return err(StatusCode::BAD_REQUEST, problems);
+        return Err(err(StatusCode::BAD_REQUEST, problems));
     }
     let interval = match req.interval.as_deref().filter(|x| !x.is_empty()) {
-        Some(i) => match i.parse::<Interval>() {
-            Ok(i) => i,
-            Err(e) => return err(StatusCode::BAD_REQUEST, vec![e]),
-        },
+        Some(i) => i.parse::<Interval>().map_err(|e| err(StatusCode::BAD_REQUEST, vec![e]))?,
         None => s.market.interval.unwrap_or(Interval::H1),
     };
     let symbol = req
@@ -159,44 +162,80 @@ async fn backtest(State(app): State<Arc<App>>, Json(req): Json<BacktestReq>) -> 
     let date = |v: &Option<String>| v.as_deref().filter(|x| !x.is_empty()).map(time::parse);
     let to = match date(&req.to) {
         Some(Some(t)) => t,
-        Some(None) => return err(StatusCode::BAD_REQUEST, vec!["bad end date".into()]),
+        Some(None) => return Err(err(StatusCode::BAD_REQUEST, vec!["bad end date".into()])),
         None => now_ms(),
     };
     let from = match date(&req.from) {
         Some(Some(t)) => t,
-        Some(None) => return err(StatusCode::BAD_REQUEST, vec!["bad start date".into()]),
+        Some(None) => return Err(err(StatusCode::BAD_REQUEST, vec!["bad start date".into()])),
         None => to - default_span(interval),
     };
     let capital = req.capital.filter(|c| *c > 0.0).unwrap_or(10_000.0);
     let csv = req.csv;
-    let app2 = app.clone();
     let loaded = tokio::task::spawn_blocking(move || -> anyhow::Result<(String, Vec<candlerail_core::Candle>)> {
         if let Some(text) = csv.filter(|t| !t.trim().is_empty()) {
             let c = candlerail_data::csv::parse(&text)?;
             return Ok(("CSV".into(), candlerail_data::tidy(c, from, to)));
         }
         let q = Query { symbol: symbol.clone(), interval, from, to };
-        Ok((symbol, binance::load(&app2.api, &app2.cache, &q, |_| {})?))
+        Ok((symbol, binance::load(&app.api, &app.cache, &q, |_| {})?))
     })
     .await;
     let (symbol, candles) = match loaded {
         Ok(Ok(v)) => v,
-        Ok(Err(e)) => return err(StatusCode::BAD_GATEWAY, vec![format!("{e:#}")]),
-        Err(e) => return err(StatusCode::INTERNAL_SERVER_ERROR, vec![e.to_string()]),
+        Ok(Err(e)) => return Err(err(StatusCode::BAD_GATEWAY, vec![format!("{e:#}")])),
+        Err(e) => return Err(err(StatusCode::INTERNAL_SERVER_ERROR, vec![e.to_string()])),
     };
     if candles.len() < 50 {
-        return err(
+        return Err(err(
             StatusCode::BAD_REQUEST,
             vec![format!("only {} candles in that range; pick a longer period", candles.len())],
-        );
+        ));
     }
     let cfg = BacktestConfig { capital, interval, ..BacktestConfig::default() };
-    let (report, candles) =
-        match tokio::task::spawn_blocking(move || (candlerail_core::run(&s, &candles, &cfg), candles)).await {
-            Ok((Ok(r), c)) => (r, c),
-            Ok((Err(e), _)) => return err(StatusCode::BAD_REQUEST, e),
-            Err(e) => return err(StatusCode::INTERNAL_SERVER_ERROR, vec![e.to_string()]),
-        };
-    Json(json!({ "ok": true, "symbol": symbol, "interval": interval, "report": report, "candles": candles }))
-        .into_response()
+    let s2 = s.clone();
+    match tokio::task::spawn_blocking(move || (candlerail_core::run(&s2, &candles, &cfg), candles)).await {
+        Ok((Ok(r), c)) => Ok((s, symbol, interval, r, c)),
+        Ok((Err(e), _)) => Err(err(StatusCode::BAD_REQUEST, e)),
+        Err(e) => Err(err(StatusCode::INTERNAL_SERVER_ERROR, vec![e.to_string()])),
+    }
+}
+
+async fn backtest(State(app): State<Arc<App>>, Json(req): Json<BacktestReq>) -> Response {
+    match run_request(app, req).await {
+        Ok((_, symbol, interval, report, candles)) => {
+            Json(json!({ "ok": true, "symbol": symbol, "interval": interval, "report": report, "candles": candles }))
+                .into_response()
+        }
+        Err(r) => r,
+    }
+}
+
+#[derive(Deserialize)]
+struct ShareReq {
+    #[serde(flatten)]
+    run: BacktestReq,
+    author: Option<String>,
+    notes: Option<String>,
+}
+
+/// Re-runs the backtest and returns a share file with the result in it.
+async fn share(State(app): State<Arc<App>>, Json(req): Json<ShareReq>) -> Response {
+    match run_request(app, req.run).await {
+        Ok((s, symbol, interval, report, _)) => {
+            let mut sh = Share::new(&s, &report, &symbol, interval, env!("CARGO_PKG_VERSION"));
+            sh.author = req.author.filter(|a| !a.trim().is_empty());
+            sh.notes = req.notes.filter(|n| !n.trim().is_empty());
+            Json(json!({ "ok": true, "share": sh })).into_response()
+        }
+        Err(r) => r,
+    }
+}
+
+async fn community() -> Json<Value> {
+    let list: Vec<Value> = community::ALL
+        .iter()
+        .filter_map(|(id, text)| serde_json::from_str::<Value>(text).ok().map(|v| json!({ "id": id, "share": v })))
+        .collect();
+    Json(Value::Array(list))
 }
