@@ -7,6 +7,14 @@ All notable changes are recorded here. The format follows
 ## [Unreleased]
 
 ### Added
+- Chart Lab: select 1 to 5 candles on a chart to turn their shape into
+  rules, see every match and what followed, loosen rules automatically,
+  backtest with setup-based stops, and compare across timeframes and coins.
+  Mark swings to find matching swing settings, draw levels to use in rules,
+  and save setups in the browser.
+- `POST /api/candles` and `POST /api/scan`, and `candlerail_core::scan`.
+- A refreshed look for the web app and site: new type, softer colours,
+  and a matching dark theme.
 - Price action: `patterns` (13 candlestick patterns), `swings` (support,
   resistance and market structure), `period` (previous hour, day, week and
   month levels on any timeframe), `opening_range` and `volume_avg`.

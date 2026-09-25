@@ -7,7 +7,7 @@ Build and backtest trading strategies without writing code. Pick indicators,
 say when to buy and sell, choose your risk and leverage, and see how it would
 have done, in plain English and with the numbers that matter.
 
-![A backtest in candlerail: metrics, warnings and the price chart with trades](docs/images/results.png)
+![The Chart Lab: select candles on a chart and test the setup](docs/images/lab.png)
 
 ```bash
 # macOS / Linux
@@ -22,7 +22,12 @@ It runs entirely on your computer (Windows, macOS or Linux). Candles come
 from Binance's public API with no account needed, or from any CSV file for
 stocks, forex, futures or anything else.
 
-## Three ways to make a strategy
+## Four ways to make a strategy
+
+**Pick it off a chart.** In the [Chart Lab](docs/chart-lab.md), drag across
+the candles you'd trade. Their shape becomes rules you can switch on and
+off, every other time it happened is marked, with what price did next, and
+one click backtests it on any timeframe or coin.
 
 **Start from a template.** 18 ready-made strategies: trend following, mean
 reversion, breakouts, momentum, intraday, and eight pure price-action setups
@@ -96,7 +101,7 @@ candlerail share mine.json --author me                # strategy + result, to sh
 - [Getting started](docs/getting-started.md)
 - [A guide to strategy types](docs/strategy-guide.md): trend, mean reversion,
   breakout, momentum, intraday, and common mistakes
-- [Price action](docs/price-action.md), [Money management](docs/money-management.md)
+- [Chart Lab](docs/chart-lab.md), [Price action](docs/price-action.md), [Money management](docs/money-management.md)
   and [Sharing strategies](docs/sharing.md)
 - [The strategy file](docs/strategy-format.md) and its [JSON Schema](schema/strategy.schema.json)
 - [How backtests work](docs/backtesting.md)

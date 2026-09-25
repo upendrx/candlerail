@@ -4,7 +4,7 @@
 apps/cli            candlerail binary: CLI commands and the local web server
 crates/core         candles, indicators, strategy format, broker, backtest, metrics, explain (no I/O)
 crates/data         candle sources: Binance klines with a cache, CSV files
-ui/                 the web app (plain HTML and JS, compiled into the binary)
+ui/                 the web app: index.html and the Chart Lab's lab.js (plain HTML and JS, compiled into the binary)
 templates/          built-in strategies (compiled into the binary)
 schema/             JSON Schema for strategy files
 community/          shared strategies with recorded results (the Community gallery)
