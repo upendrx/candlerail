@@ -81,6 +81,22 @@ The response is `{ "ok": true, "symbol", "interval", "report", "candles" }`.
 On failure: `{ "ok": false, "errors": ["..."] }` with status 400 (bad input),
 502 (data source unreachable) or 500.
 
+`metrics` also has `avg_r` (average result in R) and `kelly_risk_pct`
+(the Kelly risk fraction, once there are ten or more trades with a stop).
+Each trade has `r_multiple`. `risk` reports what the strategy's money
+management did: `halted_at` (when the drawdown limit stopped trading),
+`blocked_entries` (count by rule) and `forced_exits`.
+
+## POST /api/share
+
+Takes the same body as `/api/backtest`, plus optional `author` and `notes`.
+Runs the test and returns `{ "ok": true, "share": { ... } }`, a
+[share file](sharing.md) with the strategy and its result.
+
+## GET /api/community
+
+The strategies in the community gallery: `[{ "id", "share" }]`.
+
 ## GET /api/prompt, GET /schema.json
 
 The AI instructions as plain text, and the JSON Schema for strategy files.

@@ -72,6 +72,20 @@ candlerail fetch --symbol ETHUSDT --interval 4h --from 2023-01-01
 Downloads candles into the cache without running anything, which is useful
 before working offline.
 
+## share
+
+Runs a backtest and writes a [share file](sharing.md) with the strategy and
+its result.
+
+```text
+candlerail share <strategy> [--symbol S] [--interval I] [--from DATE] [--to DATE]
+                 [--csv FILE] [--capital N] [--output FILE] [--author NAME] [--notes TEXT]
+```
+
+The output defaults to `<strategy name>.share.json`. Share files can be
+passed anywhere a strategy file is accepted, including `backtest` and
+`explain`.
+
 ## Exit codes
 
 `0` on success, `1` on any error (invalid strategy, bad arguments, network
