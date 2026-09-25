@@ -9,6 +9,8 @@
 //! | `POST /api/backtest` | run a backtest; returns the report and the candles |
 //! | `POST /api/share` | run a backtest and return a share file with the result |
 //! | `GET /api/community` | strategies shared by the community, with their results |
+//! | `POST /api/candles` | candles for a market and period, for the chart lab |
+//! | `POST /api/scan` | every candle where a strategy's entry rules hold |
 //! | `GET /api/prompt` | instructions for an AI assistant |
 //! | `GET /schema.json` | JSON Schema for strategy files |
 
@@ -54,6 +56,8 @@ pub fn serve(listen: &str, ui_dir: Option<PathBuf>, cache: PathBuf, api: String)
         .route("/api/backtest", post(backtest))
         .route("/api/share", post(share))
         .route("/api/community", get(community))
+        .route("/api/candles", post(candles))
+        .route("/api/scan", post(scan))
         .with_state(app);
     let rt = tokio::runtime::Builder::new_multi_thread().worker_threads(2).enable_all().build()?;
     rt.block_on(async {
@@ -68,13 +72,16 @@ pub fn serve(listen: &str, ui_dir: Option<PathBuf>, cache: PathBuf, api: String)
     })
 }
 
+/// A UI file: from `--ui-dir` when given (for editing without rebuilding), else built in.
+fn ui_file(app: &App, name: &str, builtin: &'static str) -> String {
+    app.ui_dir
+        .as_ref()
+        .and_then(|dir| std::fs::read_to_string(dir.join(name)).ok())
+        .unwrap_or_else(|| builtin.to_string())
+}
+
 async fn index(State(app): State<Arc<App>>) -> Html<String> {
-    if let Some(dir) = &app.ui_dir
-        && let Ok(s) = std::fs::read_to_string(dir.join("index.html"))
-    {
-        return Html(s);
-    }
-    Html(INDEX.to_string())
+    Html(ui_file(&app, "index.html", INDEX))
 }
 
 async fn charts() -> impl IntoResponse {
@@ -122,40 +129,48 @@ async fn check(Json(req): Json<CheckReq>) -> Json<Value> {
     }
 }
 
+/// Which candles to use: a market and period, or CSV text.
+#[derive(Deserialize)]
+struct DataReq {
+    symbol: Option<String>,
+    interval: Option<String>,
+    /// A date, a date and time, or milliseconds since 1970.
+    from: Option<String>,
+    to: Option<String>,
+    /// Candles as CSV text, instead of downloading.
+    csv: Option<String>,
+}
+
 #[derive(Deserialize)]
 struct BacktestReq {
     strategy: Value,
-    symbol: Option<String>,
-    interval: Option<String>,
-    from: Option<String>,
-    to: Option<String>,
+    #[serde(flatten)]
+    data: DataReq,
     capital: Option<f64>,
-    /// Candles as CSV text, instead of downloading.
-    csv: Option<String>,
 }
 
 fn err(status: StatusCode, msgs: Vec<String>) -> Response {
     (status, Json(json!({ "ok": false, "errors": msgs }))).into_response()
 }
 
-/// Loads candles and runs the backtest a request describes.
-async fn run_request(
-    app: Arc<App>,
-    req: BacktestReq,
-) -> Result<(Strategy, String, Interval, candlerail_core::Report, Vec<candlerail_core::Candle>), Response> {
-    let s = parse_strategy(&req.strategy).map_err(|e| err(StatusCode::BAD_REQUEST, vec![e]))?;
-    let problems = s.validate();
-    if !problems.is_empty() {
-        return Err(err(StatusCode::BAD_REQUEST, problems));
-    }
+struct Loaded {
+    symbol: String,
+    interval: Interval,
+    candles: Vec<candlerail_core::Candle>,
+}
+
+/// Loads the candles a request describes. The strategy's `market`, if any,
+/// fills in a missing symbol or interval.
+async fn load(app: Arc<App>, req: DataReq, strategy: Option<&Strategy>) -> Result<Loaded, Response> {
+    let market = strategy.map(|s| &s.market);
     let interval = match req.interval.as_deref().filter(|x| !x.is_empty()) {
         Some(i) => i.parse::<Interval>().map_err(|e| err(StatusCode::BAD_REQUEST, vec![e]))?,
-        None => s.market.interval.unwrap_or(Interval::H1),
+        None => market.and_then(|m| m.interval).unwrap_or(Interval::H1),
     };
     let symbol = req
         .symbol
         .filter(|x| !x.trim().is_empty())
-        .or_else(|| s.market.symbol.clone())
+        .or_else(|| market.and_then(|m| m.symbol.clone()))
         .unwrap_or_else(|| "BTCUSDT".into())
         .trim()
         .to_uppercase();
@@ -170,7 +185,6 @@ async fn run_request(
         Some(None) => return Err(err(StatusCode::BAD_REQUEST, vec!["bad start date".into()])),
         None => to - default_span(interval),
     };
-    let capital = req.capital.filter(|c| *c > 0.0).unwrap_or(10_000.0);
     let csv = req.csv;
     let loaded = tokio::task::spawn_blocking(move || -> anyhow::Result<(String, Vec<candlerail_core::Candle>)> {
         if let Some(text) = csv.filter(|t| !t.trim().is_empty()) {
@@ -192,6 +206,27 @@ async fn run_request(
             vec![format!("only {} candles in that range; pick a longer period", candles.len())],
         ));
     }
+    Ok(Loaded { symbol, interval, candles })
+}
+
+/// A strategy that parses and validates, or the problems with it.
+fn valid_strategy(v: &Value) -> Result<Strategy, Vec<String>> {
+    let s = parse_strategy(v).map_err(|e| vec![e])?;
+    let problems = s.validate();
+    if !problems.is_empty() {
+        return Err(problems);
+    }
+    Ok(s)
+}
+
+/// Loads candles and runs the backtest a request describes.
+async fn run_request(
+    app: Arc<App>,
+    req: BacktestReq,
+) -> Result<(Strategy, String, Interval, candlerail_core::Report, Vec<candlerail_core::Candle>), Response> {
+    let s = valid_strategy(&req.strategy).map_err(|e| err(StatusCode::BAD_REQUEST, e))?;
+    let Loaded { symbol, interval, candles } = load(app, req.data, Some(&s)).await?;
+    let capital = req.capital.filter(|c| *c > 0.0).unwrap_or(10_000.0);
     let cfg = BacktestConfig { capital, interval, ..BacktestConfig::default() };
     let s2 = s.clone();
     match tokio::task::spawn_blocking(move || (candlerail_core::run(&s2, &candles, &cfg), candles)).await {
@@ -238,4 +273,39 @@ async fn community() -> Json<Value> {
         .filter_map(|(id, text)| serde_json::from_str::<Value>(text).ok().map(|v| json!({ "id": id, "share": v })))
         .collect();
     Json(Value::Array(list))
+}
+
+async fn candles(State(app): State<Arc<App>>, Json(req): Json<DataReq>) -> Response {
+    match load(app, req, None).await {
+        Ok(l) => Json(json!({ "ok": true, "symbol": l.symbol, "interval": l.interval, "candles": l.candles }))
+            .into_response(),
+        Err(r) => r,
+    }
+}
+
+#[derive(Deserialize)]
+struct ScanReq {
+    strategy: Value,
+    #[serde(flatten)]
+    data: DataReq,
+}
+
+/// Where the strategy's entry rules hold, as candle open times.
+async fn scan(State(app): State<Arc<App>>, Json(req): Json<ScanReq>) -> Response {
+    let s = match valid_strategy(&req.strategy) {
+        Ok(s) => s,
+        Err(e) => return err(StatusCode::BAD_REQUEST, e),
+    };
+    let l = match load(app, req.data, Some(&s)).await {
+        Ok(l) => l,
+        Err(r) => return r,
+    };
+    match candlerail_core::scan::scan(&s, &l.candles) {
+        Ok(m) => {
+            let ts = |v: &[usize]| v.iter().map(|&i| l.candles[i].ts).collect::<Vec<_>>();
+            Json(json!({ "ok": true, "bars": l.candles.len(), "long": ts(&m.long), "short": ts(&m.short) }))
+                .into_response()
+        }
+        Err(e) => err(StatusCode::BAD_REQUEST, e),
+    }
 }
