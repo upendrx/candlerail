@@ -14,6 +14,7 @@ categories = ["finance"]
 
 [workspace.dependencies]
 candlerail-core = { path = "crates/core" }
+candlerail-data = { path = "crates/data" }
 
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
