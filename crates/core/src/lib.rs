@@ -5,6 +5,7 @@
 //! ```text
 //! candles ──▶ indicators ──▶ strategy rules ──▶ paper broker ──▶ report
 //! ```
+pub mod broker;
 pub mod candle;
 pub mod indicators;
 pub mod spec;
