@@ -27,12 +27,21 @@ jobs:
       - name: Package
         shell: bash
         run: |
-          name="candlerail-${GITHUB_REF_NAME}-${{ matrix.target }}"
+          # Asset names carry no version, so /releases/latest/download/<name> always
+          # points at the newest build. The install scripts rely on this.
+          name="candlerail-${{ matrix.target }}"
           mkdir -p "${name:?}"
           cp -r templates README.md LICENSE-MIT LICENSE-APACHE THIRD_PARTY_NOTICES.md "${name:?}/"
           bin=target/${{ matrix.target }}/release/candlerail
-          if [ -f "$bin.exe" ]; then cp "$bin.exe" "${name:?}/"; else cp "$bin" "${name:?}/"; fi
-          tar czf "${name:?}.tar.gz" "${name:?}"
+          if [ -f "$bin.exe" ]; then
+            cp "$bin.exe" "${name:?}/"
+            7z a -tzip "${name:?}.zip" "${name:?}" > /dev/null
+          else
+            cp "$bin" "${name:?}/"
+            tar czf "${name:?}.tar.gz" "${name:?}"
+          fi
       - uses: softprops/action-gh-release@v2
         with:
-          files: candlerail-*.tar.gz
+          files: |
+            candlerail-*.tar.gz
+            candlerail-*.zip
