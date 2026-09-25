@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>candlerail quick start</title>
+<meta name="description" content="Build and backtest trading strategies without code, on your own computer. Install on Windows, macOS or Linux in two minutes.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f766e'/%3E%3Cpath d='M9 8v16M9 12h-2v8h4v-8zM16 6v18M14 10h4v9h-4zM23 11v13M21 14h4v6h-4z' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f6f7; --surface: #ffffff; --surface2: #eef3f5; --ink: #13202b; --muted: #566877; --faint: #8b9ba6;
+  --line: #d9e2e7; --accent: #0f766e; --accent-ink: #ffffff; --accent-soft: rgba(15,118,110,.10);
+  --up: #15803d; --down: #dc2626; --warn-soft: rgba(180,83,9,.10);
+  --term: #0f1a1f; --term-ink: #d7e4ea; --term-dim: #7f95a1;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "Figtree", -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0c1316; --surface: #131c21; --surface2: #19252b; --ink: #e5eef2; --muted: #93a6b1; --faint: #6b7f8a;
+    --line: #25343c; --accent: #2dd4bf; --accent-ink: #062b27; --accent-soft: rgba(45,212,191,.12);
+    --up: #34d399; --down: #f87171; --warn-soft: rgba(251,191,36,.12);
+    --term: #081013; --term-ink: #d7e4ea; --term-dim: #6f8591;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0c1316; --surface: #131c21; --surface2: #19252b; --ink: #e5eef2; --muted: #93a6b1; --faint: #6b7f8a;
+  --line: #25343c; --accent: #2dd4bf; --accent-ink: #062b27; --accent-soft: rgba(45,212,191,.12);
+  --up: #34d399; --down: #f87171; --warn-soft: rgba(251,191,36,.12);
+  --term: #081013; --term-ink: #d7e4ea; --term-dim: #6f8591;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+@media (max-width: 700px) { .wrap { padding: 0 16px; } }
+
+header { border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 5; }
+header .wrap { display: flex; align-items: center; gap: 18px; height: 60px; }
+.brand { font: 800 21px var(--display); letter-spacing: -.02em; display: flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; }
+header nav { margin-left: auto; display: flex; gap: 18px; font-weight: 600; font-size: 15px; }
+header nav a { color: var(--muted); text-decoration: none; }
+header nav a:hover { color: var(--ink); }
+@media (max-width: 560px) { header nav a.opt { display: none; } }
+
+.hero { padding: 64px 0 40px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+@media (max-width: 900px) { .hero { grid-template-columns: 1fr; padding: 40px 0 24px; } }
+.eyebrow { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin-bottom: 12px; }
+h1 { font: 800 clamp(34px, 5vw, 54px)/1.04 var(--display); letter-spacing: -.03em; margin: 0; text-wrap: balance; }
+h2 { font: 800 clamp(26px, 3.2vw, 34px)/1.1 var(--display); letter-spacing: -.02em; margin: 0 0 8px; }
+h3 { font: 700 17px var(--display); margin: 0 0 6px; }
+.lede { color: var(--muted); font-size: 18px; max-width: 58ch; margin: 16px 0 0; }
+.cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 18px; font-weight: 600; text-decoration: none; color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.facts { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 22px; color: var(--muted); font-size: 14px; }
+.facts span::before { content: "✓ "; color: var(--accent); font-weight: 700; }
+.shot { border-radius: 14px; border: 1px solid var(--line); overflow: hidden; background: var(--surface); box-shadow: 0 20px 50px -24px rgba(0,0,0,.35); }
+.shot img { display: block; width: 100%; height: auto; }
+
+section { padding: 44px 0; }
+.sub { color: var(--muted); max-width: 66ch; margin: 0 0 22px; }
+
+/* install */
+.install { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 26px; }
+@media (max-width: 700px) { .install { padding: 18px 14px; } }
+.os { display: inline-flex; background: var(--surface2); border-radius: 12px; padding: 4px; gap: 4px; flex-wrap: wrap; }
+.os button { border: 0; background: none; padding: 8px 16px; border-radius: 9px; font-weight: 600; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; }
+.os button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.detected { font-size: 13px; color: var(--faint); margin-left: 10px; }
+.methods { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+@media (max-width: 900px) { .methods { grid-template-columns: 1fr; } }
+.method { border: 1px solid var(--line); border-radius: 14px; padding: 18px; min-width: 0; }
+.method .tag { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+.method p { color: var(--muted); font-size: 14.5px; margin: 0 0 12px; }
+ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: 14px; }
+ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; }
+ol.steps > li::before { content: counter(s); width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font: 700 13px var(--display); }
+ol.steps b { display: block; font-size: 15px; margin-bottom: 6px; }
+ol.steps .note { font-size: 13.5px; color: var(--faint); margin: 6px 0 0; }
+.term { background: var(--term); color: var(--term-ink); border-radius: 10px; padding: 12px 64px 12px 14px; font: 13px/1.6 var(--mono); position: relative; white-space: pre-wrap; overflow-wrap: anywhere; }
+.term .c { color: var(--term-dim); }
+.copy { position: absolute; top: 7px; right: 7px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: var(--term-ink); border-radius: 7px; padding: 3px 8px; font: 600 11.5px var(--body); cursor: pointer; }
+.copy:hover { background: rgba(255,255,255,.14); }
+.open { margin-top: 18px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; }
+.open code { font: 500 15px var(--mono); }
+
+/* first steps */
+.first { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.first div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.first .n { font: 800 28px var(--display); color: var(--accent); line-height: 1; margin-bottom: 8px; }
+.first p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+/* tour */
+.tour { display: grid; gap: 34px; }
+.tour article { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 30px; align-items: center; }
+.tour article:nth-child(even) { grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); }
+.tour article:nth-child(even) .txt { order: 2; }
+@media (max-width: 900px) { .tour article, .tour article:nth-child(even) { grid-template-columns: 1fr; } .tour article:nth-child(even) .txt { order: 0; } }
+.tour p { color: var(--muted); margin: 0 0 10px; }
+.tour ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
+
+/* help */
+.faq { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 800px) { .faq { grid-template-columns: 1fr; } }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+details summary { cursor: pointer; font-weight: 600; }
+details p { color: var(--muted); font-size: 14.5px; margin: 10px 0 0; }
+code { font: 12.5px var(--mono); background: var(--surface2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+.warn { background: var(--warn-soft); border-radius: 12px; padding: 14px 16px; font-size: 14.5px; }
+footer { border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--faint); font-size: 14px; }
+footer .wrap { display: flex; gap: 16px; flex-wrap: wrap; justify-content: space-between; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand" href="#"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--accent)"/><path d="M9 8v16M16 6v18M23 11v13" stroke="var(--accent-ink)" stroke-width="2"/><rect x="7" y="12" width="4" height="8" fill="var(--accent-ink)"/><rect x="14" y="10" width="4" height="9" fill="none" stroke="var(--accent-ink)" stroke-width="2"/><rect x="21" y="14" width="4" height="6" fill="var(--accent-ink)"/></svg>candlerail</a>
+    <nav>
+      <a href="#install">Install</a>
+      <a class="opt" href="#tour">Tour</a>
+      <a class="opt" href="#help">Help</a>
+      <a href="https://github.com/upendrx/candlerail">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap hero">
+  <div>
+    <div class="eyebrow">Quick start</div>
+    <h1>Test your trading idea on years of real prices, before you risk a cent.</h1>
+    <p class="lede">candlerail is a free app that runs on your own computer. Pick a ready-made strategy or build one with dropdowns, add sensible money management, and see honestly how it would have done.</p>
+    <div class="cta"><a class="btn primary" href="#install">Install in 2 minutes</a><a class="btn" href="https://github.com/upendrx/candlerail">View the source</a></div>
+    <div class="facts"><span>Windows, macOS, Linux</span><span>No account or API key</span><span>Free and open source</span></div>
+  </div>
+  <div class="shot"><img src="images/start.png" alt="The candlerail start screen" width="1360" height="860"></div>
+</div>
+
+<section id="install">
+  <div class="wrap">
+    <h2>Install</h2>
+    <p class="sub">Choose your system. The one-line installer downloads a ready-made program; building from source takes a few minutes longer and works on any machine Rust supports.</p>
+    <div class="install">
+      <div class="os" role="tablist" aria-label="Operating system">
+        <button role="tab" data-os="windows">Windows</button>
+        <button role="tab" data-os="mac">macOS</button>
+        <button role="tab" data-os="linux">Linux</button>
+      </div><span class="detected" id="detected"></span>
+
+      <div class="methods">
+        <div class="method">
+          <div class="tag">Recommended</div>
+          <h3>One-line install</h3>
+          <p data-for="windows">Open <b>PowerShell</b> (press Start, type "PowerShell", press Enter) and paste:</p>
+          <p data-for="mac">Open <b>Terminal</b> (press ⌘ Space, type "Terminal", press Enter) and paste:</p>
+          <p data-for="linux">Open a terminal and paste:</p>
+          <ol class="steps">
+            <li><div><b>Install</b>
+              <div class="term" data-for="windows">powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/upendrx/candlerail/main/scripts/install.ps1 | iex"</div>
+              <div class="term" data-for="mac linux">curl -fsSL https://raw.githubusercontent.com/upendrx/candlerail/main/scripts/install.sh | sh</div>
+              <p class="note" data-for="windows">Installs to <code>%LOCALAPPDATA%\candlerail</code> and adds it to your PATH. Nothing needs administrator rights.</p>
+              <p class="note" data-for="mac linux">Installs to <code>~/.local/bin</code>. Works on Intel and Apple Silicon Macs, and on x86-64 and ARM Linux.</p>
+            </div></li>
+            <li><div><b>Start it</b>
+              <div class="term">candlerail serve</div>
+              <p class="note">Leave this window open while you use the app. Press Ctrl+C to stop it.</p>
+            </div></li>
+          </ol>
+        </div>
+        <div class="method">
+          <div class="tag">Any machine</div>
+          <h3>Build from source</h3>
+          <p>Needs the Rust toolchain (free, about 5 minutes to install) and Git.</p>
+          <ol class="steps">
+            <li><div><b>Install Rust</b>
+              <div data-for="windows"><p style="margin:0 0 8px">Download and run <a href="https://win.rustup.rs/x86_64">rustup-init.exe</a>. If it asks, let it install the Visual Studio C++ build tools. Get Git from <a href="https://git-scm.com/download/win">git-scm.com</a>.</p></div>
+              <div class="term" data-for="mac linux">curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh</div>
+              <p class="note" data-for="mac">macOS asks to install the command-line developer tools the first time; accept.</p>
+            </div></li>
+            <li><div><b>Download and build</b>
+              <div class="term">git clone https://github.com/upendrx/candlerail
+cd candlerail
+cargo build --release</div>
+            </div></li>
+            <li><div><b>Start it</b>
+              <div class="term" data-for="windows">.\target\release\candlerail.exe serve</div>
+              <div class="term" data-for="mac linux">./target/release/candlerail serve</div>
+            </div></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="open"><span>Then open</span><code>http://127.0.0.1:8787</code><span>in any browser.</span><a class="btn" href="http://127.0.0.1:8787" style="margin-left:auto">Open the app</a></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Your first ten minutes</h2>
+    <p class="sub">Everything below happens inside the app, and each tab explains itself as you go.</p>
+    <div class="first">
+      <div><div class="n">1</div><h3>Backtest a template</h3><p>Open <b>Strategies</b>, pick one, press <i>Backtest</i>. Candles download free from Binance the first time and are cached.</p></div>
+      <div><div class="n">2</div><h3>Read the result</h3><p>Look at max drawdown before return, compare with buy and hold, and read the warnings. They're written in plain words.</p></div>
+      <div><div class="n">3</div><h3>Change a rule</h3><p>Press <i>Open in builder</i>, change a number or a condition, and watch the plain-English summary update. Run it again.</p></div>
+      <div><div class="n">4</div><h3>Add money management</h3><p>On <b>Money management</b>, pick a preset such as Elder's 2% and 6% rules and apply it. See what the limits changed.</p></div>
+      <div><div class="n">5</div><h3>Share it</h3><p>Press <i>Share this result</i>. Anyone can load the file on the <b>Community</b> tab and re-run your exact test.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="tour">
+  <div class="wrap tour">
+    <article>
+      <div class="txt">
+        <div class="eyebrow">Price action</div>
+        <h2>Trade what the candles say</h2>
+        <p>Build strategies from raw price: candle shapes, swing support and resistance, market structure, and yesterday's, last week's or last month's levels on any timeframe.</p>
+        <ul><li>13 candle patterns, drawn and explained</li><li>Rules as plain arithmetic, like <code>lower_wick &gt; 2 * body</code></li><li>Stops under the candle, targets at resistance</li><li>8 ready setups, from 1-minute scalps to monthly breakouts</li></ul>
+      </div>
+      <div class="shot"><img src="images/pa.png" alt="Candle pattern gallery in candlerail" loading="lazy" width="1360" height="860"></div>
+    </article>
+    <article>
+      <div class="txt">
+        <div class="eyebrow">Money management</div>
+        <h2>Size every trade like a professional</h2>
+        <p>Calculators for shares, crypto, forex lots and futures contracts; the rules famous traders use; and a simulation of 2,000 possible futures for your strategy.</p>
+        <ul><li>Fixed-fractional risk, Kelly, R-multiples</li><li>Daily and monthly loss limits, drawdown circuit breaker</li><li>Guidance for each market and on spreading risk</li></ul>
+      </div>
+      <div class="shot"><img src="images/money.png" alt="Money management tools in candlerail" loading="lazy" width="1360" height="860"></div>
+    </article>
+    <article>
+      <div class="txt">
+        <div class="eyebrow">Honest results</div>
+        <h2>Numbers you can trust</h2>
+        <p>Orders fill at the next open, stops win ties, every trade pays fees and slippage, and leveraged trades can be liquidated. The report compares against buy and hold and checks for overfitting.</p>
+      </div>
+      <div class="shot"><img src="images/results.png" alt="Backtest results in candlerail" loading="lazy" width="1360" height="860"></div>
+    </article>
+    <article>
+      <div class="txt">
+        <div class="eyebrow">Community</div>
+        <h2>Share strategies with their real profit and loss</h2>
+        <p>A share file holds the strategy and its recorded result. Anyone can re-run it on the same data and see whether the numbers hold, losses included.</p>
+      </div>
+      <div class="shot"><img src="images/community.png" alt="Shared strategies with recorded results" loading="lazy" width="1360" height="860"></div>
+    </article>
+  </div>
+</section>
+
+<section id="help">
+  <div class="wrap">
+    <h2>If something goes wrong</h2>
+    <p class="sub">The common problems, and how to fix them.</p>
+    <div class="faq">
+      <details><summary>"candlerail" is not recognized / command not found</summary><p>The install folder isn't on your PATH yet. On Windows, open a new PowerShell window. On macOS or Linux, run the <code>export PATH=...</code> line the installer printed, or start it with the full path: <code>~/.local/bin/candlerail serve</code>.</p></details>
+      <details><summary>Windows says it protected my PC</summary><p>SmartScreen warns about new programs that haven't been downloaded by many people yet. Click <i>More info</i>, then <i>Run anyway</i>, or build from source instead.</p></details>
+      <details><summary>macOS says the app can't be opened</summary><p>This happens if you downloaded the archive with a browser. Run <code>xattr -d com.apple.quarantine ~/.local/bin/candlerail</code> once, or use the one-line installer, which doesn't trigger it.</p></details>
+      <details><summary>The address is already in use</summary><p>Another program is using port 8787. Pick a different one: <code>candlerail serve --listen 127.0.0.1:9000</code>, then open <code>http://127.0.0.1:9000</code>.</p></details>
+      <details><summary>Candles won't download</summary><p>Binance's public market-data API is blocked in some countries and networks. Upload a CSV of candles in the builder instead (any market works), or point to another mirror with <code>--binance-api</code>.</p></details>
+      <details><summary>Can I use it for stocks, forex or futures?</summary><p>Yes. Export candles as CSV (time, open, high, low, close, volume) from your broker or charting tool and upload the file in the builder. See <a href="https://github.com/upendrx/candlerail/blob/main/docs/getting-started.md">Getting started</a> for the format.</p></details>
+      <details><summary>What does it need?</summary><p>Any 64-bit computer from the last ten years, about 10 MB of disk plus room for cached candles, and a browser. No account, no API key, no internet connection beyond downloading candles.</p></details>
+      <details><summary>How do I update?</summary><p>Run the install command again. Your cached candles and saved strategy files are kept.</p></details>
+    </div>
+    <div class="warn" style="margin-top:22px"><b>Simulation only.</b> candlerail never places real orders. Past results don't predict future ones, and most traders who use leverage lose money. Nothing here is financial advice.</div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap"><span>candlerail is open source under MIT or Apache-2.0.</span><span><a href="https://github.com/upendrx/candlerail/tree/main/docs">Documentation</a> · <a href="https://github.com/upendrx/candlerail/issues">Report a problem</a></span></div>
+</footer>
+
+<script>
+"use strict";
+const guess = () => {
+  const p = (navigator.userAgentData?.platform || navigator.platform || navigator.userAgent).toLowerCase();
+  return p.includes("win") ? "windows" : p.includes("mac") ? "mac" : "linux";
+};
+const NAMES = { windows: "Windows", mac: "macOS", linux: "Linux" };
+function pick(os) {
+  document.querySelectorAll(".os button").forEach(b => b.setAttribute("aria-selected", b.dataset.os === os));
+  document.querySelectorAll("[data-for]").forEach(el => el.hidden = !el.dataset.for.split(" ").includes(os));
+}
+document.querySelectorAll(".os button").forEach(b => b.onclick = () => pick(b.dataset.os));
+const detected = guess();
+document.getElementById("detected").textContent = `Looks like you're on ${NAMES[detected]}.`;
+pick(detected);
+document.querySelectorAll(".term").forEach(t => {
+  const b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.onclick = async () => {
+    try { await navigator.clipboard.writeText(t.firstChild.textContent.trim()); b.textContent = "Copied"; }
+    catch (e) { b.textContent = "Select and copy"; }
+    setTimeout(() => b.textContent = "Copy", 1600);
+  };
+  t.appendChild(b);
+});
+</script>
+</body>
+</html>
