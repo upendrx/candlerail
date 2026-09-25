@@ -29,23 +29,33 @@ FORMAT
   "entry": {{ "long": <condition>, "short": <condition> }},         // either or both
   "exit": {{
     "long": <condition>, "short": <condition>,                      // optional exit rules
-    "stop_loss": {{ "percent": 2 }} or {{ "atr": 2, "indicator": "<atr id>" }},
-    "take_profit": {{ "percent": 4 }} or {{ "atr": 3, "indicator": "<atr id>" }} or {{ "risk_multiple": 2 }},
+    "stop_loss": {{ "percent": 2 }} or {{ "atr": 2, "indicator": "<atr id>" }}
+                 or price levels {{ "below": "<level for longs>", "above": "<level for shorts>" }},
+    "take_profit": {{ "percent": 4 }} or {{ "atr": 3, "indicator": "<atr id>" }} or {{ "risk_multiple": 2 }}
+                   or price levels {{ "above": "<level for longs>", "below": "<level for shorts>" }},
     "trailing_stop": {{ "percent": 3 }} or {{ "atr": 2, "indicator": "<atr id>" }},
     "max_bars": 24
   }},
   "sizing": {{ "type": "risk_percent", "value": 1 }},    // or "percent_equity" (margin % of account) or "fixed" (units)
   "leverage": 1,                                         // 1 to 125
-  "costs": {{ "fee_bps": 10, "slippage_bps": 2 }}
+  "costs": {{ "fee_bps": 10, "slippage_bps": 2 }},
+  "risk": {{                                             // optional account-level money management
+    "max_drawdown_percent": 20, "daily_loss_percent": 2, "monthly_loss_percent": 6,
+    "max_trades_per_day": 3, "pause_after_losses": 3, "pause_bars": 24
+  }}
 }}
 
 CONDITIONS
 - A rule: {{ "left": <value>, "op": "<op>", "right": <value> }}
 - Groups: {{ "all": [ ... ] }} (AND), {{ "any": [ ... ] }} (OR), {{ "not": <condition> }}
-- ops: ">", "<", ">=", "<=", "crosses_above", "crosses_below", "rising", "falling"
+- ops: ">", "<", ">=", "<=", "==", "!=", "crosses_above", "crosses_below", "rising", "falling"
   ("rising"/"falling": right is a whole number of bars, e.g. {{ "left": "close", "op": "rising", "right": 3 }})
 - A value is a number, a price field ({price_fields}), an indicator id (its first output),
   or "<id>.<output>". Add [n] for n bars ago: "close[1]", "bb.upper[2]".
+- A value can also be a simple sum: "2 * body[1]", "high[1] + 0.5 * range", "0.5 * or.high + 0.5 * or.low".
+  Values can be multiplied or divided by numbers only; no parentheses.
+- Candle fields for price action: body (|close - open|), range (high - low), upper_wick, lower_wick.
+- Pattern outputs are flags: use {{ "left": "pa.hammer", "op": "==", "right": 1 }}.
 
 INDICATORS
 {ind}
@@ -56,6 +66,9 @@ RULES
 - "risk_multiple" take profit requires a stop_loss.
 - For breakouts compare with the previous bar's channel, e.g. "close" > "channel.upper[1]".
 - Keep leverage at 1 unless the user asks for leverage.
+- Price-action strategies need no smoothing indicators: use "patterns", "swings" (support/resistance),
+  "period" (previous day/week/month levels), "opening_range" and "volume_avg", with stops at price
+  levels such as "below": "low" (the signal candle's low) or "below": "sw.support".
 
 EXAMPLE
 User: buy bitcoin on the 4 hour chart when RSI drops under 30 while price is above the 200 average, risk 1%, stop 3%, take profit at twice the risk.
