@@ -1,0 +1,29 @@
+{
+  "name": "VWAP intraday reclaim",
+  "description": "Intraday: buy when price reclaims the session VWAP with positive momentum, out within four hours.",
+  "about": {
+    "category": "intraday",
+    "timeframe": "15m",
+    "how_it_works": "VWAP is the average price paid today, weighted by volume, and many intraday traders treat it as fair value. Closing back above it, with RSI above 50, suggests buyers are in control for the session. Trades are short: a tight stop, a 1.5R target, and a time limit.",
+    "works_best": "Liquid markets with active intraday participation.",
+    "fails_when": "Quiet sessions where price hugs VWAP and crosses it many times. Fees matter a lot at this frequency."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "15m" },
+  "indicators": {
+    "vwap": { "type": "vwap" },
+    "rsi": { "type": "rsi", "period": 14 }
+  },
+  "entry": {
+    "long": { "all": [
+      { "left": "close", "op": "crosses_above", "right": "vwap" },
+      { "left": "rsi", "op": ">", "right": 50 }
+    ] }
+  },
+  "exit": {
+    "long": { "left": "close", "op": "crosses_below", "right": "vwap" },
+    "stop_loss": { "percent": 1 },
+    "take_profit": { "risk_multiple": 1.5 },
+    "max_bars": 16
+  },
+  "sizing": { "type": "risk_percent", "value": 0.5 }
+}

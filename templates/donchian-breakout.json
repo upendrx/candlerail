@@ -1,0 +1,23 @@
+{
+  "name": "Donchian breakout",
+  "description": "Buy a new 20-day high, exit on a 10-day low. The rules made famous by the Turtle traders.",
+  "about": {
+    "category": "breakout",
+    "timeframe": "1d",
+    "how_it_works": "A close above the highest high of the previous 20 days means the market just broke out of its recent range. Breakouts that start a big trend pay for the many that fail. The trade exits when price closes below the previous 10-day low, giving the trend room to breathe.",
+    "works_best": "Markets that trend hard after breaking out, on daily charts.",
+    "fails_when": "False breakouts: price pokes above the range and falls back. Expect a low win rate (often 30 to 40%) with a few large winners."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "1d" },
+  "indicators": {
+    "entry_ch": { "type": "donchian", "period": 20 },
+    "exit_ch": { "type": "donchian", "period": 10 },
+    "atr": { "type": "atr", "period": 20 }
+  },
+  "entry": { "long": { "left": "close", "op": ">", "right": "entry_ch.upper[1]" } },
+  "exit": {
+    "long": { "left": "close", "op": "<", "right": "exit_ch.lower[1]" },
+    "stop_loss": { "atr": 2, "indicator": "atr" }
+  },
+  "sizing": { "type": "risk_percent", "value": 1 }
+}

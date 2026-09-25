@@ -1,0 +1,29 @@
+{
+  "name": "Keltner volatility breakout",
+  "description": "Buy a close above the Keltner channel when a trend is forming.",
+  "about": {
+    "category": "breakout",
+    "timeframe": "1h",
+    "how_it_works": "The Keltner channel sits two ATRs around a 20-bar EMA, so a close above it is a larger-than-usual move. Requiring ADX above 20 filters out random spikes in dead markets. It exits back at the channel's middle.",
+    "works_best": "The start of volatile moves, like news-driven rallies.",
+    "fails_when": "Spikes that immediately reverse. The ATR stop sizes risk to current volatility."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "1h" },
+  "indicators": {
+    "kc": { "type": "keltner", "period": 20, "multiplier": 2, "atr_period": 10 },
+    "adx": { "type": "adx", "period": 14 },
+    "atr": { "type": "atr", "period": 14 }
+  },
+  "entry": {
+    "long": { "all": [
+      { "left": "close", "op": "crosses_above", "right": "kc.upper" },
+      { "left": "adx.adx", "op": ">", "right": 20 }
+    ] }
+  },
+  "exit": {
+    "long": { "left": "close", "op": "<", "right": "kc.middle" },
+    "stop_loss": { "atr": 1.5, "indicator": "atr" },
+    "take_profit": { "risk_multiple": 3 }
+  },
+  "sizing": { "type": "risk_percent", "value": 1 }
+}

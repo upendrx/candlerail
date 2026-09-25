@@ -1,0 +1,23 @@
+{
+  "name": "EMA crossover",
+  "description": "Classic trend following: ride the trend while the fast average is above the slow one.",
+  "about": {
+    "category": "trend following",
+    "timeframe": "4h or 1d",
+    "how_it_works": "When the 20-bar EMA crosses above the 50-bar EMA, recent prices are rising faster than the longer-term average, which often marks the start of a trend. The trade stays open until the averages cross back.",
+    "works_best": "Long, clean trends, like most of a crypto bull market.",
+    "fails_when": "Prices chop sideways: the averages cross back and forth and each crossover is a small loss. It also enters late, after part of the move has already happened."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "4h" },
+  "indicators": {
+    "fast": { "type": "ema", "period": 20 },
+    "slow": { "type": "ema", "period": 50 },
+    "atr": { "type": "atr", "period": 14 }
+  },
+  "entry": { "long": { "left": "fast", "op": "crosses_above", "right": "slow" } },
+  "exit": {
+    "long": { "left": "fast", "op": "crosses_below", "right": "slow" },
+    "stop_loss": { "atr": 3, "indicator": "atr" }
+  },
+  "sizing": { "type": "risk_percent", "value": 1 }
+}

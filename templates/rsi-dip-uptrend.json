@@ -1,0 +1,28 @@
+{
+  "name": "RSI dip in an uptrend",
+  "description": "Buy short-term weakness, but only while the long-term trend is up.",
+  "about": {
+    "category": "mean reversion",
+    "timeframe": "1h",
+    "how_it_works": "RSI falling below 30 means the last couple of weeks of bars were mostly down, so the market is stretched. Buying that dip only when price is above its 200-bar average avoids catching a falling knife in a downtrend. It takes profit when RSI recovers.",
+    "works_best": "Steady uptrends with regular pullbacks.",
+    "fails_when": "The trend turns: dips keep getting deeper and the stop is hit repeatedly. Also on news-driven crashes, where oversold becomes more oversold."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "1h" },
+  "indicators": {
+    "rsi": { "type": "rsi", "period": 14 },
+    "trend": { "type": "sma", "period": 200 }
+  },
+  "entry": {
+    "long": { "all": [
+      { "left": "rsi", "op": "crosses_below", "right": 30 },
+      { "left": "close", "op": ">", "right": "trend" }
+    ] }
+  },
+  "exit": {
+    "long": { "left": "rsi", "op": ">", "right": 55 },
+    "stop_loss": { "percent": 3 },
+    "max_bars": 48
+  },
+  "sizing": { "type": "risk_percent", "value": 1 }
+}

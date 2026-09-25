@@ -1,0 +1,24 @@
+{
+  "name": "Stochastic oversold turn",
+  "description": "Swing trade: buy when the stochastic turns up from oversold, sell when it's overbought.",
+  "about": {
+    "category": "swing",
+    "timeframe": "4h",
+    "how_it_works": "The stochastic shows where the close sits within the recent range. Below 20 the market has closed near its lows for a while. The signal is %K crossing back above %D while still low, meaning selling pressure is fading. It exits when %K reaches 80.",
+    "works_best": "Swinging markets with regular highs and lows.",
+    "fails_when": "Strong downtrends keep the stochastic pinned low, and each turn fails."
+  },
+  "market": { "symbol": "SOLUSDT", "interval": "4h" },
+  "indicators": { "stoch": { "type": "stoch", "k_period": 14, "k_smooth": 3, "d_period": 3 } },
+  "entry": {
+    "long": { "all": [
+      { "left": "stoch.k", "op": "crosses_above", "right": "stoch.d" },
+      { "left": "stoch.k", "op": "<", "right": 20 }
+    ] }
+  },
+  "exit": {
+    "long": { "left": "stoch.k", "op": ">", "right": 80 },
+    "stop_loss": { "percent": 5 }
+  },
+  "sizing": { "type": "risk_percent", "value": 1 }
+}

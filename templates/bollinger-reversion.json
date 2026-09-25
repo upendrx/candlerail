@@ -1,0 +1,19 @@
+{
+  "name": "Bollinger Band reversion",
+  "description": "Buy when price closes below the lower band, sell when it returns to the middle.",
+  "about": {
+    "category": "mean reversion",
+    "timeframe": "1h",
+    "how_it_works": "Bollinger Bands sit two standard deviations from a 20-bar average, so a close below the lower band is unusually far from normal. The bet is that price snaps back toward the average (the middle band).",
+    "works_best": "Range-bound markets that oscillate around a stable level.",
+    "fails_when": "A strong trend starts: in a breakdown, price can ride the lower band for a long time. The stop limits that damage."
+  },
+  "market": { "symbol": "ETHUSDT", "interval": "1h" },
+  "indicators": { "bb": { "type": "bbands", "period": 20, "stddev": 2 } },
+  "entry": { "long": { "left": "close", "op": "crosses_below", "right": "bb.lower" } },
+  "exit": {
+    "long": { "left": "close", "op": "crosses_above", "right": "bb.middle" },
+    "stop_loss": { "percent": 2.5 }
+  },
+  "sizing": { "type": "risk_percent", "value": 1 }
+}

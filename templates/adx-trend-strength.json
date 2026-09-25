@@ -1,0 +1,24 @@
+{
+  "name": "ADX trend strength",
+  "description": "Only trade when a real trend is present, in the direction ADX's DI lines point.",
+  "about": {
+    "category": "trend following",
+    "timeframe": "4h",
+    "how_it_works": "ADX measures how strong a trend is, regardless of direction; above 25 usually means trending. When +DI crosses above -DI during a strong trend, buyers have taken control. A trailing stop follows the move up.",
+    "works_best": "Filtering out sideways markets that break simpler trend strategies.",
+    "fails_when": "ADX lags: by the time it confirms a trend, part of the move is gone, and it can stay high as a trend ends."
+  },
+  "market": { "symbol": "ETHUSDT", "interval": "4h" },
+  "indicators": { "adx": { "type": "adx", "period": 14 } },
+  "entry": {
+    "long": { "all": [
+      { "left": "adx.adx", "op": ">", "right": 25 },
+      { "left": "adx.plus_di", "op": "crosses_above", "right": "adx.minus_di" }
+    ] }
+  },
+  "exit": {
+    "long": { "left": "adx.plus_di", "op": "<", "right": "adx.minus_di" },
+    "trailing_stop": { "percent": 5 }
+  },
+  "sizing": { "type": "percent_equity", "value": 25 }
+}

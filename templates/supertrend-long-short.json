@@ -1,0 +1,24 @@
+{
+  "name": "SuperTrend long and short",
+  "description": "Always follow the SuperTrend: long when it turns up, short when it turns down, with 2x leverage.",
+  "about": {
+    "category": "trend following",
+    "timeframe": "1h",
+    "how_it_works": "SuperTrend draws a line a few ATRs away from price that flips sides when the trend changes. This strategy goes long on a flip up and short on a flip down, so it can profit from falling markets too. It uses 2x leverage to show how margin and liquidation work.",
+    "works_best": "Markets with sustained moves in either direction.",
+    "fails_when": "Sideways chop causes frequent flips. Leverage doubles both the gains and the losses, and the liquidation price is shown for every trade."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "1h" },
+  "indicators": { "st": { "type": "supertrend", "period": 10, "multiplier": 3 } },
+  "entry": {
+    "long": { "left": "st.direction", "op": "crosses_above", "right": 0 },
+    "short": { "left": "st.direction", "op": "crosses_below", "right": 0 }
+  },
+  "exit": {
+    "long": { "left": "st.direction", "op": "<", "right": 0 },
+    "short": { "left": "st.direction", "op": ">", "right": 0 },
+    "stop_loss": { "percent": 4 }
+  },
+  "sizing": { "type": "percent_equity", "value": 50 },
+  "leverage": 2
+}

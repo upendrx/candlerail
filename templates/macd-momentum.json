@@ -1,0 +1,27 @@
+{
+  "name": "MACD momentum",
+  "description": "Enter when MACD crosses its signal line in the direction of the longer trend.",
+  "about": {
+    "category": "momentum",
+    "timeframe": "4h",
+    "how_it_works": "MACD is the gap between a fast and a slow moving average. When it crosses above its own signal line, momentum is turning up. The 100-bar EMA filter keeps it to trades in the direction of the bigger trend.",
+    "works_best": "Trending markets with clear swings.",
+    "fails_when": "Momentum signals lag: in quiet markets MACD crosses often and most crosses go nowhere."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "4h" },
+  "indicators": {
+    "m": { "type": "macd", "fast": 12, "slow": 26, "signal": 9 },
+    "trend": { "type": "ema", "period": 100 }
+  },
+  "entry": {
+    "long": { "all": [
+      { "left": "m.macd", "op": "crosses_above", "right": "m.signal" },
+      { "left": "close", "op": ">", "right": "trend" }
+    ] }
+  },
+  "exit": {
+    "long": { "left": "m.macd", "op": "crosses_below", "right": "m.signal" },
+    "stop_loss": { "percent": 4 }
+  },
+  "sizing": { "type": "risk_percent", "value": 1 }
+}
