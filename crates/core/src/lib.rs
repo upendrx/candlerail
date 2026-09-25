@@ -12,6 +12,7 @@ pub mod candle;
 pub mod explain;
 pub mod indicators;
 pub mod metrics;
+pub mod scan;
 pub mod share;
 pub mod spec;
 pub mod time;
