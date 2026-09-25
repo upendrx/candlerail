@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and strategy ideas
+    url: https://github.com/upendrx/candlerail/discussions
+    about: Ask how to build a strategy, or share one.
