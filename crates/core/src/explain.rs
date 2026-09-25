@@ -6,7 +6,60 @@ use crate::spec::{Condition, Distance, Op, Operand, SizingType, Strategy, Target
 use std::collections::BTreeMap;
 
 struct Names {
-    labels: BTreeMap<String, (String, &'static indicators::IndicatorInfo)>,
+    labels: BTreeMap<String, (String, &'static indicators::IndicatorInfo, Vec<f64>)>,
+}
+
+fn article(word: &str) -> &'static str {
+    if word.starts_with(['a', 'e', 'i', 'o', 'u']) { "an" } else { "a" }
+}
+
+fn period_name(minutes: f64) -> String {
+    match minutes as u64 {
+        60 => "hour".into(),
+        240 => "4-hour period".into(),
+        1440 => "day".into(),
+        10_080 => "week".into(),
+        43_200 => "month".into(),
+        m if m % 1440 == 0 => format!("{}-day period", m / 1440),
+        m if m % 60 == 0 => format!("{}-hour period", m / 60),
+        m => format!("{m}-minute period"),
+    }
+}
+
+/// Natural names for price-action outputs, which read badly as `LABEL output`.
+fn price_action_name(kind: &str, out: &str, params: &[f64]) -> Option<String> {
+    Some(match (kind, out) {
+        ("patterns", o) => {
+            let n = o.replace('_', " ");
+            format!("{} {n}", article(&n))
+        }
+        ("swings", "resistance") => "the latest swing high (resistance)".into(),
+        ("swings", "support") => "the latest swing low (support)".into(),
+        ("swings", "prev_resistance") => "the previous swing high".into(),
+        ("swings", "prev_support") => "the previous swing low".into(),
+        ("swings", "structure") => "market structure".into(),
+        ("period", o) => {
+            let p = period_name(params.first().copied().unwrap_or(1440.0));
+            match o {
+                "open" => format!("this {p}'s open"),
+                "high" => format!("this {p}'s high so far"),
+                "low" => format!("this {p}'s low so far"),
+                other => format!("the previous {p}'s {}", other.trim_start_matches("prev_")),
+            }
+        }
+        ("opening_range", o) => {
+            let m = params.first().copied().unwrap_or(15.0);
+            match o {
+                "ready" => format!("the {m:.0}-minute opening range is complete"),
+                side => format!("the {m:.0}-minute opening-range {side}"),
+            }
+        }
+        ("volume_avg", "relative") => {
+            format!("volume relative to the last {:.0} candles", params.first().copied().unwrap_or(20.0))
+        }
+        ("volume_avg", _) => format!("average volume over {:.0} candles", params.first().copied().unwrap_or(20.0)),
+        _ => return None,
+    })
 }
 
 impl Names {
@@ -16,12 +69,15 @@ impl Names {
             let Some(kind) = def.get("type").and_then(|v| v.as_str()) else { continue };
             let Some(info) = indicators::info(kind) else { continue };
             let params = indicators::resolve_params(info, def).unwrap_or_default();
-            labels.insert(id.clone(), (indicators::label(info, &params), info));
+            labels.insert(id.clone(), (indicators::label(info, &params), info, params));
         }
         Names { labels }
     }
 
     fn value(&self, text: &str) -> String {
+        if crate::spec::is_expression_text(text) {
+            return self.expression(text);
+        }
         let (name, back) = match text.split_once('[') {
             Some((n, rest)) => (n.trim(), rest.trim_end_matches(']').trim().parse::<usize>().unwrap_or(0)),
             None => (text.trim(), 0),
@@ -34,24 +90,67 @@ impl Names {
             "volume" => "volume".to_string(),
             "hl2" => "the bar midpoint".to_string(),
             "hlc3" => "the typical price".to_string(),
+            "body" => "the candle body".to_string(),
+            "range" => "the candle range".to_string(),
+            "upper_wick" => "the upper wick".to_string(),
+            "lower_wick" => "the lower wick".to_string(),
             _ => {
                 let (id, out) = name.split_once('.').map_or((name, None), |(a, b)| (a, Some(b)));
                 match self.labels.get(id) {
-                    Some((label, info)) => match out {
-                        Some(o) if info.outputs.len() > 1 && o != info.kind && o != "value" => {
+                    Some((label, info, params)) => {
+                        let o = out.unwrap_or(info.outputs[0]);
+                        if let Some(n) = price_action_name(info.kind, o, params) {
+                            n
+                        } else if out.is_some() && info.outputs.len() > 1 && o != info.kind && o != "value" {
                             format!("{label} {}", o.replace('_', " "))
+                        } else {
+                            label.clone()
                         }
-                        _ => label.clone(),
-                    },
+                    }
                     None => format!("`{name}`"),
                 }
             }
         };
         match back {
             0 => base,
-            1 => format!("{base} one bar ago"),
-            n => format!("{base} {n} bars ago"),
+            1 => format!("{base} one candle ago"),
+            n => format!("{base} {n} candles ago"),
         }
+    }
+
+    /// `2 * body[1] + 0.5` → `2 × the candle body one bar ago + 0.5`
+    fn expression(&self, text: &str) -> String {
+        let mut out = String::new();
+        let mut word = String::new();
+        let flush = |w: &mut String, out: &mut String, names: &Names| {
+            if w.is_empty() {
+                return;
+            }
+            let t = w.trim();
+            if t.parse::<f64>().is_ok() {
+                out.push_str(t);
+            } else {
+                out.push_str(&names.value(t));
+            }
+            w.clear();
+        };
+        for c in text.chars() {
+            match c {
+                '+' | '-' | '*' | '/' => {
+                    flush(&mut word, &mut out, self);
+                    out.push_str(match c {
+                        '+' => " + ",
+                        '-' => " − ",
+                        '*' => " × ",
+                        _ => " ÷ ",
+                    });
+                }
+                ' ' => flush(&mut word, &mut out, self),
+                _ => word.push(c),
+            }
+        }
+        flush(&mut word, &mut out, self);
+        out.trim().replace("  ", " ")
     }
 
     fn operand(&self, o: &Operand) -> String {
@@ -76,10 +175,35 @@ impl Names {
                     Op::Le => format!("{l} is at or below {rt}"),
                     Op::CrossesAbove => format!("{l} crosses above {rt}"),
                     Op::CrossesBelow => format!("{l} crosses below {rt}"),
+                    Op::Eq if rt == "1" && self.flag(&r.left) == Some("patterns") => format!("{l} forms"),
+                    Op::Eq if rt == "0" && self.flag(&r.left) == Some("patterns") => format!("{l} does not form"),
+                    Op::Eq if rt == "1" && self.flag(&r.left) == Some("ready") => l,
+                    Op::Eq if rt == "1" && self.flag(&r.left) == Some("structure") => {
+                        "market structure is up (higher highs and higher lows)".into()
+                    }
+                    Op::Eq if rt == "-1" && self.flag(&r.left) == Some("structure") => {
+                        "market structure is down (lower highs and lower lows)".into()
+                    }
+                    Op::Eq => format!("{l} equals {rt}"),
+                    Op::Ne => format!("{l} is not {rt}"),
                     Op::Rising => format!("{l} is higher than {rt} bars ago"),
                     Op::Falling => format!("{l} is lower than {rt} bars ago"),
                 }
             }
+        }
+    }
+
+    /// Flag-like outputs read better as sentences: "a hammer forms" rather than "equals 1".
+    fn flag(&self, o: &Operand) -> Option<&'static str> {
+        let Operand::Ref(t) = o else { return None };
+        let id = t.split(['.', '[']).next().unwrap_or("");
+        let out = t.split_once('.').map(|(_, o)| o.split('[').next().unwrap_or(o));
+        let (_, info, _) = self.labels.get(id)?;
+        match (info.kind, out) {
+            ("patterns", _) => Some("patterns"),
+            ("opening_range", Some("ready")) => Some("ready"),
+            ("swings", Some("structure")) => Some("structure"),
+            _ => None,
         }
     }
 
@@ -100,6 +224,16 @@ fn trim(n: f64) -> String {
 }
 
 fn distance(d: &Distance, names: &Names) -> String {
+    if d.is_level() {
+        let mut v = vec![];
+        if let Some(b) = &d.below {
+            v.push(format!("{} for longs", names.value(b)));
+        }
+        if let Some(a) = &d.above {
+            v.push(format!("{} for shorts", names.value(a)));
+        }
+        return format!("{} (read when the signal fires)", v.join(" and "));
+    }
     match (d.percent, d.atr) {
         (Some(p), _) => format!("{}% from the entry price", trim(p)),
         (_, Some(a)) => {
@@ -114,6 +248,16 @@ fn distance(d: &Distance, names: &Names) -> String {
 }
 
 fn target(t: &Target, names: &Names) -> String {
+    if t.above.is_some() || t.below.is_some() {
+        let mut v = vec![];
+        if let Some(a) = &t.above {
+            v.push(format!("{} for longs", names.value(a)));
+        }
+        if let Some(b) = &t.below {
+            v.push(format!("{} for shorts", names.value(b)));
+        }
+        return v.join(" and ");
+    }
     match (t.percent, t.atr, t.risk_multiple) {
         (Some(p), _, _) => format!("{}% from the entry price", trim(p)),
         (_, Some(a), _) => {
@@ -194,6 +338,29 @@ pub fn explain(s: &Strategy) -> Vec<String> {
     } else {
         out.push(format!("{size}, without leverage."));
     }
+    let r = &s.risk;
+    let mut rules = vec![];
+    if let Some(x) = r.max_drawdown_percent {
+        rules.push(format!("stop trading for good if the account falls {}% from its peak", trim(x)));
+    }
+    if let Some(x) = r.daily_loss_percent {
+        rules.push(format!("stop for the day after losing {}% of the day's starting balance", trim(x)));
+    }
+    if let Some(x) = r.monthly_loss_percent {
+        rules.push(format!("stop for the month after losing {}% of the month's starting balance", trim(x)));
+    }
+    if let Some(x) = r.max_trades_per_day {
+        rules.push(format!("take at most {x} trades a day"));
+    }
+    if let Some(x) = r.pause_after_losses {
+        rules.push(format!("pause for {} candles after {x} losses in a row", r.pause_bars.unwrap_or(24)));
+    }
+    if !rules.is_empty() {
+        out.push(format!(
+            "Money management: {}. Open positions are closed when a loss limit is hit.",
+            rules.join("; ")
+        ));
+    }
     out.push(format!(
         "Costs assumed: {}% fee per fill and {}% slippage on market and stop orders.",
         trim(s.costs.fee_bps / 100.0),
@@ -221,7 +388,7 @@ mod tests {
         let text = explain(&s).join(" ");
         for needle in [
             "Buy when RSI(14) crosses below 30 and the close is above SMA(200)",
-            "MACD(12, 26, 9) signal one bar ago",
+            "MACD(12, 26, 9) signal one candle ago",
             "cut the loss at 2% from the entry price",
             "2 times the stop distance",
             "loses 1% of the account",

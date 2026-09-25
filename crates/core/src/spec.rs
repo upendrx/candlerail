@@ -51,6 +51,39 @@ pub struct Strategy {
     pub leverage: f64,
     #[serde(default)]
     pub costs: Costs,
+    /// Account-level money-management rules.
+    #[serde(default, skip_serializing_if = "RiskRules::is_empty")]
+    pub risk: RiskRules,
+}
+
+/// Money-management guards applied to the whole account, on top of each
+/// trade's own stop. When a limit is hit, open positions are closed at the
+/// next open and new entries are blocked for as long as the rule says.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RiskRules {
+    /// Stop trading for good once the account is this far below its peak.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_drawdown_percent: Option<f64>,
+    /// No new trades for the rest of the UTC day after losing this much of the day's starting balance.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub daily_loss_percent: Option<f64>,
+    /// The same for the calendar month (Elder's "6% rule").
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub monthly_loss_percent: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_trades_per_day: Option<u32>,
+    /// After this many losing trades in a row, stop for `pause_bars` candles.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pause_after_losses: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pause_bars: Option<u32>,
+}
+
+impl RiskRules {
+    pub fn is_empty(&self) -> bool {
+        *self == RiskRules::default()
+    }
 }
 
 fn one() -> f64 {
@@ -121,6 +154,18 @@ pub struct Distance {
     /// Which ATR indicator to use with `atr` (an id from `indicators`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub indicator: Option<String>,
+    /// For longs: a price level, read when the signal fires, e.g. `"low"` or `"swings.support"`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub below: Option<String>,
+    /// For shorts: a price level above the entry, e.g. `"high"` or `"swings.resistance"`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub above: Option<String>,
+}
+
+impl Distance {
+    pub fn is_level(&self) -> bool {
+        self.below.is_some() || self.above.is_some()
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -135,6 +180,12 @@ pub struct Target {
     /// Target at this multiple of the stop distance (2 = "risk 1 to make 2").
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub risk_multiple: Option<f64>,
+    /// For longs: a price level above the entry, e.g. `"swings.resistance"`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub above: Option<String>,
+    /// For shorts: a price level below the entry.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub below: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -235,9 +286,17 @@ pub enum Op {
     Rising,
     #[serde(rename = "falling")]
     Falling,
+    /// Equal (within floating-point noise). Useful for pattern flags: `pa.hammer == 1`.
+    #[serde(rename = "==", alias = "equals")]
+    Eq,
+    #[serde(rename = "!=")]
+    Ne,
 }
 
-pub const PRICE_FIELDS: [&str; 7] = ["open", "high", "low", "close", "volume", "hl2", "hlc3"];
+/// Values every candle has. `body` is |close − open|, `range` is high − low,
+/// and the wicks are the parts of the range above and below the body.
+pub const PRICE_FIELDS: [&str; 11] =
+    ["open", "high", "low", "close", "volume", "hl2", "hlc3", "body", "range", "upper_wick", "lower_wick"];
 
 impl Strategy {
     pub fn from_json(text: &str) -> Result<Self, String> {
@@ -248,7 +307,15 @@ impl Strategy {
     /// usually wrap around JSON: code fences, surrounding prose, `//` comments
     /// and trailing commas.
     pub fn from_ai_text(text: &str) -> Result<Self, String> {
-        Self::from_json(&clean_json(text))
+        let cleaned = clean_json(text);
+        // A share file wraps the strategy together with its recorded result.
+        if let Ok(v) = serde_json::from_str::<serde_json::Value>(&cleaned)
+            && v.get("candlerail_share").is_some()
+            && let Some(inner) = v.get("strategy")
+        {
+            return serde_json::from_value(inner.clone()).map_err(|e| format!("not a valid strategy file: {e}"));
+        }
+        Self::from_json(&cleaned)
     }
 
     /// Checks everything that isn't a JSON shape error. An empty list means the
@@ -321,7 +388,21 @@ pub enum Source {
 #[derive(Debug, Clone, Copy)]
 pub enum Val {
     Const(f64),
-    Series { series: usize, offset: usize },
+    Series {
+        series: usize,
+        offset: usize,
+    },
+    /// Index into the compiled expressions.
+    Expr(usize),
+}
+
+/// A linear expression such as `2 * body[1] + 0.5`: a sum of scaled series
+/// values plus a constant.
+#[derive(Debug, Clone, Default)]
+pub struct Lin {
+    /// (coefficient, series, lookback)
+    pub terms: Vec<(f64, usize, usize)>,
+    pub constant: f64,
 }
 
 #[derive(Debug, Clone)]
@@ -355,6 +436,12 @@ pub struct Compiled {
     pub target_atr: Option<usize>,
     /// Longest lookback any rule needs (for history retention).
     pub max_offset: usize,
+    pub exprs: Vec<Lin>,
+    /// Price-level stops and targets, read when an entry signal fires.
+    pub stop_below: Option<Val>,
+    pub stop_above: Option<Val>,
+    pub target_above: Option<Val>,
+    pub target_below: Option<Val>,
 }
 
 struct Ctx<'a> {
@@ -363,6 +450,57 @@ struct Ctx<'a> {
     sources: Vec<Source>,
     errors: Vec<String>,
     max_offset: usize,
+    exprs: Vec<Lin>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum Tok {
+    Num(f64),
+    Ref(String),
+    Op(char),
+}
+
+fn tokenize(s: &str) -> Result<Vec<Tok>, String> {
+    let mut out = vec![];
+    let chars: Vec<char> = s.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        let c = chars[i];
+        if c.is_whitespace() {
+            i += 1;
+        } else if "+-*/".contains(c) {
+            out.push(Tok::Op(c));
+            i += 1;
+        } else if c.is_ascii_digit() || c == '.' {
+            let st = i;
+            while i < chars.len() && (chars[i].is_ascii_digit() || chars[i] == '.') {
+                i += 1;
+            }
+            let t: String = chars[st..i].iter().collect();
+            out.push(Tok::Num(t.parse().map_err(|_| format!("bad number `{t}`"))?));
+        } else if c.is_ascii_alphabetic() || c == '_' {
+            let st = i;
+            while i < chars.len() && (chars[i].is_ascii_alphanumeric() || "_.[]".contains(chars[i])) {
+                i += 1;
+            }
+            out.push(Tok::Ref(chars[st..i].iter().collect()));
+        } else if c == '(' || c == ')' {
+            return Err("parentheses aren't supported; write it as a sum, e.g. `high[1] + 0.5 * atr`".into());
+        } else {
+            return Err(format!("unexpected `{c}`"));
+        }
+    }
+    Ok(out)
+}
+
+/// True when a value string is an arithmetic expression rather than a single reference.
+pub fn is_expression_text(s: &str) -> bool {
+    is_expression(s)
+}
+
+fn is_expression(s: &str) -> bool {
+    let t = s.trim();
+    t.contains(['+', '*', '/']) || t.trim_start_matches('-').contains('-')
 }
 
 impl Ctx<'_> {
@@ -433,9 +571,94 @@ impl Ctx<'_> {
             Operand::Number(n) => Some(Val::Const(*n)),
             Operand::Ref(s) => match s.trim().parse::<f64>() {
                 Ok(n) => Some(Val::Const(n)),
+                Err(_) if is_expression(s) => self.expression(s, at),
                 Err(_) => self.reference(s, at),
             },
         }
+    }
+
+    /// Sums and differences of terms, each a number, a value, or a number times
+    /// (or divided into) a value: `2 * body[1]`, `high[1] + 0.25 * range`, `volume / 3`.
+    fn expression(&mut self, text: &str, at: &str) -> Option<Val> {
+        let toks = match tokenize(text) {
+            Ok(t) => t,
+            Err(e) => {
+                self.errors.push(format!("{at}: in `{text}`: {e}"));
+                return None;
+            }
+        };
+        let mut lin = Lin::default();
+        let mut i = 0;
+        let mut sign = 1.0;
+        let bad = |cx: &mut Self, why: &str| {
+            cx.errors.push(format!("{at}: can't read `{text}`: {why}"));
+            None
+        };
+        while i < toks.len() {
+            if let Tok::Op(c @ ('+' | '-')) = toks[i] {
+                if c == '-' {
+                    sign = -sign;
+                }
+                i += 1;
+                continue;
+            }
+            // One term: factors joined by * or /, at most one of them a value.
+            let mut coef = sign;
+            let mut series: Option<(usize, usize)> = None;
+            let mut first = true;
+            loop {
+                let op = if first {
+                    '*'
+                } else {
+                    match toks.get(i) {
+                        Some(Tok::Op(c @ ('*' | '/'))) => {
+                            i += 1;
+                            *c
+                        }
+                        _ => break,
+                    }
+                };
+                first = false;
+                match toks.get(i).cloned() {
+                    Some(Tok::Num(n)) => {
+                        if op == '/' {
+                            if n == 0.0 {
+                                return bad(self, "division by zero");
+                            }
+                            coef /= n;
+                        } else {
+                            coef *= n;
+                        }
+                    }
+                    Some(Tok::Ref(r)) => {
+                        if op == '/' || series.is_some() {
+                            return bad(self, "values can only be multiplied or divided by numbers");
+                        }
+                        match self.reference(&r, at)? {
+                            Val::Series { series: s, offset } => series = Some((s, offset)),
+                            _ => return bad(self, "unexpected value"),
+                        }
+                    }
+                    _ => return bad(self, "expected a number or a value"),
+                }
+                i += 1;
+            }
+            match series {
+                Some((s, o)) => lin.terms.push((coef, s, o)),
+                None => lin.constant += coef,
+            }
+            sign = 1.0;
+            match toks.get(i) {
+                None => {}
+                Some(Tok::Op('+' | '-')) => {}
+                Some(_) => return bad(self, "expected + or - between terms"),
+            }
+        }
+        if lin.terms.is_empty() {
+            return Some(Val::Const(lin.constant));
+        }
+        self.exprs.push(lin);
+        Some(Val::Expr(self.exprs.len() - 1))
     }
 
     fn cond(&mut self, c: &Condition, at: &str) -> Option<Cond> {
@@ -487,25 +710,42 @@ impl Ctx<'_> {
         };
         match self.reference(id, at)? {
             Val::Series { series, .. } => Some(series),
-            Val::Const(_) => None,
+            _ => None,
         }
     }
 }
 
-fn check_distance(d: &Distance, at: &str, errors: &mut Vec<String>) {
+fn check_distance(d: &Distance, at: &str, s: &Strategy, levels_ok: bool, errors: &mut Vec<String>) {
+    let kinds = [d.percent.is_some(), d.atr.is_some(), d.is_level()].iter().filter(|b| **b).count();
+    if kinds > 1 {
+        errors.push(format!("{at}: use one of `percent`, `atr`, or price levels (`below`/`above`)"));
+        return;
+    }
+    if d.is_level() {
+        if !levels_ok {
+            errors.push(format!("{at}: price levels aren't supported here; use `percent` or `atr`"));
+        }
+        if s.entry.long.is_some() && d.below.is_none() {
+            errors.push(format!("{at}: long entries need `below`, the level the stop goes at (e.g. \"low\")"));
+        }
+        if s.entry.short.is_some() && d.above.is_none() {
+            errors.push(format!("{at}: short entries need `above`, the level the stop goes at (e.g. \"high\")"));
+        }
+        return;
+    }
     match (d.percent, d.atr) {
         (Some(p), None) if p > 0.0 => {}
         (None, Some(a)) if a > 0.0 => {}
-        (Some(_), Some(_)) => errors.push(format!("{at}: use either `percent` or `atr`, not both")),
-        (None, None) => errors.push(format!("{at}: needs `percent` or `atr`")),
+        (None, None) => errors.push(format!("{at}: needs `percent`, `atr`, or a price level (`below`/`above`)")),
         _ => errors.push(format!("{at}: must be positive")),
     }
 }
 
 pub fn compile(s: &Strategy) -> Result<Compiled, Vec<String>> {
-    let mut cx = Ctx { strat: s, slots: vec![], sources: vec![], errors: vec![], max_offset: 1 };
+    let mut cx = Ctx { strat: s, slots: vec![], sources: vec![], errors: vec![], max_offset: 1, exprs: vec![] };
     for (id, def) in &s.indicators {
-        if PRICE_FIELDS.contains(&id.as_str()) || id.contains(['.', '[', ']', ' ']) || id.is_empty() {
+        if PRICE_FIELDS.contains(&id.as_str()) || id.contains(['.', '[', ']', ' ', '+', '-', '*', '/']) || id.is_empty()
+        {
             cx.errors
                 .push(format!("indicators.{id}: pick another id (not a price field, no dots, spaces or brackets)"));
             continue;
@@ -540,15 +780,28 @@ pub fn compile(s: &Strategy) -> Result<Compiled, Vec<String>> {
     let x = &s.exit;
     let mut errs = vec![];
     if let Some(d) = &x.stop_loss {
-        check_distance(d, "exit.stop_loss", &mut errs);
+        check_distance(d, "exit.stop_loss", s, true, &mut errs);
     }
     if let Some(d) = &x.trailing_stop {
-        check_distance(d, "exit.trailing_stop", &mut errs);
+        check_distance(d, "exit.trailing_stop", s, false, &mut errs);
     }
     if let Some(t) = &x.take_profit {
-        let set = [t.percent.is_some(), t.atr.is_some(), t.risk_multiple.is_some()].iter().filter(|b| **b).count();
+        let level = t.above.is_some() || t.below.is_some();
+        let set =
+            [t.percent.is_some(), t.atr.is_some(), t.risk_multiple.is_some(), level].iter().filter(|b| **b).count();
         if set != 1 {
-            errs.push("exit.take_profit: use exactly one of `percent`, `atr` or `risk_multiple`".into());
+            errs.push(
+                "exit.take_profit: use exactly one of `percent`, `atr`, `risk_multiple` or price levels (`above`/`below`)"
+                    .into(),
+            );
+        }
+        if level && s.entry.long.is_some() && t.above.is_none() {
+            errs.push(
+                "exit.take_profit: long entries need `above`, the target level (e.g. \"swings.resistance\")".into(),
+            );
+        }
+        if level && s.entry.short.is_some() && t.below.is_none() {
+            errs.push("exit.take_profit: short entries need `below`, the target level".into());
         }
         if t.risk_multiple.is_some() && x.stop_loss.is_none() {
             errs.push("exit.take_profit: `risk_multiple` needs a stop_loss to measure risk against".into());
@@ -587,11 +840,32 @@ pub fn compile(s: &Strategy) -> Result<Compiled, Vec<String>> {
     if s.costs.fee_bps < 0.0 || s.costs.slippage_bps < 0.0 {
         errs.push("costs: fees and slippage can't be negative".into());
     }
+    let r = &s.risk;
+    for (name, v) in [
+        ("max_drawdown_percent", r.max_drawdown_percent),
+        ("daily_loss_percent", r.daily_loss_percent),
+        ("monthly_loss_percent", r.monthly_loss_percent),
+    ] {
+        if v.is_some_and(|v| !(v > 0.0 && v <= 100.0)) {
+            errs.push(format!("risk.{name}: must be between 0 and 100"));
+        }
+    }
+    if r.max_trades_per_day == Some(0) || r.pause_after_losses == Some(0) {
+        errs.push("risk: counts must be at least 1".into());
+    }
+    if r.pause_bars.is_some() && r.pause_after_losses.is_none() {
+        errs.push("risk.pause_bars: only applies together with pause_after_losses".into());
+    }
     cx.errors.extend(errs);
 
     let stop_atr = x.stop_loss.as_ref().and_then(|d| cx.atr_ref(d.atr, &d.indicator, "exit.stop_loss"));
     let trail_atr = x.trailing_stop.as_ref().and_then(|d| cx.atr_ref(d.atr, &d.indicator, "exit.trailing_stop"));
     let target_atr = x.take_profit.as_ref().and_then(|t| cx.atr_ref(t.atr, &t.indicator, "exit.take_profit"));
+    let mut level = |v: Option<&String>, at: &str| v.and_then(|t| cx.operand(&Operand::Ref(t.clone()), at));
+    let stop_below = level(x.stop_loss.as_ref().and_then(|d| d.below.as_ref()), "exit.stop_loss.below");
+    let stop_above = level(x.stop_loss.as_ref().and_then(|d| d.above.as_ref()), "exit.stop_loss.above");
+    let target_above = level(x.take_profit.as_ref().and_then(|t| t.above.as_ref()), "exit.take_profit.above");
+    let target_below = level(x.take_profit.as_ref().and_then(|t| t.below.as_ref()), "exit.take_profit.below");
 
     let _ = cx.strat;
     if !cx.errors.is_empty() {
@@ -608,6 +882,11 @@ pub fn compile(s: &Strategy) -> Result<Compiled, Vec<String>> {
         trail_atr,
         target_atr,
         max_offset: cx.max_offset,
+        exprs: cx.exprs,
+        stop_below,
+        stop_above,
+        target_above,
+        target_below,
     })
 }
 
@@ -618,11 +897,12 @@ pub fn compile(s: &Strategy) -> Result<Compiled, Vec<String>> {
 /// Per-series history, one value per bar (NaN while an indicator warms up).
 pub struct History {
     pub series: Vec<Vec<f64>>,
+    exprs: Vec<Lin>,
 }
 
 impl History {
     pub fn new(n: usize) -> Self {
-        History { series: vec![Vec::new(); n] }
+        History { series: vec![Vec::new(); n], exprs: vec![] }
     }
 
     pub fn len(&self) -> usize {
@@ -633,16 +913,30 @@ impl History {
         self.len() == 0
     }
 
+    fn value(&self, series: usize, back: usize) -> Option<f64> {
+        let s = &self.series[series];
+        let x = s[s.len().checked_sub(1 + back)?];
+        x.is_finite().then_some(x)
+    }
+
     fn at(&self, v: Val, back: usize) -> Option<f64> {
         match v {
             Val::Const(c) => Some(c),
-            Val::Series { series, offset } => {
-                let s = &self.series[series];
-                let idx = s.len().checked_sub(1 + offset + back)?;
-                let x = s[idx];
-                x.is_finite().then_some(x)
+            Val::Series { series, offset } => self.value(series, offset + back),
+            Val::Expr(i) => {
+                let e = &self.exprs[i];
+                let mut sum = e.constant;
+                for &(k, series, offset) in &e.terms {
+                    sum += k * self.value(series, offset + back)?;
+                }
+                Some(sum)
             }
         }
+    }
+
+    /// Current value of a compiled value (for price-level stops and targets).
+    pub fn now(&self, v: Val) -> Option<f64> {
+        self.at(v, 0)
     }
 
     pub fn latest(&self, series: usize) -> Option<f64> {
@@ -652,6 +946,11 @@ impl History {
 }
 
 impl Compiled {
+    /// An empty history sized for this strategy.
+    pub fn history(&self) -> History {
+        History { series: vec![Vec::new(); self.sources.len()], exprs: self.exprs.clone() }
+    }
+
     /// Feeds a closed candle to every indicator and records the new values.
     pub fn push(&mut self, c: &Candle, h: &mut History) {
         for s in &mut self.slots {
@@ -666,7 +965,11 @@ impl Compiled {
                     3 => c.close,
                     4 => c.volume,
                     5 => c.hl2(),
-                    _ => c.hlc3(),
+                    6 => c.hlc3(),
+                    7 => (c.close - c.open).abs(),
+                    8 => c.high - c.low,
+                    9 => c.high - c.open.max(c.close),
+                    _ => c.open.min(c.close) - c.low,
                 },
                 Source::Indicator { slot, output } => self.slots[slot].ind.get(output).unwrap_or(f64::NAN),
             };
@@ -689,6 +992,8 @@ pub fn eval(c: &Cond, h: &History) -> bool {
                 Op::Lt => cmp(0).is_some_and(|(l, r)| l < r),
                 Op::Ge => cmp(0).is_some_and(|(l, r)| l >= r),
                 Op::Le => cmp(0).is_some_and(|(l, r)| l <= r),
+                Op::Eq => cmp(0).is_some_and(|(l, r)| (l - r).abs() <= 1e-9 * l.abs().max(r.abs()).max(1.0)),
+                Op::Ne => cmp(0).is_some_and(|(l, r)| (l - r).abs() > 1e-9 * l.abs().max(r.abs()).max(1.0)),
                 Op::CrossesAbove => matches!((cmp(0), cmp(1)), (Some((l, r)), Some((pl, pr))) if l > r && pl <= pr),
                 Op::CrossesBelow => matches!((cmp(0), cmp(1)), (Some((l, r)), Some((pl, pr))) if l < r && pl >= pr),
                 Op::Rising | Op::Falling => {
@@ -762,13 +1067,51 @@ mod tests {
     }
 
     #[test]
+    fn expressions_and_candle_fields() {
+        // A hammer written by hand: long lower wick, small body, close in the top third.
+        let s = Strategy::from_json(
+            r#"{ "name": "x",
+                 "entry": { "long": { "all": [
+                     { "left": "lower_wick", "op": ">=", "right": "2 * body" },
+                     { "left": "close", "op": ">", "right": "low + 0.66 * range" },
+                     { "left": "range", "op": ">", "right": "range[1] - 0.5" } ] } },
+                 "exit": { "max_bars": 1 } }"#,
+        )
+        .unwrap();
+        let mut c = compile(&s).unwrap();
+        assert_eq!(c.exprs.len(), 3);
+        let mut h = c.history();
+        let bar =
+            |o: f64, hi: f64, l: f64, cl: f64| Candle { ts: 0, open: o, high: hi, low: l, close: cl, volume: 1.0 };
+        c.push(&bar(10.0, 10.5, 9.5, 10.0), &mut h);
+        c.push(&bar(10.0, 10.4, 7.0, 10.3), &mut h); // body 0.3, lower wick 3.0, range 3.4
+        assert!(eval(c.entry_long.as_ref().unwrap(), &h));
+        c.push(&bar(10.0, 12.0, 9.9, 11.9), &mut h); // big bullish body, tiny lower wick
+        assert!(!eval(c.entry_long.as_ref().unwrap(), &h));
+    }
+
+    #[test]
+    fn expression_errors_are_clear() {
+        let bad = |right: &str| {
+            let j = format!(
+                r#"{{ "name": "x", "entry": {{ "long": {{ "left": "close", "op": ">", "right": "{right}" }} }}, "exit": {{ "max_bars": 1 }} }}"#
+            );
+            Strategy::from_json(&j).unwrap().validate().join(" ")
+        };
+        assert!(bad("close * high").contains("multiplied or divided by numbers"));
+        assert!(bad("(high + low) / 2").contains("parentheses"));
+        assert!(bad("close / 0").contains("division by zero"));
+        assert!(bad("clsoe + 1").contains("unknown value `clsoe`"));
+    }
+
+    #[test]
     fn crosses_and_lookbacks() {
         let s = Strategy::from_json(
             r#"{ "name": "x", "entry": { "long": { "left": "close", "op": "crosses_above", "right": "close[1]" } }, "exit": { "max_bars": 1 } }"#,
         )
         .unwrap();
         let mut c = compile(&s).unwrap();
-        let mut h = History::new(c.sources.len());
+        let mut h = c.history();
         let bar = |close: f64| Candle { ts: 0, open: close, high: close, low: close, close, volume: 1.0 };
         let mut fired = vec![];
         for x in [5.0, 4.0, 3.0, 4.0, 5.0] {
