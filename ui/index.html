@@ -156,6 +156,73 @@ code, .code { font-family: var(--mono); font-size: 12.5px; background: var(--sur
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
 .foot { color: var(--faint); font-size: 12.5px; text-align: center; padding: 26px 0 10px; }
+
+/* start */
+.eyebrow { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin-bottom: 8px; }
+.hero { background: linear-gradient(135deg, var(--accent-soft), transparent 70%), var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 34px 32px; position: relative; overflow: hidden; }
+.hero-art { position: absolute; right: 36px; top: 50%; transform: translateY(-50%); width: 360px; opacity: .9; pointer-events: none; }
+.hero-art svg { width: 100%; height: auto; }
+@media (max-width: 1300px) { .hero-art { display: none; } }
+.hero > div:not(.hero-art) { position: relative; z-index: 1; max-width: 760px; }
+h1.big { font-size: clamp(30px, 4.4vw, 46px); }
+@media (max-width: 760px) { .hero { padding: 24px 18px; } }
+.path { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.pathcard { text-align: left; cursor: pointer; display: grid; gap: 4px; align-content: start; font: inherit; color: inherit; transition: border-color .15s, transform .15s; }
+.pathcard:hover { border-color: var(--accent); transform: translateY(-2px); }
+.pathcard p { margin: 0; color: var(--muted); font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { .pathcard { transition: none; } .pathcard:hover { transform: none; } }
+.num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font: 700 14px var(--display); margin-bottom: 6px; }
+.ticks { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 9px; font-size: 14.5px; }
+.ticks li { padding-left: 24px; position: relative; }
+.ticks li::before { content: ""; position: absolute; left: 3px; top: 7px; width: 10px; height: 5px; border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--muted); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* price action */
+.anatomy svg { width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto; color: var(--ink); }
+.patterns { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.pat { background: var(--surface2); border-radius: 12px; padding: 12px; display: grid; gap: 6px; align-content: start; }
+.pat svg { width: 100%; height: 92px; }
+.pat h3 { margin: 0; font-size: 14px; }
+.pat p { margin: 0; font-size: 13px; color: var(--muted); }
+.pat .side { font: 600 10.5px var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+.four { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 10px; }
+.qcard { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 4px; align-content: start; }
+.qcard p { margin: 0 0 6px; color: var(--muted); font-size: 14px; }
+.qcard code { justify-self: start; white-space: nowrap; }
+.example { margin-top: 16px; background: var(--accent-soft); border-radius: 14px; padding: 16px; display: grid; gap: 12px; }
+.example > div { min-width: 0; }
+.example p { margin: 0 0 10px; color: var(--muted); max-width: 80ch; }
+.code-block { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font: 12.5px/1.55 var(--mono); overflow-x: auto; margin: 0; max-height: 360px; }
+table.recipes td, table.wrap td { white-space: normal; vertical-align: top; }
+table.recipes td:first-child { color: var(--muted); }
+input.w-expr { width: 170px; font-family: var(--mono); }
+.rule-row input.expr { width: 210px; font-family: var(--mono); }
+
+/* money */
+.calc-out { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.calc-out div { background: var(--surface2); border-radius: 10px; padding: 10px 12px; }
+.calc-out b { display: block; font: 500 19px var(--mono); }
+.calc-out span { font-size: 12.5px; color: var(--muted); }
+.calc-out .wide { grid-column: 1 / -1; font-size: 13.5px; color: var(--muted); }
+.mc { margin-top: 14px; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 900px) { .mc { grid-template-columns: 1fr; } }
+.mc svg { width: 100%; height: auto; background: var(--surface2); border-radius: 10px; }
+.methods { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); margin-top: 8px; }
+.method { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.method p { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
+.method .how { margin: 0; font-size: 13px; color: var(--ink); border-top: 1px dashed var(--line); padding-top: 8px; }
+
+/* community */
+.share-card .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.share-card .stats div { background: var(--surface2); border-radius: 8px; padding: 7px 9px; }
+.share-card .stats b { display: block; font: 500 14px var(--mono); white-space: nowrap; }
+#cm-list { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.share-card .stats span { font-size: 11.5px; color: var(--muted); }
+.share-card .by { font-size: 13px; color: var(--faint); }
+.verify { border-radius: 12px; padding: 12px 16px; background: var(--accent-soft); font-size: 14px; }
+.verify.bad { background: var(--warn-soft); }
 </style>
 </head>
 <body>
@@ -167,22 +234,65 @@ code, .code { font-family: var(--mono); font-size: 12.5px; background: var(--sur
     <button class="btn ghost small" id="theme">Theme: system</button>
   </div>
   <nav class="tabs" role="tablist">
-    <button data-tab="strategies" aria-selected="true">Strategies</button>
+    <button data-tab="start" aria-selected="true">Start</button>
+    <button data-tab="strategies" aria-selected="false">Strategies</button>
     <button data-tab="build" aria-selected="false">Build</button>
     <button data-tab="ai" aria-selected="false">Ask AI</button>
     <button data-tab="results" aria-selected="false">Results</button>
+    <button data-tab="pa" aria-selected="false">Price action</button>
+    <button data-tab="money" aria-selected="false">Money management</button>
+    <button data-tab="community" aria-selected="false">Community</button>
     <button data-tab="indicators" aria-selected="false">Indicators</button>
     <button data-tab="guide" aria-selected="false">Guide</button>
   </nav>
 </header>
 
 <main>
+<!-- START -->
+<section class="tab" id="t-start">
+  <div class="hero">
+    <div class="hero-art" id="hero-art" aria-hidden="true"></div>
+    <div>
+      <div class="eyebrow">Welcome</div>
+      <h1 class="big">Turn a trading idea into a tested strategy in minutes.</h1>
+      <p class="lede">Pick a template, change it with dropdowns, or describe it in your own words. candlerail replays years of real prices through your rules, with fees, slippage and leverage, and tells you plainly whether the idea holds up.</p>
+      <div class="row" style="margin-top:16px"><button class="btn primary" data-go="strategies">Browse strategies</button><button class="btn" data-go="build">Build my own</button><button class="btn ghost" data-go="pa">Learn price action</button></div>
+    </div>
+  </div>
+  <div class="grid path">
+    <button class="panel pathcard" data-go="strategies"><span class="num">1</span><h3>Pick an idea</h3><p>18 ready strategies: trend following, mean reversion, breakouts, and 8 pure price-action setups from 1-minute scalps to monthly levels.</p></button>
+    <button class="panel pathcard" data-go="build"><span class="num">2</span><h3>Make it yours</h3><p>Change the rules with dropdowns or plain arithmetic like <code>lower_wick &gt; 2 * body</code>. The summary on the right says exactly what it will do.</p></button>
+    <button class="panel pathcard" data-go="money"><span class="num">3</span><h3>Size it safely</h3><p>Choose how much to risk per trade and add daily and monthly loss limits, the way professional traders protect an account.</p></button>
+    <button class="panel pathcard" data-go="results"><span class="num">4</span><h3>Read the truth</h3><p>Drawdown, win rate, R-multiples, buy-and-hold comparison and an overfitting check, with warnings in plain words.</p></button>
+    <button class="panel pathcard" data-go="community"><span class="num">5</span><h3>Share and compare</h3><p>Export a strategy with its real results. Anyone can load it and re-run the test to check the numbers.</p></button>
+  </div>
+  <div class="grid two">
+    <div class="panel">
+      <h2>What you can build</h2>
+      <ul class="ticks">
+        <li><b>Price action:</b> candle patterns, swing support and resistance, market structure, previous day, week and month levels, opening ranges, volume spikes.</li>
+        <li><b>Indicators:</b> moving averages, RSI, MACD, Bollinger, ATR, stochastic, VWAP, SuperTrend, ADX and more.</li>
+        <li><b>Any timeframe:</b> 1-minute scalping to weekly swing trades, combining levels from higher timeframes.</li>
+        <li><b>Long and short</b>, with leverage and a liquidation price you can see.</li>
+        <li><b>Exits:</b> stops under a candle or a swing low, targets at resistance or at 2R, trailing stops, time limits.</li>
+        <li><b>Money management:</b> risk per trade, daily and monthly loss limits, a drawdown circuit breaker, pauses after losing streaks.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Your data, your machine</h2>
+      <p class="sub">Everything runs on this computer. Candles for any Binance pair download free and are cached; for stocks, forex or futures, upload a CSV in the builder.</p>
+      <div class="warnbox"><b>Simulation only.</b> candlerail never places real orders. Past results don't predict future ones, and most traders who use leverage lose money. Treat every result as a hypothesis to keep testing, not as advice.</div>
+    </div>
+  </div>
+</section>
+
 <!-- STRATEGIES -->
-<section class="tab" id="t-strategies">
+<section class="tab" id="t-strategies" hidden>
   <div>
     <h1>Start from a well-known idea</h1>
     <p class="lede">Each template is a complete strategy with a plain explanation of how it works, when it works, and when it fails. Backtest one as-is, or open it in the builder and make it yours.</p>
   </div>
+  <div class="chips" id="tpl-filter"><button class="chip on" data-f="">All</button><button class="chip" data-f="price action">Price action (no indicators)</button><button class="chip" data-f="indicators">Indicator-based</button></div>
   <div class="grid cards" id="tpl"></div>
 </section>
 
@@ -226,10 +336,16 @@ code, .code { font-family: var(--mono); font-size: 12.5px; background: var(--sur
       <fieldset>
         <legend>When to exit</legend>
         <div class="row">
-          <label class="f">Stop-loss<select id="x-stop-kind"><option value="">none</option><option value="percent">% from entry</option><option value="atr">× ATR</option></select></label>
+          <label class="f">Stop-loss<select id="x-stop-kind"><option value="">none</option><option value="percent">% from entry</option><option value="atr">× ATR</option><option value="level">at a price level</option></select></label>
           <label class="f">Value<input type="number" id="x-stop-val" step="0.1" min="0"></label>
-          <label class="f">Take-profit<select id="x-tp-kind"><option value="">none</option><option value="percent">% from entry</option><option value="risk_multiple">× the stop distance</option><option value="atr">× ATR</option></select></label>
+          <label class="f">Take-profit<select id="x-tp-kind"><option value="">none</option><option value="percent">% from entry</option><option value="risk_multiple">× the stop distance</option><option value="atr">× ATR</option><option value="level">at a price level</option></select></label>
           <label class="f">Value<input type="number" id="x-tp-val" step="0.1" min="0"></label>
+        </div>
+        <div class="row" id="x-levels" style="margin-top:10px" hidden>
+          <label class="f" id="x-sb-l">Long stop below<input type="text" id="x-stop-below" class="w-expr" placeholder="low"></label>
+          <label class="f" id="x-sa-l">Short stop above<input type="text" id="x-stop-above" class="w-expr" placeholder="high"></label>
+          <label class="f" id="x-ta-l">Long target at<input type="text" id="x-tp-above" class="w-expr" placeholder="sw.resistance"></label>
+          <label class="f" id="x-tb-l">Short target at<input type="text" id="x-tp-below" class="w-expr" placeholder="sw.support"></label>
         </div>
         <div class="row" style="margin-top:10px">
           <label class="f">Trailing stop<select id="x-trail-kind"><option value="">none</option><option value="percent">% behind best price</option><option value="atr">× ATR</option></select></label>
@@ -250,6 +366,18 @@ code, .code { font-family: var(--mono); font-size: 12.5px; background: var(--sur
           <label class="f">Slippage (%)<input type="number" id="c-slip" min="0" step="0.01"></label>
         </div>
         <p class="hint" id="s-hint"></p>
+      </fieldset>
+      <fieldset>
+        <legend>Money management rules</legend>
+        <div class="row">
+          <label class="f">Daily loss limit (%)<input type="number" id="rk-day" min="0" step="0.5" placeholder="none"></label>
+          <label class="f">Monthly loss limit (%)<input type="number" id="rk-month" min="0" step="0.5" placeholder="none"></label>
+          <label class="f">Stop at drawdown (%)<input type="number" id="rk-dd" min="0" placeholder="none"></label>
+          <label class="f">Max trades per day<input type="number" id="rk-trades" min="1" placeholder="none"></label>
+          <label class="f">Pause after losses<input type="number" id="rk-losses" min="1" placeholder="none"></label>
+          <label class="f">Pause (candles)<input type="number" id="rk-pause" min="1" placeholder="—"></label>
+        </div>
+        <p class="hint">Hitting a loss limit closes open positions at the next open and blocks new entries until the next day or month. <a href="#" data-go="money">What these mean</a></p>
       </fieldset>
     </div>
     <div class="sticky">
@@ -308,14 +436,265 @@ code, .code { font-family: var(--mono); font-size: 12.5px; background: var(--sur
   </div>
 </section>
 
+<!-- PRICE ACTION -->
+<section class="tab" id="t-pa" hidden>
+  <div>
+    <div class="eyebrow">Price action</div>
+    <h1>Trade what the candles say</h1>
+    <p class="lede">Price action trading reads raw price, with no indicators. Where are buyers and sellers defending (support and resistance)? Which way is the market stepping (structure)? What did this candle just show (its shape)? Every rule below is plain price, so you can build any setup you'd spot on a chart.</p>
+  </div>
+  <div class="grid two">
+    <div class="panel">
+      <h2>1. Read one candle</h2>
+      <p class="sub">Every candle gives these values, ready to use in rules.</p>
+      <div class="anatomy">
+        <svg viewBox="0 0 320 212" role="img" aria-label="Candle anatomy: upper wick, body, lower wick and range">
+          <g font-family="Figtree, sans-serif" font-size="12" fill="currentColor">
+            <line x1="90" y1="20" x2="90" y2="190" stroke="currentColor" stroke-width="2"/>
+            <rect x="70" y="60" width="40" height="70" rx="3" style="fill:var(--up)"/>
+            <path d="M125 20 H140 V58 H125" fill="none" stroke="currentColor" stroke-opacity=".5"/><text x="146" y="43">upper_wick</text>
+            <path d="M125 62 H140 V128 H125" fill="none" stroke="currentColor" stroke-opacity=".5"/><text x="146" y="99">body = |close − open|</text>
+            <path d="M125 132 H140 V190 H125" fill="none" stroke="currentColor" stroke-opacity=".5"/><text x="146" y="165">lower_wick</text>
+            <path d="M26 20 H16 V190 H26" fill="none" stroke="currentColor" stroke-opacity=".5"/><text x="10" y="105" text-anchor="middle" transform="rotate(-90 10 105)">range</text>
+            <text x="90" y="14" font-size="11" text-anchor="middle" fill-opacity=".7">high</text><text x="90" y="205" font-size="11" text-anchor="middle" fill-opacity=".7">low</text>
+            <text x="64" y="64" font-size="11" text-anchor="end" fill-opacity=".7">close</text><text x="64" y="134" font-size="11" text-anchor="end" fill-opacity=".7">open</text>
+          </g>
+        </svg>
+      </div>
+      <p class="hint">Combine them with numbers: <code>lower_wick &gt;= 2 * body</code> is a rejection wick, <code>range &gt; 2 * range[1]</code> is a candle twice as big as the last, <code>close &gt; high[1]</code> closes above the previous high.</p>
+    </div>
+    <div class="panel">
+      <h2>2. Find the levels</h2>
+      <ul class="ticks">
+        <li><b>Swing support and resistance</b> (<code>swings</code>): the latest swing low and high. A swing needs <i>right</i> candles after it to be confirmed, so nothing looks into the future.</li>
+        <li><b>Market structure</b> (<code>swings.structure</code>): 1 when highs and lows are both rising, −1 when both falling.</li>
+        <li><b>Higher-timeframe levels</b> (<code>period</code>): the previous hour, 4 hours, day, week or month's open, high, low and close, usable on any chart. Trade 5-minute candles against yesterday's high, or daily candles against last month's.</li>
+        <li><b>Opening range</b> (<code>opening_range</code>): the high and low of the first minutes of each session, for crypto or stock market opens.</li>
+        <li><b>Volume</b> (<code>volume_avg.relative</code>): 2 means twice the usual volume, a sign the move has conviction.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>3. Know the patterns</h2>
+    <p class="sub">Add a <code>patterns</code> indicator (say with id <code>pa</code>) and use any of these as <code>pa.hammer == 1</code>. The last candle drawn is the one that completes the pattern.</p>
+    <div class="grid patterns" id="pat-gallery"></div>
+  </div>
+  <div class="panel">
+    <h2>4. Build your own setup in four questions</h2>
+    <div class="grid four">
+      <div class="qcard"><span class="num">1</span><h3>Where?</h3><p>At which level does the idea make sense? A swing low, yesterday's high, the opening range, last month's high.</p><code>low &lt;= 1.003 * sw.support</code></div>
+      <div class="qcard"><span class="num">2</span><h3>What happened?</h3><p>What does price have to do there? A rejection candle, an engulfing, a close through the level.</p><code>pa.hammer == 1</code></div>
+      <div class="qcard"><span class="num">3</span><h3>Any confirmation?</h3><p>What makes it more likely? Structure in your favour, a volume spike, a bigger than usual candle.</p><code>vol.relative &gt; 1.5</code></div>
+      <div class="qcard"><span class="num">4</span><h3>Where am I wrong?</h3><p>Put the stop where the idea is invalid (under the candle or level) and the target at the next level or 2R.</p><code>"stop_loss": { "below": "low" }</code></div>
+    </div>
+    <div class="example">
+      <div>
+        <h3>Worked example: "buy a rejection of yesterday's low"</h3>
+        <p>Where: price dips below yesterday's low. What: it closes back above it with a long lower wick. Confirmation: more volume than usual. Wrong if: it trades back under the wick (the stop sits a tenth of the candle's range below its low). Target: twice the risk.</p>
+        <pre class="code-block" id="pa-example"></pre>
+      </div>
+      <div class="row"><button class="btn primary" id="pa-example-load">Open in the builder</button><button class="btn" id="pa-example-run">Backtest it</button></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Recipes</h2>
+    <p class="sub">Copy these into rules. Ids assume indicators named <code>pa</code> (patterns), <code>sw</code> (swings), <code>pd</code> (period, day), <code>wk</code> (period, week), <code>or</code> (opening range) and <code>vol</code> (volume average).</p>
+    <div class="tw"><table class="recipes">
+      <thead><tr><th>Idea</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr><td>Bullish candle</td><td><code>close &gt; open</code></td></tr>
+        <tr><td>Strong candle (body is most of the range)</td><td><code>body &gt;= 0.7 * range</code></td></tr>
+        <tr><td>Rejection wick (buyers pushed back)</td><td><code>lower_wick &gt;= 2 * body</code></td></tr>
+        <tr><td>Range expansion</td><td><code>range &gt; 1.5 * range[1]</code></td></tr>
+        <tr><td>Higher high and higher low than the last candle</td><td><code>high &gt; high[1]</code> and <code>low &gt; low[1]</code></td></tr>
+        <tr><td>Three higher closes</td><td><code>close</code> rising <code>3</code></td></tr>
+        <tr><td>Break of resistance</td><td><code>close</code> crosses above <code>sw.resistance</code></td></tr>
+        <tr><td>Retest of broken resistance as support</td><td><code>low &lt;= 1.002 * sw.prev_resistance</code> and <code>close &gt; sw.prev_resistance</code></td></tr>
+        <tr><td>Uptrend by structure</td><td><code>sw.structure == 1</code></td></tr>
+        <tr><td>Above yesterday's high</td><td><code>close &gt; pd.prev_high</code></td></tr>
+        <tr><td>Weekly trend up (multi-timeframe)</td><td><code>close &gt; wk.prev_close</code></td></tr>
+        <tr><td>Opening range breakout</td><td><code>or.ready == 1</code> and <code>close</code> crosses above <code>or.high</code></td></tr>
+        <tr><td>Volume spike</td><td><code>vol.relative &gt; 2</code></td></tr>
+        <tr><td>Inside bar breakout</td><td><code>pa.inside_bar[1] == 1</code> and <code>close &gt; high[1]</code></td></tr>
+        <tr><td>Stop under the signal candle</td><td><code>"stop_loss": { "below": "low" }</code></td></tr>
+        <tr><td>Target at resistance</td><td><code>"take_profit": { "above": "sw.resistance" }</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="panel">
+    <h2>Price-action templates</h2>
+    <p class="sub">Ready to run, from 1-minute scalping to monthly levels.</p>
+    <div class="grid cards" id="pa-templates"></div>
+  </div>
+</section>
+
+<!-- MONEY -->
+<section class="tab" id="t-money" hidden>
+  <div>
+    <div class="eyebrow">Money management</div>
+    <h1>How much to risk decides whether you survive</h1>
+    <p class="lede">Two traders with the same entries can end up in very different places because of position size. Professional traders fix how much they can lose on one trade, one day and one month before they think about how much they can make. Here are the rules they use, and tools to apply them.</p>
+  </div>
+
+  <div class="grid two">
+    <div class="panel">
+      <h2>Position size calculator</h2>
+      <p class="sub">How big should this trade be, so that hitting the stop loses exactly what you planned?</p>
+      <div class="row">
+        <label class="f">Market<select id="ps-market"><option value="stock">Stocks / ETFs</option><option value="crypto">Crypto</option><option value="forex">Forex</option><option value="futures">Futures</option></select></label>
+        <label class="f">Account balance<input type="number" id="ps-acct" value="10000" style="width:110px"></label>
+        <label class="f">Risk per trade (%)<input type="number" id="ps-risk" value="1" step="0.1"></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label class="f">Entry price<input type="number" id="ps-entry" value="100" step="any" style="width:110px"></label>
+        <label class="f">Stop price<input type="number" id="ps-stop" value="97" step="any" style="width:110px"></label>
+        <label class="f" id="ps-extra1-l" hidden>Pip size<input type="number" id="ps-pip" value="0.0001" step="any" style="width:100px"></label>
+        <label class="f" id="ps-extra2-l" hidden>Value per pip per lot<input type="number" id="ps-pipval" value="10" step="any"></label>
+        <label class="f" id="ps-extra3-l" hidden>Value per point per contract<input type="number" id="ps-point" value="50" step="any"></label>
+      </div>
+      <div class="calc-out" id="ps-out"></div>
+    </div>
+    <div class="panel">
+      <h2>Reward, risk and the win rate you need</h2>
+      <p class="sub">With a 1:2 risk/reward you only need to win a third of the time to break even, before costs.</p>
+      <div class="row">
+        <label class="f">Stop distance (%)<input type="number" id="rr-stop" value="2" step="0.1"></label>
+        <label class="f">Target distance (%)<input type="number" id="rr-target" value="4" step="0.1"></label>
+        <label class="f">Round-trip costs (%)<input type="number" id="rr-cost" value="0.2" step="0.01"></label>
+      </div>
+      <div class="calc-out" id="rr-out"></div>
+      <div class="tw" style="margin-top:12px"><table>
+        <thead><tr><th>Risk : reward</th><th class="n">Break-even win rate</th><th>Drawdown</th><th class="n">Gain to recover</th></tr></thead>
+        <tbody>
+          <tr><td>1 : 1</td><td class="n">50%</td><td>−10%</td><td class="n">+11.1%</td></tr>
+          <tr><td>1 : 1.5</td><td class="n">40%</td><td>−20%</td><td class="n">+25%</td></tr>
+          <tr><td>1 : 2</td><td class="n">33.3%</td><td>−30%</td><td class="n">+42.9%</td></tr>
+          <tr><td>1 : 3</td><td class="n">25%</td><td>−50%</td><td class="n">+100%</td></tr>
+          <tr><td>1 : 4</td><td class="n">20%</td><td>−75%</td><td class="n">+300%</td></tr>
+        </tbody>
+      </table></div>
+      <p class="hint">Losses compound against you: a 50% loss needs a 100% gain to get back. That's why small, fixed risk per trade matters.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>What could happen: 2,000 simulated futures</h2>
+    <p class="sub">Enter your strategy's win rate and payoff. The simulation shuffles wins and losses 2,000 times to show the range of outcomes, and how often a bad streak would push the account into a deep drawdown.</p>
+    <div class="row">
+      <label class="f">Win rate (%)<input type="number" id="mc-win" value="40"></label>
+      <label class="f">Average win (R)<input type="number" id="mc-rw" value="2" step="0.1"></label>
+      <label class="f">Average loss (R)<input type="number" id="mc-rl" value="1" step="0.1"></label>
+      <label class="f">Risk per trade (%)<input type="number" id="mc-risk" value="1" step="0.25"></label>
+      <label class="f">Trades<input type="number" id="mc-n" value="200"></label>
+      <button class="btn primary" id="mc-run" style="align-self:end">Simulate</button>
+    </div>
+    <div class="mc" id="mc-out"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Rules famous traders use</h2>
+    <div class="grid methods">
+      <div class="method"><h3>The 1–2% rule (fixed fractional)</h3><p>Risk a fixed small share of the account on every trade, usually 1%, and never more than 2%. Size = account × risk% ÷ distance to stop. Ten losses in a row then cost about 10%, not the account.</p><p class="how">In candlerail: sizing <code>risk_percent</code> with a stop-loss.</p></div>
+      <div class="method"><h3>Elder's 2% and 6% rules</h3><p>Alexander Elder's pair of limits: no single trade may risk more than 2% of equity, and once losses in a month reach 6%, stop trading until next month. The second rule stops a bad month from turning into a disaster.</p><p class="how">In candlerail: <code>risk_percent</code> ≤ 2 and <code>risk.monthly_loss_percent: 6</code>.</p></div>
+      <div class="method"><h3>The Turtle traders' units</h3><p>Richard Dennis's Turtles sized positions by volatility: one "unit" risked 1% of equity per 1 N, where N is the 20-day ATR, with stops 2N away. Volatile markets got smaller positions, so every market carried the same risk.</p><p class="how">In candlerail: <code>risk_percent</code> with an ATR stop (<code>"atr": 2</code>). See the Donchian template.</p></div>
+      <div class="method"><h3>R-multiples (Van Tharp)</h3><p>Measure every trade in units of the risk taken: 1R is what you lose at the stop. A +3R trade made three times the risk. Expectancy is the average R per trade, and it lets you compare strategies whatever their size.</p><p class="how">In candlerail: every trade shows its R, and results show the average R.</p></div>
+      <div class="method"><h3>Kelly criterion (and half-Kelly)</h3><p>A formula for the fraction of capital to risk that maximises long-run growth: f = W − (1 − W) ÷ R, with W the win rate and R the average win ÷ average loss. Full Kelly swings violently and assumes your statistics are exact, so traders use half or less.</p><p class="how">In candlerail: results show the Kelly estimate and warn if you risk more than half of it.</p></div>
+      <div class="method"><h3>Fixed ratio (Ryan Jones)</h3><p>For futures traders who trade whole contracts: add a contract each time profits grow by a set amount ("delta") times the number of contracts already traded. Size grows more slowly than with a percentage, and keeps early drawdowns small.</p><p class="how">Use the position calculator above with futures to see contract counts.</p></div>
+      <div class="method"><h3>Martingale vs anti-martingale</h3><p>Martingale doubles the size after each loss to win it back. One long losing streak, which always comes eventually, wipes out the account. Anti-martingale does the opposite: size stays small after losses and grows with profits, as trend followers do when they add to winners.</p><p class="how">candlerail has no martingale sizing, deliberately. <code>risk.pause_after_losses</code> steps back after a streak instead.</p></div>
+      <div class="method"><h3>Daily limits and circuit breakers</h3><p>Many proprietary trading firms hold traders to a daily loss limit (often 2 to 5%) and a maximum drawdown (often 5 to 10%). Hit it and you stop for the day, or for good. It removes the worst decisions, which usually come right after big losses.</p><p class="how">In candlerail: <code>risk.daily_loss_percent</code>, <code>risk.max_drawdown_percent</code>, <code>risk.max_trades_per_day</code>.</p></div>
+    </div>
+  </div>
+
+  <div class="grid two">
+    <div class="panel">
+      <h2>Different markets need different sizes</h2>
+      <p class="sub">The more a market moves in a day, the smaller the position for the same risk. Typical figures, to calibrate expectations:</p>
+      <div class="tw"><table class="wrap">
+        <thead><tr><th>Market</th><th>Daily move</th><th>Common risk / trade</th><th>Leverage to watch</th></tr></thead>
+        <tbody>
+          <tr><td><b>Large-cap stocks, ETFs</b></td><td>1–2%</td><td>0.5–1%</td><td>US margin: 2x overnight, up to 4x intraday for pattern day traders</td></tr>
+          <tr><td><b>Forex majors</b></td><td>0.5–1%</td><td>0.5–1%</td><td>Retail caps: 30:1 (EU, UK), 50:1 (US). Sized in lots: 1 standard lot = 100,000 units, ≈ $10 per pip on EURUSD</td></tr>
+          <tr><td><b>Crypto</b></td><td>3–5% or more</td><td>0.25–1%</td><td>Exchanges offer 50–100x; liquidation comes fast. Most careful traders stay at 1–3x</td></tr>
+          <tr><td><b>Index futures</b></td><td>1–2%</td><td>0.5–1%</td><td>Priced per point (E-mini S&amp;P 500: $50 a point), so one contract can be a large position</td></tr>
+          <tr><td><b>Commodities</b></td><td>1–3%, with gaps</td><td>0.5–1%</td><td>Overnight gaps can jump past stops; size for the gap, not just the stop</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="panel">
+      <h2>Spreading risk across markets and sectors</h2>
+      <ul class="ticks">
+        <li><b>Correlated positions count as one.</b> Long three tech stocks, or BTC, ETH and SOL together, is close to one big bet. Add up their risk.</li>
+        <li><b>Cap total open risk ("portfolio heat").</b> A common ceiling is 5–6% of the account at risk across all open trades at once.</li>
+        <li><b>Cap each sector.</b> Many portfolio managers keep any one sector to roughly 20–25% of exposure, so one bad industry can't sink everything.</li>
+        <li><b>Size down in volatile regimes.</b> When the market's daily range doubles, halve the position to keep the same risk (the Turtle approach).</li>
+        <li><b>Leveraged markets deserve less, not more.</b> Forex and crypto allow huge leverage, which is why traders there usually risk <i>less</i> per trade.</li>
+      </ul>
+      <p class="hint">These are widely used guidelines for thinking about risk, not personal financial advice.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Apply a money-management plan to your strategy</h2>
+    <p class="sub">These rules go into the strategy's <code>risk</code> section and apply in every backtest. When a loss limit is hit, open positions close at the next open and new entries wait.</p>
+    <div class="row">
+      <label class="f">Risk per trade (%)<input type="number" id="mm-risk" value="1" step="0.25"></label>
+      <label class="f">Daily loss limit (%)<input type="number" id="mm-day" value="3" step="0.5"></label>
+      <label class="f">Monthly loss limit (%)<input type="number" id="mm-month" value="6" step="0.5"></label>
+      <label class="f">Stop at drawdown (%)<input type="number" id="mm-dd" value="20"></label>
+      <label class="f">Max trades per day<input type="number" id="mm-trades" placeholder="no limit"></label>
+      <label class="f">Pause after losses<input type="number" id="mm-losses" value="4"></label>
+      <label class="f">Pause length (candles)<input type="number" id="mm-pause" value="24"></label>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-plan="conservative">Conservative preset</button><button class="btn" data-plan="elder">Elder 2% / 6%</button><button class="btn" data-plan="prop">Prop-firm style</button><span class="spacer"></span><button class="btn primary" id="mm-apply">Apply to strategy in builder</button></div>
+    <p class="hint" id="mm-status"></p>
+  </div>
+</section>
+
+<!-- COMMUNITY -->
+<section class="tab" id="t-community" hidden>
+  <div>
+    <div class="eyebrow">Community</div>
+    <h1>Shared strategies, with their real results</h1>
+    <p class="lede">A share file holds a strategy and the backtest it produced: market, period, return, drawdown, win rate. Anyone can load it and press <i>Re-run</i> to reproduce the numbers on the same data. Don't trust a result you haven't re-run.</p>
+  </div>
+  <div class="grid two">
+    <div class="panel">
+      <h2>Load a shared strategy</h2>
+      <p class="sub">Paste a share file or a strategy file, or open one from disk.</p>
+      <textarea id="cm-paste" rows="7" placeholder='{ "candlerail_share": 1, "strategy": { ... }, "result": { ... } }'></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="cm-load">Load</button><label class="btn">Open file<input type="file" id="cm-file" accept=".json" hidden></label></div>
+      <div id="cm-loaded" style="margin-top:12px"></div>
+    </div>
+    <div class="panel prose">
+      <h2>Share yours</h2>
+      <p><b>From the app:</b> run a backtest, then press <i>Share this result</i> on the Results tab. You get a file with the strategy and its numbers.</p>
+      <p><b>From the terminal:</b> <code>candlerail share my.json --author yourname --notes "what it does"</code></p>
+      <p><b>To the gallery below:</b> add the file to <code>community/strategies/</code> in the repository and open a pull request. Reviewers re-run it before merging.</p>
+      <p class="hint">Share honest results, including the ones that lose. A strategy that failed on real data teaches as much as one that worked.</p>
+    </div>
+  </div>
+  <div>
+    <h2>Gallery</h2>
+    <p class="hint" style="margin:0 0 12px">Shared by contributors. Results include every fee and are shown as recorded, losses included.</p>
+    <div class="grid cards" id="cm-list"></div>
+  </div>
+</section>
+
 <!-- RESULTS -->
 <section class="tab" id="t-results" hidden>
   <div id="r-empty" class="panel empty">Run a backtest from the Strategies or Build tab to see results here.</div>
   <div id="r-body" hidden style="display:grid;gap:18px">
     <div class="row" style="justify-content:space-between;align-items:end">
       <div><h1 id="r-title">Results</h1><p class="lede" id="r-sub"></p></div>
-      <div class="row"><button class="btn small" id="r-edit">Edit strategy</button></div>
+      <div class="row"><button class="btn small" id="r-edit">Edit strategy</button><button class="btn small primary" id="r-share">Share this result</button></div>
     </div>
+    <div class="panel" id="r-share-box" hidden>
+      <h2>Share this result</h2>
+      <p class="sub">Creates a file with the strategy and these numbers. Anyone can load it on the Community tab and re-run the test.</p>
+      <div class="row"><label class="f">Your name (optional)<input type="text" id="sh-author" style="width:180px"></label><label class="f" style="flex:1">Notes (optional)<input type="text" id="sh-notes" style="width:100%" placeholder="what it does, what you changed"></label><button class="btn primary" id="sh-make">Create share file</button></div>
+      <div id="sh-out" style="margin-top:10px"></div>
+    </div>
+    <div id="r-verify"></div>
     <div class="kpis" id="r-kpis"></div>
     <div id="r-warn"></div>
     <div class="panel">
@@ -334,6 +713,7 @@ code, .code { font-family: var(--mono); font-size: 12.5px; background: var(--sur
       <p class="sub">The test period split in two. If a strategy only works on the first part, it was probably fitted to that history.</p>
       <div class="seg" id="r-seg"></div>
     </div>
+    <div id="r-risk"></div>
     <div class="panel">
       <h2>Trades</h2>
       <div class="tw" style="max-height:560px;overflow-y:auto"><table id="r-trades"></table></div>
@@ -392,7 +772,7 @@ code, .code { font-family: var(--mono); font-size: 12.5px; background: var(--sur
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-let CAT = null, TEMPLATES = [], S = null, CSV_TEXT = null, LAST = null, activeTab = "strategies";
+let CAT = null, TEMPLATES = [], S = null, CSV_TEXT = null, LAST = null, LAST_REQ = null, VERIFY = null, activeTab = "start";
 
 /* ---------- theme & tabs ---------- */
 const THEMES = ["system", "light", "dark"]; let theme = "system";
@@ -407,12 +787,16 @@ $("theme").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; ap
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => LAST && drawCharts(LAST));
 function show(tab) {
   activeTab = tab;
-  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+  document.querySelectorAll("nav.tabs button").forEach(b => {
+    b.setAttribute("aria-selected", b.dataset.tab === tab);
+    if (b.dataset.tab === tab) b.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
   document.querySelectorAll("section.tab").forEach(s => s.hidden = s.id !== "t-" + tab);
   if (tab === "results" && LAST) requestAnimationFrame(() => drawCharts(LAST));
   window.scrollTo({ top: 0 });
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => show(b.dataset.tab));
+document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); show(g.dataset.go); } });
 
 /* ---------- api ---------- */
 async function api(path, body) {
@@ -422,20 +806,35 @@ async function api(path, body) {
 }
 
 /* ---------- templates ---------- */
-function renderTemplates() {
-  $("tpl").innerHTML = TEMPLATES.map((t, i) => {
-    const s = t.strategy, a = s.about || {};
-    return `<div class="panel card">
-      <div class="cat">${esc(a.category)} · ${esc(a.timeframe)}</div>
-      <h2>${esc(s.name)}</h2>
-      <p>${esc(s.description)}</p>
-      <details><summary>How it works</summary><p style="margin-top:6px">${esc(a.how_it_works)}</p><p style="margin-top:6px"><b>Works best:</b> ${esc(a.works_best)}</p><p style="margin-top:6px"><b>Fails when:</b> ${esc(a.fails_when)}</p></details>
-      <div class="actions"><button class="btn primary small" data-run="${i}">Backtest</button><button class="btn small" data-edit="${i}">Open in builder</button></div>
-    </div>`;
-  }).join("");
-  $("tpl").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => { loadStrategy(structuredClone(TEMPLATES[+b.dataset.edit].strategy)); show("build"); });
-  $("tpl").querySelectorAll("[data-run]").forEach(b => b.onclick = () => { loadStrategy(structuredClone(TEMPLATES[+b.dataset.run].strategy)); runBacktest(b); });
+let TPL_FILTER = "";
+const isPA = t => t.strategy.about?.category === "price action";
+function tplCard(t) {
+  const s = t.strategy, a = s.about || {};
+  return `<div class="panel card">
+    <div class="cat">${esc(a.category)} · ${esc(a.timeframe)}</div>
+    <h2>${esc(s.name)}</h2>
+    <p>${esc(s.description)}</p>
+    <details><summary>How it works</summary><p style="margin-top:6px">${esc(a.how_it_works)}</p><p style="margin-top:6px"><b>Works best:</b> ${esc(a.works_best)}</p><p style="margin-top:6px"><b>Fails when:</b> ${esc(a.fails_when)}</p></details>
+    <div class="actions"><button class="btn primary small" data-run="${esc(t.id)}">Backtest</button><button class="btn small" data-edit="${esc(t.id)}">Open in builder</button></div>
+  </div>`;
 }
+function bindTemplates(el) {
+  const get = id => structuredClone(TEMPLATES.find(t => t.id === id).strategy);
+  el.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => { loadStrategy(get(b.dataset.edit)); show("build"); });
+  el.querySelectorAll("[data-run]").forEach(b => b.onclick = () => { loadStrategy(get(b.dataset.run)); runBacktest(b); });
+}
+function renderTemplates() {
+  const list = TEMPLATES.filter(t => !TPL_FILTER || (TPL_FILTER === "price action") === isPA(t));
+  $("tpl").innerHTML = list.map(tplCard).join("");
+  bindTemplates($("tpl"));
+  $("pa-templates").innerHTML = TEMPLATES.filter(isPA).map(tplCard).join("");
+  bindTemplates($("pa-templates"));
+}
+$("tpl-filter").querySelectorAll(".chip").forEach(c => c.onclick = () => {
+  TPL_FILTER = c.dataset.f;
+  $("tpl-filter").querySelectorAll(".chip").forEach(x => x.classList.toggle("on", x === c));
+  renderTemplates();
+});
 
 /* ---------- indicator catalog ---------- */
 const info = kind => CAT.indicators.find(i => i.kind === kind);
@@ -451,8 +850,9 @@ function renderCatalog() {
 }
 
 /* ---------- builder ---------- */
-const OPS = { ">": "is above", "<": "is below", ">=": "is at or above", "<=": "is at or below", crosses_above: "crosses above", crosses_below: "crosses below", rising: "is higher than N bars ago", falling: "is lower than N bars ago" };
-const FIELD_NAMES = { open: "open", high: "high", low: "low", close: "close", volume: "volume", hl2: "bar midpoint (hl2)", hlc3: "typical price (hlc3)" };
+const OPS = { ">": "is above", "<": "is below", ">=": "is at or above", "<=": "is at or below", "==": "equals", "!=": "is not", crosses_above: "crosses above", crosses_below: "crosses below", rising: "is higher than N bars ago", falling: "is lower than N bars ago" };
+const FIELD_NAMES = { open: "open", high: "high", low: "low", close: "close", volume: "volume", hl2: "bar midpoint (hl2)", hlc3: "typical price (hlc3)", body: "candle body", range: "candle range", upper_wick: "upper wick", lower_wick: "lower wick" };
+const isExpr = v => typeof v === "string" && /[+\-*/]/.test(v);
 function refOptions() {
   const out = CAT.price_fields.map(f => [f, "Price: " + FIELD_NAMES[f]]);
   for (const [id, d] of Object.entries(S.indicators || {})) {
@@ -485,16 +885,21 @@ function renderGroup(el, title, getC, setC, optional) {
   if (enabled && !g) html += `<p class="hint">This rule uses nested groups. Edit it in the strategy file panel.</p>`;
   if (enabled && g) {
     const opts = refOptions();
-    const sel = (v) => { const [b] = splitRef(v); const known = opts.some(o => o[0] === b); return `<select class="ref">${opts.map(o => `<option value="${esc(o[0])}" ${o[0] === b ? "selected" : ""}>${esc(o[1])}</option>`).join("")}${known ? "" : `<option value="${esc(b)}" selected>${esc(b)} (unknown)</option>`}</select>`; };
+    const sel = (v) => {
+      const ex = isExpr(v), [b] = ex ? ["__expr"] : splitRef(v), known = ex || opts.some(o => o[0] === b);
+      return `<select class="ref">${opts.map(o => `<option value="${esc(o[0])}" ${o[0] === b ? "selected" : ""}>${esc(o[1])}</option>`).join("")}${known ? "" : `<option value="${esc(b)}" selected>${esc(b)} (unknown)</option>`}<option value="__expr" ${ex ? "selected" : ""}>formula…</option></select>`;
+    };
+    const operand = (v, side) => isExpr(v)
+      ? `${sel(v)}<input type="text" class="expr ${side}expr" value="${esc(v)}" spellcheck="false" title="e.g. low - 0.5 * range, or 2 * body">`
+      : `${sel(v)}<input type="number" class="ago ${side}ago" min="0" value="${splitRef(v)[1]}" title="bars ago"><span class="agol">bars ago</span>`;
     g.rules.forEach((r, i) => {
-      const [lb, la] = splitRef(r.left);
       const rightNum = typeof r.right === "number" || r.op === "rising" || r.op === "falling";
-      const [rb, ra] = rightNum ? [r.right, 0] : splitRef(r.right);
+      const rb = rightNum ? r.right : null;
       html += `<div class="rule-row" data-i="${i}">
-        ${sel(r.left)}<input type="number" class="ago lago" min="0" value="${la}" title="bars ago"><span class="agol">bars ago</span>
+        ${operand(r.left, "l")}
         <select class="op">${Object.entries(OPS).map(([k, v]) => `<option value="${k}" ${k === r.op ? "selected" : ""}>${v}</option>`).join("")}</select>
         <select class="rkind"><option value="num" ${rightNum ? "selected" : ""}>number</option>${r.op === "rising" || r.op === "falling" ? "" : `<option value="ref" ${!rightNum ? "selected" : ""}>value</option>`}</select>
-        ${rightNum ? `<input type="number" class="rnum" step="any" value="${esc(rb)}">` : `${sel(r.right)}<input type="number" class="ago rago" min="0" value="${ra}" title="bars ago"><span class="agol">bars ago</span>`}
+        ${rightNum ? `<input type="number" class="rnum" step="any" value="${esc(rb)}">` : operand(r.right, "r")}
         <button class="x" title="Remove">×</button></div>`;
     });
     html += `<button class="btn small add-rule" style="margin-top:6px">Add condition</button>`;
@@ -511,12 +916,17 @@ function renderGroup(el, title, getC, setC, optional) {
     const read = () => {
       const refs = row.querySelectorAll("select.ref");
       const op = row.querySelector(".op").value;
-      const left = joinRef(refs[0].value, +row.querySelector(".lago").value || 0);
+      const old = g.rules[i];
+      const seed = v => `1 * ${isExpr(v) || typeof v !== "string" ? "close" : splitRef(v)[0]}`;
+      const pick = (ref, side, prev) => ref.value === "__expr"
+        ? (row.querySelector(`.${side}expr`)?.value.trim() || seed(prev))
+        : joinRef(ref.value, +(row.querySelector(`.${side}ago`)?.value) || 0);
+      const left = pick(refs[0], "l", old.left);
       let right;
       if (row.querySelector(".rkind").value === "num" || op === "rising" || op === "falling") {
         right = parseFloat(row.querySelector(".rnum")?.value ?? "1");
         if (!isFinite(right)) right = op === "rising" || op === "falling" ? 1 : 0;
-      } else right = joinRef(refs[1]?.value ?? "close", +(row.querySelector(".rago")?.value) || 0);
+      } else right = refs[1] ? pick(refs[1], "r", old.right) : "close";
       return { left, op, right };
     };
     row.querySelectorAll("select, input").forEach(inp => inp.onchange = () => {
@@ -544,10 +954,15 @@ function renderIndicators() {
       const next = {}; for (const [k, v] of Object.entries(S.indicators)) next[k === id ? nid : k] = v;
       S.indicators = next;
       // Rename references in every rule.
-      const re = new RegExp(`^${id}(?=$|[.\\[])`);
-      const walk = c => { if (!c) return; if (isRule(c)) { if (typeof c.left === "string") c.left = c.left.replace(re, nid); if (typeof c.right === "string") c.right = c.right.replace(re, nid); } else (c.all || c.any || [c.not]).forEach(walk); };
+      const re = new RegExp(`(?<![\\w.])${id}(?!\\w)`, "g");
+      const ren = v => typeof v === "string" ? v.replace(re, nid) : v;
+      const walk = c => { if (!c) return; if (isRule(c)) { c.left = ren(c.left); c.right = ren(c.right); } else (c.all || c.any || [c.not]).forEach(walk); };
       [S.entry.long, S.entry.short, S.exit?.long, S.exit?.short].forEach(walk);
-      for (const k of ["stop_loss", "take_profit", "trailing_stop"]) if (S.exit?.[k]?.indicator === id) S.exit[k].indicator = nid;
+      for (const k of ["stop_loss", "take_profit", "trailing_stop"]) {
+        const d = S.exit?.[k]; if (!d) continue;
+        if (d.indicator === id) d.indicator = nid;
+        for (const f of ["below", "above"]) if (d[f]) d[f] = ren(d[f]);
+      }
       changed(); renderBuilder();
     };
     row.querySelectorAll("[data-p]").forEach(inp => inp.onchange = () => { S.indicators[id][inp.dataset.p] = parseFloat(inp.value); changed(); });
@@ -557,12 +972,18 @@ function renderIndicators() {
 
 function firstAtr() { return Object.entries(S.indicators || {}).find(([, d]) => d.type === "atr")?.[0]; }
 function ensureAtr() { let id = firstAtr(); if (!id) { id = "atr"; S.indicators = S.indicators || {}; S.indicators.atr = { type: "atr", period: 14 }; } return id; }
-function readDist(kind, val) {
+function readDist(kind, val, level) {
   if (!kind) return undefined;
+  if (kind === "level") {
+    const d = {};
+    if (S.entry.long) d[level.long[0]] = $(level.long[1]).value.trim() || level.long[2];
+    if (S.entry.short) d[level.short[0]] = $(level.short[1]).value.trim() || level.short[2];
+    return d;
+  }
   const v = parseFloat(val); const value = isFinite(v) && v > 0 ? v : (kind === "atr" ? 2 : kind === "risk_multiple" ? 2 : 2);
   return kind === "atr" ? { atr: value, indicator: ensureAtr() } : { [kind]: value };
 }
-function distKind(d) { if (!d) return ""; return "percent" in d ? "percent" : "atr" in d ? "atr" : "risk_multiple" in d ? "risk_multiple" : ""; }
+function distKind(d) { if (!d) return ""; if ("below" in d || "above" in d) return "level"; return "percent" in d ? "percent" : "atr" in d ? "atr" : "risk_multiple" in d ? "risk_multiple" : ""; }
 
 function renderBuilder() {
   $("f-name").value = S.name || "";
@@ -576,10 +997,19 @@ function renderBuilder() {
   renderGroup($("exit-short"), "Close a short early", () => S.exit.short, c => { if (c) S.exit.short = c; else delete S.exit.short; }, true);
   $("exit-long").hidden = !S.entry.long; $("exit-short").hidden = !S.entry.short;
   const x = S.exit;
-  $("x-stop-kind").value = distKind(x.stop_loss); $("x-stop-val").value = x.stop_loss ? (x.stop_loss.percent ?? x.stop_loss.atr) : "";
-  $("x-tp-kind").value = distKind(x.take_profit); $("x-tp-val").value = x.take_profit ? (x.take_profit.percent ?? x.take_profit.atr ?? x.take_profit.risk_multiple) : "";
+  $("x-stop-kind").value = distKind(x.stop_loss); $("x-stop-val").value = x.stop_loss ? (x.stop_loss.percent ?? x.stop_loss.atr ?? "") : "";
+  $("x-tp-kind").value = distKind(x.take_profit); $("x-tp-val").value = x.take_profit ? (x.take_profit.percent ?? x.take_profit.atr ?? x.take_profit.risk_multiple ?? "") : "";
   $("x-trail-kind").value = distKind(x.trailing_stop); $("x-trail-val").value = x.trailing_stop ? (x.trailing_stop.percent ?? x.trailing_stop.atr) : "";
   $("x-maxbars").value = x.max_bars ?? "";
+  const sl = distKind(x.stop_loss) === "level", tl = distKind(x.take_profit) === "level";
+  $("x-stop-val").disabled = sl; $("x-tp-val").disabled = tl;
+  $("x-levels").hidden = !sl && !tl;
+  $("x-sb-l").hidden = !sl || !S.entry.long; $("x-sa-l").hidden = !sl || !S.entry.short;
+  $("x-ta-l").hidden = !tl || !S.entry.long; $("x-tb-l").hidden = !tl || !S.entry.short;
+  $("x-stop-below").value = x.stop_loss?.below ?? ""; $("x-stop-above").value = x.stop_loss?.above ?? "";
+  $("x-tp-above").value = x.take_profit?.above ?? ""; $("x-tp-below").value = x.take_profit?.below ?? "";
+  const rk = S.risk || {};
+  for (const [el, k] of RISK_FIELDS) $(el).value = rk[k] ?? "";
   const atrUsed = ["stop_loss", "take_profit", "trailing_stop"].some(k => x[k]?.atr);
   $("x-atr-hint").textContent = atrUsed ? `ATR-based distances use the "${firstAtr()}" indicator, measured when the signal fires.` : "";
   const sz = S.sizing || { type: "percent_equity", value: 100 };
@@ -596,22 +1026,28 @@ function sizeHint() {
   const liq = lev > 1 ? ` At ${lev}x, a move of about ${(100 / lev - 0.5).toFixed(1)}% against a position liquidates it.` : "";
   $("s-hint").textContent = what + liq;
 }
+const RISK_FIELDS = [["rk-day", "daily_loss_percent"], ["rk-month", "monthly_loss_percent"], ["rk-dd", "max_drawdown_percent"], ["rk-trades", "max_trades_per_day"], ["rk-losses", "pause_after_losses"], ["rk-pause", "pause_bars"]];
 function readForm() {
   S.name = $("f-name").value.trim() || "My strategy";
   const sym = $("m-symbol").value.trim().toUpperCase();
   S.market = { ...(sym ? { symbol: sym } : {}), interval: $("m-interval").value };
   const x = S.exit = S.exit || {};
   const set = (k, v) => { if (v === undefined) delete x[k]; else x[k] = v; };
-  set("stop_loss", readDist($("x-stop-kind").value, $("x-stop-val").value));
-  set("take_profit", readDist($("x-tp-kind").value, $("x-tp-val").value));
+  set("stop_loss", readDist($("x-stop-kind").value, $("x-stop-val").value, { long: ["below", "x-stop-below", "low"], short: ["above", "x-stop-above", "high"] }));
+  set("take_profit", readDist($("x-tp-kind").value, $("x-tp-val").value, { long: ["above", "x-tp-above", "high + 2 * range"], short: ["below", "x-tp-below", "low - 2 * range"] }));
   set("trailing_stop", readDist($("x-trail-kind").value, $("x-trail-val").value));
   const mb = parseInt($("x-maxbars").value); set("max_bars", mb > 0 ? mb : undefined);
   const v = parseFloat($("s-val").value);
   S.sizing = { type: $("s-kind").value, value: isFinite(v) && v > 0 ? v : 1 };
   const lev = parseFloat($("s-lev").value); S.leverage = isFinite(lev) ? Math.min(125, Math.max(1, lev)) : 1;
+  const risk = {};
+  for (const [el, k] of RISK_FIELDS) { const v = parseFloat($(el).value); if (isFinite(v) && v > 0) risk[k] = v; }
+  if (risk.pause_after_losses && !risk.pause_bars) risk.pause_bars = 24;
+  if (!risk.pause_after_losses) delete risk.pause_bars;
+  if (Object.keys(risk).length) S.risk = risk; else delete S.risk;
   S.costs = { ...(S.costs || {}), fee_bps: Math.max(0, parseFloat($("c-fee").value) || 0) * 100, slippage_bps: Math.max(0, parseFloat($("c-slip").value) || 0) * 100 };
 }
-["f-name", "m-symbol", "m-interval", "x-stop-kind", "x-stop-val", "x-tp-kind", "x-tp-val", "x-trail-kind", "x-trail-val", "x-maxbars", "s-kind", "s-val", "s-lev", "c-fee", "c-slip"].forEach(id => $(id).addEventListener("change", () => { readForm(); changed(); renderBuilder(); }));
+["f-name", "m-symbol", "m-interval", "x-stop-kind", "x-stop-val", "x-tp-kind", "x-tp-val", "x-trail-kind", "x-trail-val", "x-maxbars", "s-kind", "s-val", "s-lev", "c-fee", "c-slip", "x-stop-below", "x-stop-above", "x-tp-above", "x-tp-below", ...RISK_FIELDS.map(f => f[0])].forEach(id => $(id).addEventListener("change", () => { readForm(); changed(); renderBuilder(); }));
 $("ind-add").onclick = () => {
   const kind = $("ind-add-type").value; const inf = info(kind);
   let id = kind, n = 2; while (S.indicators?.[id]) id = kind + n++;
@@ -641,12 +1077,7 @@ $("b-json-apply").onclick = async () => {
   loadStrategy(r.strategy);
 };
 $("b-json-copy").onclick = () => navigator.clipboard.writeText($("b-json").value).catch(() => { $("b-json").select(); });
-$("save-file").onclick = () => {
-  const blob = new Blob([JSON.stringify(S, null, 2)], { type: "application/json" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-  a.download = (S.name || "strategy").toLowerCase().replace(/[^a-z0-9]+/g, "-") + ".json"; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-};
+$("save-file").onclick = () => download(slug(S.name) + ".json", JSON.stringify(S, null, 2));
 $("open-file").onchange = async e => {
   const f = e.target.files[0]; if (!f) return;
   const r = await api("/api/check", { strategy: await f.text() });
@@ -661,35 +1092,56 @@ $("m-csv").onchange = async e => {
 };
 
 /* ---------- run ---------- */
-async function runBacktest(btn) {
+/** `over` replaces the form's market and dates, e.g. to re-run a shared result. */
+async function runBacktest(btn, over) {
   readForm();
   const b = btn || $("b-run"); const old = b.textContent;
   b.disabled = true; b.innerHTML = `<span class="spinner"></span> Running…`;
   $("b-status").textContent = "Downloading candles can take a few seconds the first time.";
   try {
-    const r = await api("/api/backtest", {
+    const req = over ? { strategy: S, symbol: over.symbol, interval: over.interval, from: over.from, to: over.to, capital: over.capital, csv: null } : {
       strategy: S, symbol: $("m-symbol").value || S.market?.symbol, interval: $("m-interval").value || S.market?.interval,
       from: $("m-from").value, to: $("m-to").value, capital: parseFloat($("m-capital").value) || 10000, csv: CSV_TEXT,
-    });
+    };
+    const r = await api("/api/backtest", req);
     if (!r.ok) {
       $("b-errors").innerHTML = `<div class="errors"><b>Backtest failed:</b><ul>${r.errors.map(e => `<li>${esc(e)}</li>`).join("")}</ul></div>`;
       show("build");
       return;
     }
-    LAST = r; renderResults(r); show("results");
+    LAST = r; LAST_REQ = req; VERIFY = over?.verify || null;
+    renderResults(r); show("results");
   } catch (e) {
     $("b-errors").innerHTML = `<div class="errors">Couldn't reach candlerail. Is it still running?</div>`;
   } finally { b.disabled = false; b.textContent = old; $("b-status").textContent = ""; }
 }
 $("b-run").onclick = () => runBacktest();
 $("r-edit").onclick = () => show("build");
+function download(name, text) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const slug = t => (t || "strategy").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+$("r-share").onclick = () => { $("r-share-box").hidden = !$("r-share-box").hidden; };
+$("sh-make").onclick = async e => {
+  const b = e.target; b.disabled = true;
+  try {
+    const r = await api("/api/share", { ...LAST_REQ, author: $("sh-author").value, notes: $("sh-notes").value });
+    if (!r.ok) { $("sh-out").innerHTML = `<div class="errors">${r.errors.map(esc).join("<br>")}</div>`; return; }
+    const text = JSON.stringify(r.share, null, 2), name = slug(r.share.strategy.name) + ".share.json";
+    download(name, text);
+    $("sh-out").innerHTML = `<p class="okmsg">✓ Downloaded ${esc(name)}.</p><p class="hint">Send the file to anyone, or copy it and paste it on their Community tab. To add it to the public gallery, put it in <code>community/strategies/</code> and open a pull request.</p><div class="row" style="margin-top:8px"><button class="btn small" id="sh-copy">Copy share file</button></div>`;
+    $("sh-copy").onclick = () => navigator.clipboard.writeText(text).then(() => $("sh-copy").textContent = "Copied");
+  } finally { b.disabled = false; }
+};
 
 /* ---------- results ---------- */
 const fmt = (v, d = 2) => (v ?? 0).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const money = v => (v < 0 ? "−" : "") + fmt(Math.abs(v));
+const rmul = v => v == null ? "–" : (v > 0 ? "+" : v < 0 ? "−" : "") + fmt(Math.abs(v)) + "R";
 const pct = v => (v > 0 ? "+" : v < 0 ? "−" : "") + fmt(Math.abs(v)) + "%";
 const dt = ms => new Date(ms).toISOString().slice(0, 16).replace("T", " ");
-const REASON = { stop_loss: "stop-loss", take_profit: "take-profit", trailing_stop: "trailing stop", liquidation: "LIQUIDATED", exit_rule: "exit rule", max_bars: "time limit", end_of_data: "end of test" };
+const REASON = { stop_loss: "stop-loss", take_profit: "take-profit", trailing_stop: "trailing stop", liquidation: "LIQUIDATED", exit_rule: "exit rule", max_bars: "time limit", end_of_data: "end of test", risk_limit: "loss limit" };
 
 function renderResults(r) {
   const rep = r.report, m = rep.metrics;
@@ -707,15 +1159,28 @@ function renderResults(r) {
     k("Profit factor", pf, "won ÷ lost; above 1 made money", m.profit_factor != null && m.profit_factor < 1 ? "down" : ""),
     k("Average win", money(m.avg_win), `average loss ${money(m.avg_loss)}`),
     k("Expectancy", money(m.expectancy), "average result per trade", m.expectancy >= 0 ? "up" : "down"),
+    k("Average R", m.avg_r == null ? "n/a" : rmul(m.avg_r), "result per trade in units of risk", m.avg_r == null ? "" : m.avg_r >= 0 ? "up" : "down"),
+    k("Kelly estimate", m.kelly_risk_pct == null ? "n/a" : m.kelly_risk_pct <= 0 ? "no edge" : fmt(m.kelly_risk_pct, 1) + "%", m.kelly_risk_pct == null ? "needs 10+ trades with a stop" : m.kelly_risk_pct <= 0 ? "no risk size makes this profitable" : "risk per trade that maximises growth; use half or less", m.kelly_risk_pct != null && m.kelly_risk_pct <= 0 ? "down" : ""),
     k("Sharpe", fmt(m.sharpe), "return per unit of volatility"),
     k("Fees paid", money(m.fees_paid), m.liquidations ? `${m.liquidations} liquidation(s)` : "no liquidations", m.liquidations ? "down" : ""),
   ].join("");
   $("r-warn").innerHTML = rep.warnings.length ? `<div class="warnbox"><b>Before you trust this result:</b><ul>${rep.warnings.map(w => `<li>${esc(w)}</li>`).join("")}</ul></div>` : "";
   const seg = (t, s) => `<div><b>${t}</b><br>${pct(s.return_pct)} over ${s.trades} trades · win rate ${fmt(s.win_rate_pct, 0)}% · profit factor ${s.profit_factor == null ? (s.trades ? "∞" : "n/a") : fmt(s.profit_factor)}</div>`;
   $("r-seg").innerHTML = seg("First 70% of the period", rep.in_sample) + seg("Last 30% (the check)", rep.out_of_sample);
+  const rk = rep.risk || {}, blocked = Object.entries(rk.blocked_entries || {});
+  $("r-risk").innerHTML = rk.halted_at || blocked.length || rk.forced_exits ? `<div class="panel"><h2>Money management in action</h2><p class="sub">What the strategy's risk rules did during the test.</p><ul class="ticks">
+    ${rk.halted_at ? `<li><b>Trading stopped for good</b> at ${dt(rk.halted_at)} UTC: the maximum drawdown was reached.</li>` : ""}
+    ${rk.forced_exits ? `<li><b>${rk.forced_exits}</b> open position(s) closed early when a loss limit was hit.</li>` : ""}
+    ${blocked.map(([why, n]) => `<li><b>${n}</b> entry signal(s) skipped: ${esc(why)}.</li>`).join("")}</ul></div>` : "";
+  const v = VERIFY;
+  if (v) {
+    const same = Math.abs(v.return_pct - m.total_return_pct) < 0.5 && v.trades === m.trades;
+    $("r-verify").innerHTML = `<div class="verify ${same ? "" : "bad"}"><b>${same ? "✓ Result reproduced." : "The re-run differs from the shared result."}</b> Shared: ${pct(v.return_pct)} over ${v.trades} trades. This run: ${pct(m.total_return_pct)} over ${m.trades} trades.${same ? "" : " Small differences can come from candle data revised by the exchange or a different candlerail version; large ones mean the shared numbers can't be trusted."}</div>`;
+  } else $("r-verify").innerHTML = "";
+  $("r-share-box").hidden = true; $("sh-out").innerHTML = "";
   const tr = rep.trades.slice().reverse();
-  $("r-trades").innerHTML = tr.length ? `<thead><tr><th>Entry (UTC)</th><th>Side</th><th class="n">Entry</th><th class="n">Exit</th><th>Exit (UTC)</th><th>Why it closed</th><th class="n">Bars</th><th class="n">PnL</th><th class="n">On margin</th></tr></thead><tbody>` +
-    tr.slice(0, 500).map(t => `<tr><td>${dt(t.entry_ts)}</td><td><span class="pill ${t.side}">${t.side}</span></td><td class="n">${fmt(t.entry_price, 4)}</td><td class="n">${fmt(t.exit_price, 4)}</td><td>${dt(t.exit_ts)}</td><td>${REASON[t.reason] || t.reason}</td><td class="n">${t.bars}</td><td class="n ${t.pnl >= 0 ? "up" : "down"}">${money(t.pnl)}</td><td class="n">${pct(t.return_on_margin_pct)}</td></tr>`).join("") + `</tbody>` + (tr.length > 500 ? `<tfoot><tr><td colspan="9" class="hint">Showing the latest 500 of ${tr.length} trades.</td></tr></tfoot>` : "")
+  $("r-trades").innerHTML = tr.length ? `<thead><tr><th>Entry (UTC)</th><th>Side</th><th class="n">Entry</th><th class="n">Exit</th><th>Exit (UTC)</th><th>Why it closed</th><th class="n">Bars</th><th class="n">PnL</th><th class="n">R</th><th class="n">On margin</th></tr></thead><tbody>` +
+    tr.slice(0, 500).map(t => `<tr><td>${dt(t.entry_ts)}</td><td><span class="pill ${t.side}">${t.side}</span></td><td class="n">${fmt(t.entry_price, 4)}</td><td class="n">${fmt(t.exit_price, 4)}</td><td>${dt(t.exit_ts)}</td><td>${REASON[t.reason] || t.reason}</td><td class="n">${t.bars}</td><td class="n ${t.pnl >= 0 ? "up" : "down"}">${money(t.pnl)}</td><td class="n">${rmul(t.r_multiple)}</td><td class="n">${pct(t.return_on_margin_pct)}</td></tr>`).join("") + `</tbody>` + (tr.length > 500 ? `<tfoot><tr><td colspan="10" class="hint">Showing the latest 500 of ${tr.length} trades.</td></tr></tfoot>` : "")
     : `<tbody><tr><td class="empty">No trades in this period.</td></tr></tbody>`;
   const colors = ["#2563eb", "#d97706", "#7c3aed", "#db2777", "#0891b2", "#65a30d", "#dc2626"];
   $("r-legend").innerHTML = rep.indicators.map((s, i) => `<label><input type="checkbox" data-s="${i}" ${s.overlay && s.output !== "middle" ? "checked" : ""}><i style="background:${colors[i % colors.length]}"></i>${esc(s.id)}${s.output !== "value" ? "." + esc(s.output) : ""} <span class="hint">${s.overlay ? "" : "(lower pane)"}</span></label>`).join("");
@@ -739,7 +1204,7 @@ function drawCharts(r) {
   for (const tr of rep.trades) {
     const long = tr.side === "long";
     markers.push({ time: t(tr.entry_ts), position: long ? "belowBar" : "aboveBar", color: long ? css("--up") : css("--down"), shape: long ? "arrowUp" : "arrowDown", text: busy ? "" : long ? "Buy" : "Short" });
-    const tag = { stop_loss: "SL", take_profit: "TP", trailing_stop: "TS", liquidation: "LIQ", exit_rule: "exit", max_bars: "time", end_of_data: "end" }[tr.reason];
+    const tag = { stop_loss: "SL", take_profit: "TP", trailing_stop: "TS", liquidation: "LIQ", exit_rule: "exit", max_bars: "time", end_of_data: "end", risk_limit: "limit" }[tr.reason];
     markers.push({ time: t(tr.exit_ts), position: long ? "aboveBar" : "belowBar", color: tr.pnl >= 0 ? css("--up") : css("--down"), shape: "circle", text: busy ? "" : tag });
   }
   markers.sort((a, b) => a.time - b.time);
@@ -787,11 +1252,211 @@ $("ai-load").onclick = async () => {
   $("ai-edit").onclick = () => show("build");
 };
 
+/* ---------- price action ---------- */
+// [open, high, low, close, context?]. Context candles set the scene and are drawn faded.
+const PATTERNS = [
+  ["hammer", "Hammer", "bull", "A long lower wick after a fall: sellers pushed price down and buyers pushed it all the way back.", [[72, 74, 60, 62, 1], [62, 64, 52, 54, 1], [49, 53, 28, 52]]],
+  ["shooting_star", "Shooting star", "bear", "A long upper wick after a rise: buyers tried higher and got rejected.", [[28, 40, 26, 38, 1], [38, 48, 36, 46, 1], [51, 72, 47, 48]]],
+  ["bullish_engulfing", "Bullish engulfing", "bull", "A rising candle whose body swallows the previous falling one. Buyers took over.", [[70, 72, 58, 60, 1], [58, 60, 46, 48], [45, 66, 43, 63]]],
+  ["bearish_engulfing", "Bearish engulfing", "bear", "A falling candle whose body swallows the previous rising one. Sellers took over.", [[30, 42, 28, 40, 1], [42, 54, 40, 52], [55, 57, 34, 37]]],
+  ["doji", "Doji", "neutral", "Open and close almost equal: a standoff. Meaningful at a level, noise elsewhere.", [[40, 52, 38, 50, 1], [50, 62, 48, 60, 1], [60, 72, 48, 60.6]]],
+  ["inside_bar", "Inside bar", "neutral", "A candle entirely inside the previous one. The market is coiling; trade the breakout.", [[40, 76, 32, 70], [64, 68, 46, 52]]],
+  ["outside_bar", "Outside bar", "neutral", "A candle that takes out both the previous high and low. A burst of volatility.", [[52, 60, 46, 56], [58, 68, 36, 40]]],
+  ["morning_star", "Morning star", "bull", "Big fall, small pause, big rise: a three-candle turn from down to up.", [[74, 76, 52, 54], [50, 52, 42, 45], [47, 70, 46, 68]]],
+  ["evening_star", "Evening star", "bear", "Big rise, small pause, big fall: a three-candle turn from up to down.", [[26, 48, 24, 46], [50, 58, 48, 55], [53, 54, 30, 32]]],
+  ["three_white_soldiers", "Three white soldiers", "bull", "Three strong rising candles, each opening inside the last. Steady buying.", [[26, 38, 25, 37], [33, 52, 32, 50], [46, 66, 45, 64]]],
+  ["three_black_crows", "Three black crows", "bear", "Three strong falling candles, each opening inside the last. Steady selling.", [[74, 75, 62, 63], [67, 68, 48, 50], [54, 55, 34, 36]]],
+  ["bullish_marubozu", "Bullish marubozu", "bull", "A rising candle with almost no wicks. Buyers controlled it from open to close.", [[50, 54, 46, 48, 1], [36, 70, 36, 70]]],
+  ["bearish_marubozu", "Bearish marubozu", "bear", "A falling candle with almost no wicks. Sellers controlled it from open to close.", [[50, 54, 46, 52, 1], [70, 70, 36, 36]]],
+];
+function candleSvg(bars, w = 200, h = 92) {
+  const lo = Math.min(...bars.map(b => b[2])), hi = Math.max(...bars.map(b => b[1]));
+  const y = v => 6 + (hi - v) / (hi - lo || 1) * (h - 12);
+  const step = 34, x0 = (w - step * (bars.length - 1)) / 2;
+  return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true">` + bars.map(([o, hh, l, c, ctx], i) => {
+    const x = x0 + i * step, up = c >= o, col = up ? "var(--up)" : "var(--down)";
+    const top = y(Math.max(o, c)), bh = Math.max(1.5, Math.abs(y(o) - y(c)));
+    return `<g opacity="${ctx ? 0.35 : 1}"><line x1="${x}" y1="${y(hh)}" x2="${x}" y2="${y(l)}" stroke="${col}" stroke-width="2"/><rect x="${x - 9}" y="${top}" width="18" height="${bh}" rx="2" fill="${col}"/></g>`;
+  }).join("") + `</svg>`;
+}
+function renderHero() {
+  // A fixed, gently rising series: a small sketch of what the app works with.
+  const bars = []; let p = 40;
+  [3, -2, 4, 5, -3, 2, -4, 6, 3, -2, 5, 4, -5, 7].forEach((d, i) => {
+    const o = p, c = p + d, hi = Math.max(o, c) + 1.5 + (i % 3), lo = Math.min(o, c) - 1.5 - ((i + 1) % 3);
+    bars.push([o, hi, lo, c]); p = c;
+  });
+  $("hero-art").innerHTML = candleSvg(bars, 480, 240);
+}
+function renderPatterns() {
+  const side = { bull: ["bullish", "var(--up)"], bear: ["bearish", "var(--down)"], neutral: ["either way", "var(--muted)"] };
+  $("pat-gallery").innerHTML = PATTERNS.map(([id, name, sd, text, bars]) => `<div class="pat">${candleSvg(bars)}
+    <span class="side" style="color:${side[sd][1]}">${side[sd][0]}</span><h3>${name}</h3><p>${text}</p><code>pa.${id} == 1</code></div>`).join("");
+}
+const PA_EXAMPLE = {
+  name: "Yesterday's low rejection",
+  description: "Buy when price dips under yesterday's low and closes back above it with a long lower wick on above-average volume.",
+  market: { symbol: "BTCUSDT", interval: "1h" },
+  indicators: { pd: { type: "period", minutes: 1440 }, vol: { type: "volume_avg", period: 20 } },
+  entry: { long: { all: [
+    { left: "low", op: "<", right: "pd.prev_low" },
+    { left: "close", op: ">", right: "pd.prev_low" },
+    { left: "lower_wick", op: ">=", right: "2 * body" },
+    { left: "vol.relative", op: ">", right: 1.3 },
+  ] } },
+  exit: { stop_loss: { below: "low - 0.1 * range" }, take_profit: { risk_multiple: 2 }, max_bars: 48 },
+  sizing: { type: "risk_percent", value: 1 },
+  risk: { daily_loss_percent: 3, max_drawdown_percent: 20 },
+};
+$("pa-example").textContent = JSON.stringify(PA_EXAMPLE, null, 2);
+$("pa-example-load").onclick = () => { loadStrategy(structuredClone(PA_EXAMPLE)); show("build"); };
+$("pa-example-run").onclick = e => { loadStrategy(structuredClone(PA_EXAMPLE)); runBacktest(e.target); };
+
+/* ---------- money management ---------- */
+const num = id => parseFloat($(id).value);
+const cell = (v, l) => `<div><b>${v}</b><span>${l}</span></div>`;
+function positionSize() {
+  const mk = $("ps-market").value;
+  $("ps-extra1-l").hidden = $("ps-extra2-l").hidden = mk !== "forex"; $("ps-extra3-l").hidden = mk !== "futures";
+  const acct = num("ps-acct"), riskPct = num("ps-risk"), entry = num("ps-entry"), stop = num("ps-stop");
+  const riskCash = acct * riskPct / 100, dist = Math.abs(entry - stop), dir = stop < entry ? 1 : -1;
+  if (!(acct > 0 && riskPct > 0 && dist > 0)) { $("ps-out").innerHTML = `<div class="wide">Enter a balance, a risk and a stop different from the entry.</div>`; return; }
+  const targets = [1, 2, 3].map(k => `${k}R: ${fmt(entry + dir * k * dist, entry < 10 ? 5 : 2)}`).join(" · ");
+  let out;
+  if (mk === "forex") {
+    const pips = dist / num("ps-pip"), lots = riskCash / (pips * num("ps-pipval"));
+    out = cell(fmt(lots, 2), "standard lots") + cell(fmt(lots * 100000, 0), "units") + cell(fmt(pips, 1), "pips to the stop") + cell(money(riskCash), "lost if the stop is hit");
+  } else if (mk === "futures") {
+    const per = dist * num("ps-point"), n = Math.floor(riskCash / per);
+    out = cell(n, "contracts") + cell(money(per), "risk per contract") + cell(money(n * per), "lost if the stop is hit") +
+      (n === 0 ? `<div class="wide">One contract risks more than your limit. Use a closer stop, a micro contract, or skip the trade.</div>` : "");
+  } else {
+    const qty = mk === "crypto" ? riskCash / dist : Math.floor(riskCash / dist), value = qty * entry;
+    out = cell(fmt(qty, mk === "crypto" ? 4 : 0), mk === "crypto" ? "coins" : "shares") + cell(money(value), "position value") +
+      cell(fmt(value / acct * 100, 0) + "%", "of the account") + cell(money(qty * dist), "lost if the stop is hit") +
+      (value > acct ? `<div class="wide">The position is bigger than the account, so it needs ${fmt(value / acct, 1)}x leverage. A wider stop with a smaller position risks the same amount.</div>` : "");
+  }
+  $("ps-out").innerHTML = out + `<div class="wide">Targets ${targets}</div>`;
+}
+["ps-market", "ps-acct", "ps-risk", "ps-entry", "ps-stop", "ps-pip", "ps-pipval", "ps-point"].forEach(id => $(id).addEventListener("input", positionSize));
+function rewardRisk() {
+  const st = num("rr-stop"), tg = num("rr-target"), cost = num("rr-cost") || 0;
+  if (!(st > 0 && tg > 0)) { $("rr-out").innerHTML = ""; return; }
+  const be = st / (st + tg) * 100, beCost = (st + cost) / (st + tg) * 100;
+  $("rr-out").innerHTML = cell("1 : " + fmt(tg / st, 2), "risk : reward") + cell(fmt(be, 1) + "%", "win rate to break even") + cell(fmt(beCost, 1) + "%", "including costs") +
+    `<div class="wide">Win more often than ${fmt(beCost, 0)}% of the time and this setup makes money over many trades.</div>`;
+}
+["rr-stop", "rr-target", "rr-cost"].forEach(id => $(id).addEventListener("input", rewardRisk));
+function monteCarlo() {
+  const w = Math.min(99, Math.max(1, num("mc-win"))) / 100, rw = num("mc-rw"), rl = num("mc-rl"), risk = num("mc-risk") / 100, n = Math.min(2000, Math.max(10, num("mc-n") | 0));
+  if (!(rw > 0 && rl > 0 && risk > 0)) return;
+  const RUNS = 2000, finals = [], dds = [], sample = [];
+  for (let k = 0; k < RUNS; k++) {
+    let eq = 1, peak = 1, dd = 0; const path = k < 40 ? [1] : null;
+    for (let i = 0; i < n; i++) {
+      eq *= Math.random() < w ? 1 + risk * rw : Math.max(0, 1 - risk * rl);
+      peak = Math.max(peak, eq); dd = Math.max(dd, 1 - eq / peak);
+      if (path) path.push(eq);
+    }
+    finals.push(eq); dds.push(dd); if (path) sample.push(path);
+  }
+  finals.sort((a, b) => a - b); dds.sort((a, b) => a - b);
+  const q = (a, p) => a[Math.min(a.length - 1, Math.floor(p * a.length))];
+  const share = f => fmt(dds.filter(f).length / RUNS * 100, 0) + "%";
+  const exp = w * rw - (1 - w) * rl, kelly = w - (1 - w) / (rw / rl);
+  const W = 560, H = 230, all = sample.flat(), lo = Math.log(Math.max(1e-3, Math.min(...all))), hi = Math.log(Math.max(...all));
+  const X = i => i / n * W, Y = v => 8 + (hi - Math.log(Math.max(1e-3, v))) / (hi - lo || 1) * (H - 16);
+  const line = (p, attrs) => `<polyline fill="none" points="${p.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ")}" ${attrs}/>`;
+  const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="40 simulated equity paths">
+    <line x1="0" x2="${W}" y1="${Y(1)}" y2="${Y(1)}" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="4 4"/>
+    ${sample.map(p => line(p, `stroke="${p[p.length - 1] >= 1 ? "var(--up)" : "var(--down)"}" stroke-opacity=".45" stroke-width="1.2"`)).join("")}
+    <text x="6" y="${Y(1) - 5}" font-size="11" fill="currentColor" opacity=".7">starting balance</text></svg>`;
+  $("mc-out").innerHTML = `<div style="color:var(--muted)">${svg}<p class="hint">40 of the 2,000 paths, log scale. Same strategy, same odds: the only difference is the order of wins and losses.</p></div>
+    <div class="calc-out" style="margin:0">
+      ${cell(rmul(exp), "expectancy per trade")}
+      ${cell(pct((q(finals, .5) - 1) * 100), "median result")}
+      ${cell(pct((q(finals, .05) - 1) * 100), "bad luck (worst 5%)")}
+      ${cell(pct((q(finals, .95) - 1) * 100), "good luck (best 5%)")}
+      ${cell("−" + fmt(q(dds, .5) * 100, 1) + "%", "typical max drawdown")}
+      ${cell(share(d => d >= 0.2), "chance of a 20% drawdown")}
+      ${cell(share(d => d >= 0.5), "chance of a 50% drawdown")}
+      ${cell(fmt(finals.filter(f => f < 1).length / RUNS * 100, 0) + "%", "chance of ending down")}
+      <div class="wide">${exp <= 0 ? "This setup loses money on average: no position size fixes that." : `Kelly says risk ${fmt(kelly * 100, 1)}% per trade for the fastest growth; half of that, ${fmt(kelly * 50, 1)}%, is the usual ceiling. ${risk * 100 > kelly * 50 ? "You're above it: expect big swings." : "You're below it."}`}</div>
+    </div>`;
+}
+$("mc-run").onclick = monteCarlo;
+const PLANS = {
+  conservative: { "mm-risk": 0.5, "mm-day": 2, "mm-month": 5, "mm-dd": 15, "mm-trades": 3, "mm-losses": 3, "mm-pause": 24 },
+  elder: { "mm-risk": 2, "mm-day": "", "mm-month": 6, "mm-dd": "", "mm-trades": "", "mm-losses": "", "mm-pause": "" },
+  prop: { "mm-risk": 0.5, "mm-day": 5, "mm-month": "", "mm-dd": 10, "mm-trades": "", "mm-losses": 3, "mm-pause": 12 },
+};
+document.querySelectorAll("[data-plan]").forEach(b => b.onclick = () => { for (const [id, v] of Object.entries(PLANS[b.dataset.plan])) $(id).value = v; });
+$("mm-apply").onclick = () => {
+  const map = { "mm-day": "rk-day", "mm-month": "rk-month", "mm-dd": "rk-dd", "mm-trades": "rk-trades", "mm-losses": "rk-losses", "mm-pause": "rk-pause" };
+  for (const [from, to] of Object.entries(map)) $(to).value = $(from).value;
+  $("s-kind").value = "risk_percent"; $("s-val").value = num("mm-risk") || 1;
+  readForm(); changed(); renderBuilder();
+  const noStop = !S.exit?.stop_loss;
+  $("mm-status").innerHTML = `Applied to <b>${esc(S.name)}</b>.` + (noStop ? " Sizing by risk needs a stop-loss: add one in the builder." : ` <a href="#" data-go="build">Open the builder</a>`);
+};
+
+/* ---------- community ---------- */
+function shareCard(sh, key) {
+  const r = sh.result, s = sh.strategy, up = v => v >= 0 ? "up" : "down";
+  const st = (v, l, cls = "") => `<div><b class="${cls}">${v}</b><span>${l}</span></div>`;
+  return `<div class="panel card share-card">
+    <div class="cat">${esc(r.symbol)} · ${esc(r.interval)} · ${esc(r.from.slice(0, 10))} to ${esc(r.to.slice(0, 10))}</div>
+    <h2>${esc(s.name)}</h2>
+    ${sh.author ? `<div class="by">shared by ${esc(sh.author)}</div>` : ""}
+    <p>${esc(sh.notes || s.description || "")}</p>
+    <div class="stats">
+      ${st(pct(r.return_pct), "return", up(r.return_pct))}${st(pct(r.buy_hold_pct), "buy and hold", up(r.buy_hold_pct))}${st("−" + fmt(r.max_drawdown_pct, 1) + "%", "max drawdown")}
+      ${st(r.trades, "trades")}${st(fmt(r.win_rate_pct, 0) + "%", "win rate")}${st(r.avg_r == null ? "n/a" : rmul(r.avg_r), "average R", r.avg_r == null ? "" : up(r.avg_r))}
+    </div>
+    <div class="actions"><button class="btn primary small" data-verify="${key}" title="Run the same test again and compare">Re-run</button><button class="btn small" data-open="${key}">Open in builder</button><button class="btn small ghost" data-dl="${key}">Download</button></div>
+  </div>`;
+}
+const SHARES = {};
+function bindShares(el) {
+  el.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { loadStrategy(structuredClone(SHARES[b.dataset.open].strategy)); show("build"); });
+  el.querySelectorAll("[data-dl]").forEach(b => b.onclick = () => { const sh = SHARES[b.dataset.dl]; download(slug(sh.strategy.name) + ".share.json", JSON.stringify(sh, null, 2)); });
+  el.querySelectorAll("[data-verify]").forEach(b => b.onclick = () => {
+    const sh = SHARES[b.dataset.verify], r = sh.result;
+    loadStrategy(structuredClone(sh.strategy));
+    // The recorded end is the last candle's open; include that candle.
+    const end = Date.parse(r.to.replace(" ", "T") + ":00Z") + 60_000;
+    runBacktest(b, { symbol: r.symbol, interval: r.interval, from: r.from, to: String(end), capital: r.starting_balance, verify: r });
+  });
+}
+async function renderCommunity() {
+  const list = await api("/api/community");
+  list.forEach(x => SHARES["c:" + x.id] = x.share);
+  $("cm-list").innerHTML = list.length ? list.map(x => shareCard(x.share, "c:" + x.id)).join("") : `<p class="empty">No shared strategies yet.</p>`;
+  bindShares($("cm-list"));
+}
+async function loadShared(text) {
+  let v = null; try { v = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1)); } catch (e) {}
+  if (v?.candlerail_share && v.strategy && v.result) {
+    const chk = await api("/api/check", { strategy: v.strategy });
+    if (!chk.ok) { $("cm-loaded").innerHTML = `<div class="errors">${chk.errors.map(esc).join("<br>")}</div>`; return; }
+    SHARES.pasted = v;
+    $("cm-loaded").innerHTML = shareCard(v, "pasted"); bindShares($("cm-loaded"));
+    return;
+  }
+  const r = await api("/api/check", { strategy: text });
+  if (!r.ok) { $("cm-loaded").innerHTML = `<div class="errors"><b>That isn't a share file or a strategy:</b><br>${r.errors.map(esc).join("<br>")}</div>`; return; }
+  loadStrategy(r.strategy);
+  $("cm-loaded").innerHTML = `<div class="explain">${r.explanation.map(p => `<p>${esc(p)}</p>`).join("")}</div><p class="hint">A strategy without recorded results. It's loaded in the builder.</p><div class="row"><button class="btn primary small" data-go="build">Open the builder</button></div>`;
+}
+$("cm-load").onclick = () => loadShared($("cm-paste").value);
+$("cm-file").onchange = async e => { const f = e.target.files[0]; if (f) { const t = await f.text(); $("cm-paste").value = t; loadShared(t); } e.target.value = ""; };
+
 /* ---------- start ---------- */
 (async () => {
   applyTheme();
   [CAT, TEMPLATES] = await Promise.all([api("/api/catalog"), api("/api/templates")]);
-  renderCatalog(); renderTemplates();
+  renderCatalog(); renderTemplates(); renderPatterns(); renderHero(); positionSize(); rewardRisk(); monteCarlo();
+  renderCommunity().catch(() => {});
   loadStrategy(structuredClone(TEMPLATES.find(t => t.id === "rsi-dip-uptrend")?.strategy || TEMPLATES[0].strategy));
 })();
 </script>
