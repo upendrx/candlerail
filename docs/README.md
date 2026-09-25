@@ -6,6 +6,7 @@
 |---|---|
 | [Getting started](getting-started.md) | Installing, the web app, the terminal, your own data |
 | [A guide to strategy types](strategy-guide.md) | Trend, mean reversion, breakout, momentum, intraday, and common mistakes |
+| [Chart Lab](chart-lab.md) | Building price-action setups by selecting candles on a chart |
 | [Price action](price-action.md) | Candles, patterns, support and resistance, multi-timeframe levels, building your own setups |
 | [Money management](money-management.md) | Position sizing in any market, well-known risk rules, account loss limits |
 | [Sharing strategies](sharing.md) | Share files, re-running shared results, the community gallery |

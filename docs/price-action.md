@@ -4,8 +4,9 @@ Price action trading uses price itself, with no indicators that smooth or
 transform it. It asks three questions: where are buyers and sellers
 defending (support and resistance), which way is the market stepping
 (structure), and what did this candle just show (its shape). The app's
-**Price action** tab covers the same ground with drawings; this page is the
-reference.
+**Price action** tab covers the same ground with drawings, and the
+[Chart Lab](chart-lab.md) lets you build setups by selecting candles on a
+real chart; this page is the reference.
 
 ![The candle pattern gallery](images/pa.png)
 
