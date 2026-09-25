@@ -4,43 +4,95 @@
   "title": "candlerail strategy",
   "description": "A trading strategy for candlerail: indicators, entry and exit rules, sizing and leverage.",
   "type": "object",
-  "required": ["name", "entry"],
+  "required": [
+    "name",
+    "entry"
+  ],
   "additionalProperties": false,
   "properties": {
-    "name": { "type": "string", "minLength": 1 },
-    "description": { "type": "string" },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
     "about": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "category": { "type": "string" },
-        "timeframe": { "type": "string" },
-        "how_it_works": { "type": "string" },
-        "works_best": { "type": "string" },
-        "fails_when": { "type": "string" }
+        "category": {
+          "type": "string"
+        },
+        "timeframe": {
+          "type": "string"
+        },
+        "how_it_works": {
+          "type": "string"
+        },
+        "works_best": {
+          "type": "string"
+        },
+        "fails_when": {
+          "type": "string"
+        }
       }
     },
     "market": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "symbol": { "type": "string", "examples": ["BTCUSDT", "ETHUSDT"] },
-        "interval": { "$ref": "#/$defs/interval" }
+        "symbol": {
+          "type": "string",
+          "examples": [
+            "BTCUSDT",
+            "ETHUSDT"
+          ]
+        },
+        "interval": {
+          "$ref": "#/$defs/interval"
+        }
       }
     },
     "indicators": {
       "description": "Indicators by id. Rules refer to them by id, or id.output for multi-output indicators.",
       "type": "object",
-      "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+      "propertyNames": {
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      },
       "additionalProperties": {
         "type": "object",
-        "required": ["type"],
+        "required": [
+          "type"
+        ],
         "properties": {
           "type": {
-            "enum": ["sma", "ema", "rsi", "macd", "bbands", "atr", "stoch", "vwap", "supertrend", "adx", "obv", "donchian", "roc", "keltner"]
+            "enum": [
+              "sma",
+              "ema",
+              "rsi",
+              "macd",
+              "bbands",
+              "atr",
+              "stoch",
+              "vwap",
+              "supertrend",
+              "adx",
+              "obv",
+              "donchian",
+              "roc",
+              "keltner",
+              "patterns",
+              "swings",
+              "period",
+              "opening_range",
+              "volume_avg"
+            ]
           }
         },
-        "additionalProperties": { "type": "number" }
+        "additionalProperties": {
+          "type": "number"
+        }
       }
     },
     "entry": {
@@ -48,82 +100,282 @@
       "additionalProperties": false,
       "minProperties": 1,
       "properties": {
-        "long": { "$ref": "#/$defs/condition" },
-        "short": { "$ref": "#/$defs/condition" }
+        "long": {
+          "$ref": "#/$defs/condition"
+        },
+        "short": {
+          "$ref": "#/$defs/condition"
+        }
       }
     },
     "exit": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "long": { "$ref": "#/$defs/condition" },
-        "short": { "$ref": "#/$defs/condition" },
-        "stop_loss": { "$ref": "#/$defs/distance" },
-        "trailing_stop": { "$ref": "#/$defs/distance" },
+        "long": {
+          "$ref": "#/$defs/condition"
+        },
+        "short": {
+          "$ref": "#/$defs/condition"
+        },
+        "stop_loss": {
+          "$ref": "#/$defs/distance"
+        },
+        "trailing_stop": {
+          "$ref": "#/$defs/distance"
+        },
         "take_profit": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "percent": { "type": "number", "exclusiveMinimum": 0 },
-            "atr": { "type": "number", "exclusiveMinimum": 0 },
-            "indicator": { "type": "string" },
-            "risk_multiple": { "type": "number", "exclusiveMinimum": 0 }
+            "percent": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "atr": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "indicator": {
+              "type": "string"
+            },
+            "risk_multiple": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "above": {
+              "type": "string",
+              "description": "For longs: target price level, e.g. \"sw.resistance\"."
+            },
+            "below": {
+              "type": "string",
+              "description": "For shorts: target price level."
+            }
           }
         },
-        "max_bars": { "type": "integer", "minimum": 1 }
+        "max_bars": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     },
     "sizing": {
       "type": "object",
-      "required": ["type", "value"],
+      "required": [
+        "type",
+        "value"
+      ],
       "additionalProperties": false,
       "properties": {
-        "type": { "enum": ["percent_equity", "risk_percent", "fixed"] },
-        "value": { "type": "number", "exclusiveMinimum": 0 }
+        "type": {
+          "enum": [
+            "percent_equity",
+            "risk_percent",
+            "fixed"
+          ]
+        },
+        "value": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
       }
     },
-    "leverage": { "type": "number", "minimum": 1, "maximum": 125, "default": 1 },
+    "leverage": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 125,
+      "default": 1
+    },
     "costs": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "fee_bps": { "type": "number", "minimum": 0, "default": 10 },
-        "slippage_bps": { "type": "number", "minimum": 0, "default": 2 },
-        "maintenance_margin_percent": { "type": "number", "minimum": 0, "default": 0.5 }
+        "fee_bps": {
+          "type": "number",
+          "minimum": 0,
+          "default": 10
+        },
+        "slippage_bps": {
+          "type": "number",
+          "minimum": 0,
+          "default": 2
+        },
+        "maintenance_margin_percent": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.5
+        }
+      }
+    },
+    "risk": {
+      "description": "Account-level money-management rules.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_drawdown_percent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100
+        },
+        "daily_loss_percent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100
+        },
+        "monthly_loss_percent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100
+        },
+        "max_trades_per_day": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pause_after_losses": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pause_bars": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     }
   },
   "$defs": {
-    "interval": { "enum": ["1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"] },
+    "interval": {
+      "enum": [
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "4h",
+        "1d",
+        "1w"
+      ]
+    },
     "value": {
-      "description": "A number, a price field (open, high, low, close, volume, hl2, hlc3), an indicator id, or id.output, optionally followed by [n] for n bars ago.",
-      "oneOf": [{ "type": "number" }, { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_]+)?(\\[[0-9]+\\])?$" }]
+      "description": "A number; a price field (open, high, low, close, volume, hl2, hlc3, body, range, upper_wick, lower_wick); an indicator id or id.output, optionally followed by [n] for n bars ago; or a sum of those scaled by numbers, e.g. \"2 * body[1]\" or \"high[1] + 0.5 * range\".",
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
     },
     "rule": {
       "type": "object",
-      "required": ["left", "op", "right"],
+      "required": [
+        "left",
+        "op",
+        "right"
+      ],
       "additionalProperties": false,
       "properties": {
-        "left": { "$ref": "#/$defs/value" },
-        "op": { "enum": [">", "<", ">=", "<=", "crosses_above", "crosses_below", "rising", "falling", "above", "below"] },
-        "right": { "$ref": "#/$defs/value" }
+        "left": {
+          "$ref": "#/$defs/value"
+        },
+        "op": {
+          "enum": [
+            ">",
+            "<",
+            ">=",
+            "<=",
+            "crosses_above",
+            "crosses_below",
+            "rising",
+            "falling",
+            "above",
+            "below",
+            "==",
+            "!=",
+            "equals"
+          ]
+        },
+        "right": {
+          "$ref": "#/$defs/value"
+        }
       }
     },
     "condition": {
       "oneOf": [
-        { "$ref": "#/$defs/rule" },
-        { "type": "object", "required": ["all"], "additionalProperties": false, "properties": { "all": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" } } } },
-        { "type": "object", "required": ["any"], "additionalProperties": false, "properties": { "any": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" } } } },
-        { "type": "object", "required": ["not"], "additionalProperties": false, "properties": { "not": { "$ref": "#/$defs/condition" } } }
+        {
+          "$ref": "#/$defs/rule"
+        },
+        {
+          "type": "object",
+          "required": [
+            "all"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "any"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "any": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "not"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "$ref": "#/$defs/condition"
+            }
+          }
+        }
       ]
     },
     "distance": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "percent": { "type": "number", "exclusiveMinimum": 0 },
-        "atr": { "type": "number", "exclusiveMinimum": 0 },
-        "indicator": { "type": "string", "description": "Id of an ATR indicator, required with atr." }
+        "percent": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "atr": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "indicator": {
+          "type": "string",
+          "description": "Id of an ATR indicator, required with atr."
+        },
+        "below": {
+          "type": "string",
+          "description": "For longs: price level for the stop, read when the signal fires, e.g. \"low\"."
+        },
+        "above": {
+          "type": "string",
+          "description": "For shorts: price level for the stop, e.g. \"high\"."
+        }
       }
     }
   }
