@@ -75,7 +75,15 @@ liquidation work needs a test in `broker.rs` that pins down the new behaviour.
 2. Bump `version` in the root `Cargo.toml`.
 3. Merge to `main`, then tag: `git tag -a v0.2.0 -m "v0.2.0" && git push origin v0.2.0`.
 4. The release workflow builds binaries for Linux (x86_64, ARM64), macOS
-   (Apple Silicon, Intel) and Windows, and attaches them to a GitHub release.
+   (Apple Silicon, Intel) and Windows, and attaches them to a GitHub release
+   as `candlerail-<target>.tar.gz` (`.zip` on Windows). The install scripts
+   download `releases/latest/download/candlerail-<target>...`, so keep those
+   names stable.
+
+The quick-start page in `site/` is published by the Site workflow whenever
+`site/` or `docs/images/` changes on `main`. In the repository settings,
+set Pages to deploy from GitHub Actions once. Screenshots in `docs/images/`
+are taken from the app at 1360×860.
 
 Versioning follows [Semantic Versioning](https://semver.org/). Until 1.0, a
 minor version may change the strategy file format; the changelog calls that out.

@@ -2,8 +2,26 @@
 
 ## Install
 
-candlerail is a single program. Build it from source with Rust 1.88 or newer
-([rustup.rs](https://rustup.rs)):
+The [quick-start page](https://upendrx.github.io/candlerail/) walks through
+this for Windows, macOS and Linux.
+
+**One line**, downloading the latest release:
+
+```bash
+# macOS and Linux
+curl -fsSL https://raw.githubusercontent.com/upendrx/candlerail/main/scripts/install.sh | sh
+```
+
+```powershell
+# Windows (PowerShell)
+powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/upendrx/candlerail/main/scripts/install.ps1 | iex"
+```
+
+The scripts put `candlerail` in `~/.local/bin` or `%LOCALAPPDATA%\candlerail`.
+Set `CANDLERAIL_INSTALL_DIR` to choose another folder, or
+`CANDLERAIL_VERSION=v0.2.0` for a specific release.
+
+**From source**, with Rust 1.88 or newer ([rustup.rs](https://rustup.rs)):
 
 ```bash
 git clone https://github.com/upendrx/candlerail
@@ -31,6 +49,12 @@ cached in `~/.candlerail/cache` after the first time.
    summary on the right always says exactly what the strategy will do.
 4. **Ask AI:** describe a strategy in words, copy the prompt into any chat
    assistant, and paste its reply back.
+5. **Price action:** learn candles, levels and patterns, and open the
+   worked example in the builder.
+6. **Money management:** size positions, compare risk rules, and apply loss
+   limits to your strategy.
+7. **Community:** load strategies others shared and re-run them to check
+   their results.
 
 ## From the terminal
 

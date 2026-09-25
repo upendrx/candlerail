@@ -7,6 +7,9 @@ crates/data         candle sources: Binance klines with a cache, CSV files
 ui/                 the web app (plain HTML and JS, compiled into the binary)
 templates/          built-in strategies (compiled into the binary)
 schema/             JSON Schema for strategy files
+community/          shared strategies with recorded results (the Community gallery)
+site/               the quick-start web page, published to GitHub Pages
+scripts/            one-line installers for macOS, Linux and Windows
 ```
 
 `candlerail-core` has no network or file access. It's a pure function from
