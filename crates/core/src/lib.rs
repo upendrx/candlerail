@@ -5,9 +5,11 @@
 //! ```text
 //! candles ──▶ indicators ──▶ strategy rules ──▶ paper broker ──▶ report
 //! ```
+
 pub mod backtest;
 pub mod broker;
 pub mod candle;
+pub mod explain;
 pub mod indicators;
 pub mod metrics;
 pub mod spec;
