@@ -1,0 +1,29 @@
+{
+  "name": "Previous day high breakout",
+  "description": "Intraday price action: buy when price closes above yesterday's high on strong volume.",
+  "about": {
+    "category": "price action",
+    "timeframe": "15m or 1h",
+    "how_it_works": "Yesterday's high and low are levels almost every trader watches. A close above yesterday's high, on at least one and a half times the usual volume, means buyers are pushing into new territory with conviction. The stop goes under the breakout candle, the target is twice the risk, and the trade gets one day to work.",
+    "works_best": "Trending days and news-driven moves.",
+    "fails_when": "Quiet days, when price pokes above the level and falls back (a 'failed breakout'). The volume filter removes many of these."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "15m" },
+  "indicators": {
+    "pd": { "type": "period", "minutes": 1440 },
+    "vol": { "type": "volume_avg", "period": 20 }
+  },
+  "entry": {
+    "long": { "all": [
+      { "left": "close", "op": "crosses_above", "right": "pd.prev_high" },
+      { "left": "vol.relative", "op": ">", "right": 1.5 }
+    ] }
+  },
+  "exit": {
+    "stop_loss": { "below": "low" },
+    "take_profit": { "risk_multiple": 2 },
+    "max_bars": 96
+  },
+  "sizing": { "type": "risk_percent", "value": 0.5 },
+  "risk": { "max_trades_per_day": 2, "daily_loss_percent": 2 }
+}

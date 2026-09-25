@@ -42,7 +42,7 @@ fn explains_every_template() {
     let list = stdout(&run(&["templates"]));
     let ids: Vec<&str> =
         list.lines().take_while(|l| !l.trim().is_empty()).filter_map(|l| l.split_whitespace().next()).collect();
-    assert_eq!(ids.len(), 10);
+    assert_eq!(ids.len(), 18);
     for id in ids {
         let text = stdout(&run(&["explain", id]));
         assert!(text.contains("No problems found."), "{id}:\n{text}");

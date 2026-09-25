@@ -1,0 +1,30 @@
+{
+  "name": "Opening range breakout",
+  "description": "Intraday price action: trade the break of the session's first 30 minutes, long or short.",
+  "about": {
+    "category": "price action",
+    "timeframe": "5m",
+    "how_it_works": "The first minutes of a session set its opening range, as early orders find a price. A close beyond that range often starts the day's move. The stop goes back at the middle of the range, the target is twice the risk, and the trade closes within three hours. For US stocks set session_start to 810 (13:30 UTC in summer) or 870 (winter). Crypto uses 0, the UTC day start.",
+    "works_best": "Liquid markets with a clear session open: stock indices, large-cap stocks, and major crypto pairs.",
+    "fails_when": "Range days, when both sides of the range get tested. The two-trades-a-day limit caps the damage."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "5m" },
+  "indicators": { "or": { "type": "opening_range", "minutes": 30, "session_start": 0 } },
+  "entry": {
+    "long": { "all": [
+      { "left": "or.ready", "op": "==", "right": 1 },
+      { "left": "close", "op": "crosses_above", "right": "or.high" }
+    ] },
+    "short": { "all": [
+      { "left": "or.ready", "op": "==", "right": 1 },
+      { "left": "close", "op": "crosses_below", "right": "or.low" }
+    ] }
+  },
+  "exit": {
+    "stop_loss": { "below": "0.5 * or.high + 0.5 * or.low", "above": "0.5 * or.high + 0.5 * or.low" },
+    "take_profit": { "risk_multiple": 2 },
+    "max_bars": 36
+  },
+  "sizing": { "type": "risk_percent", "value": 0.5 },
+  "risk": { "max_trades_per_day": 2, "daily_loss_percent": 1.5 }
+}

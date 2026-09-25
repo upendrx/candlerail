@@ -1,0 +1,19 @@
+{
+  "name": "Monthly high breakout",
+  "description": "Multi-timeframe price action on daily candles: buy when price closes above last month's high, ride it with a trailing stop.",
+  "about": {
+    "category": "price action",
+    "timeframe": "1d",
+    "how_it_works": "Last month's high is a level long-term traders watch. A daily close above it means the market is breaking out on a higher timeframe. The trade uses daily candles for timing and the monthly level for direction. A 10% trailing stop lets a big trend run, and the position closes if price falls back below last month's low.",
+    "works_best": "Strong multi-month trends.",
+    "fails_when": "Sideways years produce breakouts that fade. Expect few trades, a low win rate and occasional very large winners."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "1d" },
+  "indicators": { "mo": { "type": "period", "minutes": 43200 } },
+  "entry": { "long": { "left": "close", "op": "crosses_above", "right": "mo.prev_high" } },
+  "exit": {
+    "long": { "left": "close", "op": "<", "right": "mo.prev_low" },
+    "trailing_stop": { "percent": 10 }
+  },
+  "sizing": { "type": "percent_equity", "value": 50 }
+}

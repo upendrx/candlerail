@@ -1,0 +1,28 @@
+{
+  "name": "Inside bar breakout",
+  "description": "Price action: trade the break of an inside bar in either direction, stop at the other side of it.",
+  "about": {
+    "category": "price action",
+    "timeframe": "4h or 1d",
+    "how_it_works": "An inside bar has its whole range inside the previous candle (the 'mother bar'): the market is pausing and coiling. A close above the inside bar's high is a buy, and a close below its low is a sell. The stop goes at the opposite end of the inside bar, so the risk is small and clearly defined. The target is twice the risk.",
+    "works_best": "Daily and 4-hour charts, especially after a strong move, where the pause resolves in the same direction.",
+    "fails_when": "Choppy markets break out one way and reverse. Waiting for a close beyond the range, rather than a touch, filters some of those."
+  },
+  "market": { "symbol": "ETHUSDT", "interval": "4h" },
+  "indicators": { "pa": { "type": "patterns" } },
+  "entry": {
+    "long": { "all": [
+      { "left": "pa.inside_bar[1]", "op": "==", "right": 1 },
+      { "left": "close", "op": ">", "right": "high[1]" }
+    ] },
+    "short": { "all": [
+      { "left": "pa.inside_bar[1]", "op": "==", "right": 1 },
+      { "left": "close", "op": "<", "right": "low[1]" }
+    ] }
+  },
+  "exit": {
+    "stop_loss": { "below": "low[1]", "above": "high[1]" },
+    "take_profit": { "risk_multiple": 2 }
+  },
+  "sizing": { "type": "risk_percent", "value": 1 }
+}

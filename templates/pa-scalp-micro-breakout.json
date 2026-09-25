@@ -1,0 +1,31 @@
+{
+  "name": "1-minute micro breakout scalp",
+  "description": "Scalping price action on 1-minute candles: buy the break of a tiny swing high on a volume spike, out fast.",
+  "about": {
+    "category": "price action",
+    "timeframe": "1m",
+    "how_it_works": "On one-minute candles, small swing highs mark short-term resistance. When a candle closes through that level with at least twice the usual volume, and its range is bigger than the last one, a burst of buying is under way. Scalps are short: the stop goes under the breakout candle, the target is 1.5 times the risk, and the trade ends after 15 minutes either way. Strict daily limits stop a bad session early.",
+    "works_best": "Very liquid markets during active hours, with low fees.",
+    "fails_when": "Fees and slippage are high relative to the tiny moves. At retail fees of 0.1% per fill, most scalping loses, so set fee_bps to your real rate before judging it."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "1m" },
+  "indicators": {
+    "sw": { "type": "swings", "left": 5, "right": 2 },
+    "vol": { "type": "volume_avg", "period": 30 }
+  },
+  "entry": {
+    "long": { "all": [
+      { "left": "close", "op": "crosses_above", "right": "sw.resistance" },
+      { "left": "vol.relative", "op": ">", "right": 2 },
+      { "left": "range", "op": ">", "right": "range[1]" }
+    ] }
+  },
+  "exit": {
+    "stop_loss": { "below": "low" },
+    "take_profit": { "risk_multiple": 1.5 },
+    "max_bars": 15
+  },
+  "sizing": { "type": "risk_percent", "value": 0.25 },
+  "costs": { "fee_bps": 2, "slippage_bps": 1 },
+  "risk": { "daily_loss_percent": 1.5, "max_trades_per_day": 20, "pause_after_losses": 5, "pause_bars": 60 }
+}

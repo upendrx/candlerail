@@ -1,0 +1,28 @@
+{
+  "name": "Morning star reversal",
+  "description": "Price action: buy a three-candle morning star that forms at the latest swing low.",
+  "about": {
+    "category": "price action",
+    "timeframe": "4h or 1d",
+    "how_it_works": "A morning star is a strong down candle, then a small indecisive one, then a strong up candle that closes above the middle of the first. It shows selling running out and buyers taking over. Requiring the small middle candle to sit near the latest swing low means the reversal happens at a level that has held before. The stop goes under the pattern's low and the target is the latest swing high.",
+    "works_best": "Pullbacks within larger uptrends, and range lows.",
+    "fails_when": "Downtrends that pause briefly and continue. The pattern is rare, so test long periods and several markets."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "4h" },
+  "indicators": {
+    "pa": { "type": "patterns" },
+    "sw": { "type": "swings", "left": 4, "right": 2 }
+  },
+  "entry": {
+    "long": { "all": [
+      { "left": "pa.morning_star", "op": "==", "right": 1 },
+      { "left": "low[1]", "op": "<=", "right": "1.01 * sw.support" }
+    ] }
+  },
+  "exit": {
+    "stop_loss": { "below": "low[1]" },
+    "take_profit": { "above": "sw.resistance" },
+    "max_bars": 60
+  },
+  "sizing": { "type": "risk_percent", "value": 1 }
+}

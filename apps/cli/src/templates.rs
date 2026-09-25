@@ -11,6 +11,14 @@ pub const ALL: &[(&str, &str)] = &[
     ("vwap-intraday", include_str!("../../../templates/vwap-intraday.json")),
     ("stochastic-oversold", include_str!("../../../templates/stochastic-oversold.json")),
     ("keltner-breakout", include_str!("../../../templates/keltner-breakout.json")),
+    ("pa-pin-bar-support", include_str!("../../../templates/pa-pin-bar-support.json")),
+    ("pa-inside-bar-breakout", include_str!("../../../templates/pa-inside-bar-breakout.json")),
+    ("pa-engulfing-structure", include_str!("../../../templates/pa-engulfing-structure.json")),
+    ("pa-previous-day-breakout", include_str!("../../../templates/pa-previous-day-breakout.json")),
+    ("pa-opening-range-breakout", include_str!("../../../templates/pa-opening-range-breakout.json")),
+    ("pa-scalp-micro-breakout", include_str!("../../../templates/pa-scalp-micro-breakout.json")),
+    ("pa-monthly-level-breakout", include_str!("../../../templates/pa-monthly-level-breakout.json")),
+    ("pa-morning-star-support", include_str!("../../../templates/pa-morning-star-support.json")),
 ];
 
 pub fn get(id: &str) -> Option<&'static str> {

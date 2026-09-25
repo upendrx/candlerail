@@ -1,0 +1,32 @@
+{
+  "name": "Engulfing with market structure",
+  "description": "Price action: buy bullish engulfing candles in an uptrend of higher highs and higher lows; sell bearish ones in a downtrend.",
+  "about": {
+    "category": "price action",
+    "timeframe": "4h",
+    "how_it_works": "Market structure is the sequence of swing highs and lows: higher highs and higher lows mean an uptrend, lower highs and lower lows a downtrend. An engulfing candle, whose body swallows the previous candle's body, shows one side taking over. Taking only the engulfing candles that agree with the structure keeps the trades with the trend. The stop sits beyond the engulfing candle.",
+    "works_best": "Trending markets with clean swings.",
+    "fails_when": "Structure flips at turning points, and the first engulfing candle against the old trend is often the one that matters. This strategy waits for the new structure instead, so it's late at reversals."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "4h" },
+  "indicators": {
+    "pa": { "type": "patterns" },
+    "sw": { "type": "swings", "left": 3, "right": 3 }
+  },
+  "entry": {
+    "long": { "all": [
+      { "left": "sw.structure", "op": "==", "right": 1 },
+      { "left": "pa.bullish_engulfing", "op": "==", "right": 1 }
+    ] },
+    "short": { "all": [
+      { "left": "sw.structure", "op": "==", "right": -1 },
+      { "left": "pa.bearish_engulfing", "op": "==", "right": 1 }
+    ] }
+  },
+  "exit": {
+    "stop_loss": { "below": "low", "above": "high" },
+    "take_profit": { "risk_multiple": 2.5 }
+  },
+  "sizing": { "type": "risk_percent", "value": 1 },
+  "risk": { "pause_after_losses": 4, "pause_bars": 30 }
+}

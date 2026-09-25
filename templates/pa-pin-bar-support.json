@@ -1,0 +1,30 @@
+{
+  "name": "Pin bar at support",
+  "description": "Price action: buy a hammer (pin bar) that rejects the latest swing low, stop under its wick, target the swing high.",
+  "about": {
+    "category": "price action",
+    "timeframe": "1h or 4h",
+    "how_it_works": "A swing low is where buyers stepped in before. When price comes back to it and prints a hammer, a candle with a long lower wick and a small body near the top, sellers pushed down and buyers pushed right back. The trade enters on the next open, puts the stop just under the wick (if that level breaks, the idea is wrong), and aims for the latest swing high.",
+    "works_best": "Ranges and pullbacks in uptrends, where old lows attract buyers.",
+    "fails_when": "Support breaks in a strong downtrend. The wick-based stop keeps the loss small, so the target needs to be well above the stop for the trade to be worth it."
+  },
+  "market": { "symbol": "BTCUSDT", "interval": "1h" },
+  "indicators": {
+    "pa": { "type": "patterns", "wick_ratio": 2 },
+    "sw": { "type": "swings", "left": 5, "right": 3 }
+  },
+  "entry": {
+    "long": { "all": [
+      { "left": "pa.hammer", "op": "==", "right": 1 },
+      { "left": "low", "op": "<=", "right": "1.003 * sw.support" },
+      { "left": "close", "op": ">", "right": "sw.support" }
+    ] }
+  },
+  "exit": {
+    "stop_loss": { "below": "low - 0.1 * range" },
+    "take_profit": { "above": "sw.resistance" },
+    "max_bars": 72
+  },
+  "sizing": { "type": "risk_percent", "value": 1 },
+  "risk": { "daily_loss_percent": 3, "max_drawdown_percent": 25 }
+}
