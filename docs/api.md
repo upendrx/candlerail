@@ -97,6 +97,24 @@ Runs the test and returns `{ "ok": true, "share": { ... } }`, a
 
 The strategies in the community gallery: `[{ "id", "share" }]`.
 
+## POST /api/candles
+
+```json
+{ "symbol": "BTCUSDT", "interval": "1h", "from": "2026-01-01", "to": "", "csv": null }
+```
+
+The candles for a market and period, as `{ "ok": true, "symbol", "interval",
+"candles": [{ "ts", "open", "high", "low", "close", "volume" }] }`. Dates can
+also be milliseconds since 1970, and `to` is exclusive.
+
+## POST /api/scan
+
+Takes the same body as `/api/backtest` and returns every candle whose close
+satisfies the strategy's entry rules, without trading:
+`{ "ok": true, "bars": 4386, "long": [ts, ...], "short": [ts, ...] }`. The
+Chart Lab uses it to mark matches, with the same rule evaluation as a
+backtest.
+
 ## GET /api/prompt, GET /schema.json
 
 The AI instructions as plain text, and the JSON Schema for strategy files.
