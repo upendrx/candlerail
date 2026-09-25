@@ -7,6 +7,8 @@
 //! ```
 pub mod candle;
 pub mod indicators;
+pub mod spec;
 pub mod time;
 
 pub use candle::{Candle, Interval};
+pub use spec::Strategy;
