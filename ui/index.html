@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>candlerail</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f766e'/%3E%3Cpath d='M9 8v16M9 12h-2v8h4v-8zM16 6v18M14 10h4v9h-4zM23 11v13M21 14h4v6h-4z' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="/vendor/lightweight-charts.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f6f7; --surface: #ffffff; --surface2: #eef3f5; --ink: #13202b; --muted: #566877; --faint: #8b9ba6;
+  --line: #d9e2e7; --accent: #0f766e; --accent-ink: #ffffff; --accent-soft: rgba(15,118,110,.10);
+  --up: #15803d; --down: #dc2626; --up-soft: rgba(21,128,61,.11); --down-soft: rgba(220,38,38,.10);
+  --warn: #b45309; --warn-soft: rgba(180,83,9,.10);
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "Figtree", -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0c1316; --surface: #131c21; --surface2: #19252b; --ink: #e5eef2; --muted: #93a6b1; --faint: #6b7f8a;
+    --line: #25343c; --accent: #2dd4bf; --accent-ink: #062b27; --accent-soft: rgba(45,212,191,.12);
+    --up: #34d399; --down: #f87171; --up-soft: rgba(52,211,153,.12); --down-soft: rgba(248,113,113,.12);
+    --warn: #fbbf24; --warn-soft: rgba(251,191,36,.12);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0c1316; --surface: #131c21; --surface2: #19252b; --ink: #e5eef2; --muted: #93a6b1; --faint: #6b7f8a;
+  --line: #25343c; --accent: #2dd4bf; --accent-ink: #062b27; --accent-soft: rgba(45,212,191,.12);
+  --up: #34d399; --down: #f87171; --up-soft: rgba(52,211,153,.12); --down-soft: rgba(248,113,113,.12);
+  --warn: #fbbf24; --warn-soft: rgba(251,191,36,.12);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); }
+
+header.top { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); }
+.bar { display: flex; align-items: center; gap: 14px; padding: 10px 22px; flex-wrap: wrap; }
+.brand { font: 800 21px var(--display); letter-spacing: -.02em; display: flex; align-items: center; gap: 9px; }
+.brand svg { flex: none; }
+.tag { font-size: 13px; color: var(--muted); }
+.spacer { flex: 1; }
+nav.tabs { display: flex; gap: 2px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 9px 13px 10px; cursor: pointer; color: var(--muted); font-weight: 600; white-space: nowrap; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+main { max-width: 1320px; margin: 0 auto; padding: 22px; }
+@media (max-width: 760px) { main { padding: 14px 16px; } .bar { padding: 10px 16px; } }
+section.tab { display: grid; gap: 18px; }
+h1 { font: 800 30px/1.1 var(--display); letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+h2 { font: 700 19px/1.2 var(--display); margin: 0 0 4px; }
+h3 { font: 700 15px var(--display); margin: 0 0 6px; }
+.lede { color: var(--muted); max-width: 70ch; margin: 6px 0 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; min-width: 0; }
+.panel > .sub { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+.grid { display: grid; gap: 14px; }
+.cards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.two { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 1000px) { .two { grid-template-columns: 1fr; } }
+
+.btn { border: 1px solid var(--line); background: var(--surface2); border-radius: 9px; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: 14px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.small { padding: 4px 9px; font-size: 13px; }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: .55; cursor: wait; }
+
+.card { display: flex; flex-direction: column; gap: 8px; }
+.card .cat { font: 500 11.5px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+.card p { margin: 0; color: var(--muted); font-size: 14px; }
+.card .actions { display: flex; gap: 8px; margin-top: auto; padding-top: 6px; }
+.card details { font-size: 13.5px; color: var(--muted); }
+.card details summary { cursor: pointer; color: var(--ink); font-weight: 600; }
+.card details b { color: var(--ink); }
+
+/* forms */
+.form { display: grid; gap: 16px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+label.f { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+input[type=text], input[type=number], input[type=date], select, textarea {
+  background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 14px; min-width: 0;
+}
+input[type=number] { width: 92px; }
+input.w-sym { width: 130px; text-transform: uppercase; }
+textarea { width: 100%; font: 13px/1.5 var(--mono); resize: vertical; }
+fieldset { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 14px; margin: 0; min-width: 0; }
+legend { font: 700 14px var(--display); padding: 0 6px; }
+.hint { font-size: 12.5px; color: var(--faint); margin: 6px 0 0; }
+.ind-row, .rule-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+.ind-row:last-of-type, .rule-row:last-of-type { border-bottom: 0; }
+.ind-row input.id { width: 110px; font-family: var(--mono); }
+.ind-row .p { display: inline-flex; gap: 4px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.ind-row .p input { width: 70px; }
+.rule-row select.ref { max-width: 190px; }
+.rule-row .ago { width: 58px; }
+.rule-row .agol { font-size: 12px; color: var(--faint); }
+.x { border: 0; background: none; color: var(--faint); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; }
+.x:hover { color: var(--down); }
+.group-head { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; font-size: 14px; }
+.toggle { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
+
+.explain { background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; }
+.explain p { margin: 0 0 8px; } .explain p:last-child { margin: 0; }
+.errors { background: var(--down-soft); border-radius: 12px; padding: 12px 16px; color: var(--ink); }
+.errors ul { margin: 6px 0 0; padding-left: 18px; font-size: 14px; }
+.okmsg { color: var(--up); font-weight: 600; font-size: 14px; }
+.warnbox { background: var(--warn-soft); border-radius: 12px; padding: 12px 16px; }
+.warnbox ul { margin: 6px 0 0; padding-left: 18px; }
+.warnbox li { margin: 4px 0; }
+.sticky { position: sticky; top: 108px; display: grid; gap: 14px; }
+
+/* results */
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.kpi .l { font-size: 12.5px; color: var(--muted); }
+.kpi .v { font: 500 22px var(--mono); margin-top: 2px; white-space: nowrap; }
+.kpi .h { font-size: 12px; color: var(--faint); }
+.up { color: var(--up); } .down { color: var(--down); }
+.chart { width: 100%; height: 440px; }
+.chart.small { height: 170px; }
+.chart.eq { height: 230px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); margin: 0 0 8px; }
+.legend label { display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+.legend i { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
+.tw { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th { position: sticky; top: 0; background: var(--surface); text-align: left; font: 600 11.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 7px 9px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 7px 9px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.pill { font: 600 11px var(--mono); padding: 2px 7px; border-radius: 5px; text-transform: uppercase; }
+.pill.long { background: var(--up-soft); color: var(--up); } .pill.short { background: var(--down-soft); color: var(--down); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) { .seg { grid-template-columns: 1fr; } }
+.seg div { background: var(--surface2); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.empty { color: var(--faint); padding: 30px 0; text-align: center; }
+.steps { counter-reset: s; display: grid; gap: 14px; }
+.step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; }
+.step::before { counter-increment: s; content: counter(s); width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font: 700 14px var(--display); }
+.prose { max-width: 74ch; }
+.prose p { margin: 0 0 10px; }
+.gloss { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.gloss div { background: var(--surface2); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+.gloss b { display: block; font-family: var(--display); margin-bottom: 3px; }
+code, .code { font-family: var(--mono); font-size: 12.5px; background: var(--surface2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+.foot { color: var(--faint); font-size: 12.5px; text-align: center; padding: 26px 0 10px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--accent)"/><path d="M9 8v16M16 6v18M23 11v13" stroke="var(--accent-ink)" stroke-width="2"/><rect x="7" y="12" width="4" height="8" fill="var(--accent-ink)"/><rect x="14" y="10" width="4" height="9" fill="none" stroke="var(--accent-ink)" stroke-width="2"/><rect x="21" y="14" width="4" height="6" fill="var(--accent-ink)"/></svg>candlerail</div>
+    <span class="tag">Build and backtest trading strategies. No code needed.</span>
+    <span class="spacer"></span>
+    <button class="btn ghost small" id="theme">Theme: system</button>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button data-tab="strategies" aria-selected="true">Strategies</button>
+    <button data-tab="build" aria-selected="false">Build</button>
+    <button data-tab="ai" aria-selected="false">Ask AI</button>
+    <button data-tab="results" aria-selected="false">Results</button>
+    <button data-tab="indicators" aria-selected="false">Indicators</button>
+    <button data-tab="guide" aria-selected="false">Guide</button>
+  </nav>
+</header>
+
+<main>
+<!-- STRATEGIES -->
+<section class="tab" id="t-strategies">
+  <div>
+    <h1>Start from a well-known idea</h1>
+    <p class="lede">Each template is a complete strategy with a plain explanation of how it works, when it works, and when it fails. Backtest one as-is, or open it in the builder and make it yours.</p>
+  </div>
+  <div class="grid cards" id="tpl"></div>
+</section>
+
+<!-- BUILD -->
+<section class="tab" id="t-build" hidden>
+  <div class="row" style="justify-content:space-between;align-items:center">
+    <div><h1 id="b-title">Strategy builder</h1><p class="lede">Pick indicators, describe when to enter and exit, choose your risk. Everything updates the plain-English summary on the right.</p></div>
+    <div class="row">
+      <label class="btn small" style="display:inline-flex;align-items:center">Open file<input type="file" id="open-file" accept=".json,application/json" hidden></label>
+      <button class="btn small" id="save-file">Save as file</button>
+    </div>
+  </div>
+  <div class="grid two">
+    <div class="form">
+      <fieldset>
+        <legend>Name</legend>
+        <div class="row"><label class="f" style="flex:1">Strategy name<input type="text" id="f-name" style="width:100%"></label></div>
+      </fieldset>
+      <fieldset>
+        <legend>Market and test period</legend>
+        <div class="row">
+          <label class="f">Symbol<input type="text" id="m-symbol" class="w-sym" placeholder="BTCUSDT"></label>
+          <label class="f">Candle interval<select id="m-interval"></select></label>
+          <label class="f">From<input type="date" id="m-from"></label>
+          <label class="f">To<input type="date" id="m-to"></label>
+          <label class="f">Starting balance<input type="number" id="m-capital" value="10000" min="1" style="width:110px"></label>
+        </div>
+        <p class="hint">Any Binance spot pair works (BTCUSDT, ETHUSDT, SOLUSDT...). Leave dates empty for a sensible default. For stocks or other markets, <label style="color:var(--accent);cursor:pointer;text-decoration:underline">upload a CSV<input type="file" id="m-csv" accept=".csv,text/csv" hidden></label> of candles. <span id="m-csv-name"></span></p>
+      </fieldset>
+      <fieldset>
+        <legend>Indicators</legend>
+        <div id="ind-list"></div>
+        <div class="row" style="margin-top:8px"><select id="ind-add-type"></select><button class="btn small" id="ind-add">Add indicator</button></div>
+        <p class="hint">Give each indicator a short id; rules refer to it by that id.</p>
+      </fieldset>
+      <fieldset>
+        <legend>When to enter</legend>
+        <div id="entry-long"></div>
+        <div id="entry-short" style="margin-top:14px"></div>
+      </fieldset>
+      <fieldset>
+        <legend>When to exit</legend>
+        <div class="row">
+          <label class="f">Stop-loss<select id="x-stop-kind"><option value="">none</option><option value="percent">% from entry</option><option value="atr">× ATR</option></select></label>
+          <label class="f">Value<input type="number" id="x-stop-val" step="0.1" min="0"></label>
+          <label class="f">Take-profit<select id="x-tp-kind"><option value="">none</option><option value="percent">% from entry</option><option value="risk_multiple">× the stop distance</option><option value="atr">× ATR</option></select></label>
+          <label class="f">Value<input type="number" id="x-tp-val" step="0.1" min="0"></label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <label class="f">Trailing stop<select id="x-trail-kind"><option value="">none</option><option value="percent">% behind best price</option><option value="atr">× ATR</option></select></label>
+          <label class="f">Value<input type="number" id="x-trail-val" step="0.1" min="0"></label>
+          <label class="f">Close after (bars)<input type="number" id="x-maxbars" min="1" placeholder="no limit"></label>
+        </div>
+        <p class="hint" id="x-atr-hint"></p>
+        <div id="exit-long" style="margin-top:12px"></div>
+        <div id="exit-short" style="margin-top:12px"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Position size, leverage and costs</legend>
+        <div class="row">
+          <label class="f">Size by<select id="s-kind"><option value="risk_percent">risk per trade (% of account)</option><option value="percent_equity">margin (% of account)</option><option value="fixed">fixed quantity</option></select></label>
+          <label class="f">Value<input type="number" id="s-val" step="0.1" min="0"></label>
+          <label class="f">Leverage<input type="number" id="s-lev" min="1" max="125" step="1"></label>
+          <label class="f">Fee per fill (%)<input type="number" id="c-fee" min="0" step="0.01"></label>
+          <label class="f">Slippage (%)<input type="number" id="c-slip" min="0" step="0.01"></label>
+        </div>
+        <p class="hint" id="s-hint"></p>
+      </fieldset>
+    </div>
+    <div class="sticky">
+      <div class="panel">
+        <h2>In plain English</h2>
+        <p class="sub">Read this before running. It's generated from the rules, so it says exactly what the strategy will do.</p>
+        <div class="explain" id="b-explain">…</div>
+        <div id="b-errors" style="margin-top:12px"></div>
+        <div class="row" style="margin-top:14px"><button class="btn primary" id="b-run">Run backtest</button><span id="b-status" class="hint" style="margin:0"></span></div>
+      </div>
+      <div class="panel">
+        <details>
+          <summary style="cursor:pointer;font-weight:600">Strategy file (JSON)</summary>
+          <p class="hint">This is the whole strategy. You can edit it here, save it, share it, or paste one an AI wrote.</p>
+          <textarea id="b-json" rows="18" spellcheck="false"></textarea>
+          <div class="row" style="margin-top:8px"><button class="btn small" id="b-json-apply">Apply edits</button><button class="btn small ghost" id="b-json-copy">Copy</button></div>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI -->
+<section class="tab" id="t-ai" hidden>
+  <div>
+    <h1>Describe it, let an AI write it</h1>
+    <p class="lede">Any chat assistant, hosted or running locally, can turn a description into a strategy file. You stay in control, because nothing runs until you've read the plain-English summary and backtested it.</p>
+  </div>
+  <div class="grid two">
+    <div class="panel steps">
+      <div class="step"><div>
+        <h3>Describe your strategy</h3>
+        <textarea id="ai-desc" rows="5" placeholder="e.g. On the 1 hour chart, buy ETH when the 9 EMA crosses above the 21 EMA and RSI is above 50. Stop 2% below entry, take profit at 2x the risk, risk 1% of my account per trade."></textarea>
+      </div></div>
+      <div class="step"><div>
+        <h3>Copy the prompt into your AI assistant</h3>
+        <p class="hint" style="margin:0 0 8px">It includes the file format, every indicator and a worked example, so the reply comes back valid.</p>
+        <button class="btn primary" id="ai-copy">Copy prompt</button> <span id="ai-copied" class="hint"></span>
+      </div></div>
+      <div class="step"><div>
+        <h3>Paste the reply here</h3>
+        <textarea id="ai-reply" rows="9" placeholder="Paste the whole reply. Code fences and extra text are fine."></textarea>
+        <div class="row" style="margin-top:8px"><button class="btn primary" id="ai-load">Check and load</button></div>
+        <div id="ai-result" style="margin-top:12px"></div>
+      </div></div>
+    </div>
+    <div class="panel prose">
+      <h2>Tips for good results</h2>
+      <p><b>Say the timeframe and the market.</b> "1 hour chart, BTCUSDT" avoids guesses.</p>
+      <p><b>Say how you exit, not just how you enter.</b> A stop-loss and a target, or a rule like "sell when RSI goes above 70".</p>
+      <p><b>Say how much you risk.</b> "Risk 1% per trade" is safer and easier to reason about than a fixed size.</p>
+      <p><b>Be careful with leverage.</b> At 10x, a 10% move against you wipes out the position. The summary shows the liquidation distance.</p>
+      <p><b>Check the summary.</b> If it doesn't match what you meant, tell the assistant what's wrong, or fix it in the builder.</p>
+      <p class="hint">Want to wire an AI straight in? The prompt is also served at <code>/api/prompt</code>, and the file format is <a href="/schema.json" target="_blank">a JSON Schema</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section class="tab" id="t-results" hidden>
+  <div id="r-empty" class="panel empty">Run a backtest from the Strategies or Build tab to see results here.</div>
+  <div id="r-body" hidden style="display:grid;gap:18px">
+    <div class="row" style="justify-content:space-between;align-items:end">
+      <div><h1 id="r-title">Results</h1><p class="lede" id="r-sub"></p></div>
+      <div class="row"><button class="btn small" id="r-edit">Edit strategy</button></div>
+    </div>
+    <div class="kpis" id="r-kpis"></div>
+    <div id="r-warn"></div>
+    <div class="panel">
+      <h2>Price, trades and indicators</h2>
+      <div class="legend" id="r-legend"></div>
+      <div class="chart" id="c-price"></div>
+      <div class="chart small" id="c-osc" hidden></div>
+    </div>
+    <div class="panel">
+      <h2>Account balance</h2>
+      <p class="sub">Equity at each bar's close, including open positions.</p>
+      <div class="chart eq" id="c-eq"></div>
+    </div>
+    <div class="panel">
+      <h2>Does it hold up on data it wasn't tuned on?</h2>
+      <p class="sub">The test period split in two. If a strategy only works on the first part, it was probably fitted to that history.</p>
+      <div class="seg" id="r-seg"></div>
+    </div>
+    <div class="panel">
+      <h2>Trades</h2>
+      <div class="tw" style="max-height:560px;overflow-y:auto"><table id="r-trades"></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- INDICATORS -->
+<section class="tab" id="t-indicators" hidden>
+  <div><h1>Indicators</h1><p class="lede">Everything you can use in rules. Refer to an indicator by its id, or <code>id.output</code> for ones with several lines (like <code>macd.signal</code>). Add <code>[1]</code> for the value one bar ago.</p></div>
+  <div class="grid cards" id="ind-cat"></div>
+</section>
+
+<!-- GUIDE -->
+<section class="tab" id="t-guide" hidden>
+  <div><h1>How candlerail tests a strategy</h1><p class="lede">Backtests are only useful if they're honest. These are the rules every test follows.</p></div>
+  <div class="grid two">
+    <div class="panel prose">
+      <h2>The simulation</h2>
+      <p><b>Decisions happen at the close.</b> Rules are checked when a candle closes, using only data up to that moment.</p>
+      <p><b>Orders fill at the next open.</b> A signal on the 14:00 candle trades at the 15:00 open, never at a price you couldn't have had.</p>
+      <p><b>Stops are checked against each candle's range.</b> If one candle touches both your stop and your target, the stop counts, because we can't know which came first. A gap through a stop fills at the worse open.</p>
+      <p><b>Every fill pays fees, and market and stop orders pay slippage.</b> Defaults are 0.1% fee and 0.02% slippage, typical for retail crypto. Change them in the builder.</p>
+      <p><b>Leverage uses isolated margin.</b> Each position has a liquidation price. If the market reaches it, that trade loses its whole margin, and the rest of the account is untouched.</p>
+      <p><b>Warm-up is respected.</b> A 200-bar average has no value for the first 199 candles, so rules that use it stay off until then.</p>
+      <h2 style="margin-top:18px">Reading the results</h2>
+      <p>Look at <b>max drawdown</b> before return: it's how much pain you'd have sat through. Look at <b>trade count</b>: fewer than 30 trades says little. Compare with <b>buy and hold</b>: many strategies don't beat it. And check the <b>two halves</b> of the period: if it only works on the first, it was fitted to the past.</p>
+      <div class="warnbox" style="margin-top:10px"><b>Simulation only.</b> candlerail simulates trades and never sends orders. Past results don't predict future ones, and most leveraged traders lose money. Nothing here is financial advice.</div>
+    </div>
+    <div class="panel">
+      <h2>Words you'll see</h2>
+      <div class="gloss" style="margin-top:10px">
+        <div><b>Long / short</b>Long profits when price rises. Short profits when it falls.</div>
+        <div><b>Stop-loss</b>Closes a losing trade at a set distance, so one bad trade can't sink the account.</div>
+        <div><b>Take-profit</b>Closes a winning trade at a target price.</div>
+        <div><b>Trailing stop</b>A stop that follows price up (for longs) and never moves back.</div>
+        <div><b>Risk per trade</b>How much of the account you lose if the stop is hit. 1% is a common choice.</div>
+        <div><b>Risk multiple (R)</b>Target distance as a multiple of the stop distance. 2R means "risk 1 to make 2".</div>
+        <div><b>Leverage</b>Borrowing to take a bigger position. 5x means a 1% move changes your margin by 5%.</div>
+        <div><b>Liquidation</b>The exchange closes a leveraged trade when losses use up its margin.</div>
+        <div><b>Drawdown</b>Fall from the account's highest point. Max drawdown is the worst one.</div>
+        <div><b>Win rate</b>Share of trades that made money. Good strategies can have low win rates if winners are big.</div>
+        <div><b>Profit factor</b>Total won divided by total lost. Above 1 made money; above 1.5 is solid.</div>
+        <div><b>Sharpe ratio</b>Return per unit of volatility, annualised. Above 1 is decent for a single strategy.</div>
+        <div><b>Overfitting</b>Tuning rules until they fit past data perfectly, so they fail on new data.</div>
+        <div><b>Crosses above</b>Was below on the previous candle, is above on this one.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<p class="foot">candlerail is open source (MIT or Apache-2.0). Charts by <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a>.</p>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+let CAT = null, TEMPLATES = [], S = null, CSV_TEXT = null, LAST = null, activeTab = "strategies";
+
+/* ---------- theme & tabs ---------- */
+const THEMES = ["system", "light", "dark"]; let theme = "system";
+try { theme = localStorage.getItem("candlerail-theme") || "system"; } catch (e) {}
+function applyTheme() {
+  if (theme === "system") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = theme;
+  $("theme").textContent = "Theme: " + theme;
+  try { localStorage.setItem("candlerail-theme", theme); } catch (e) {}
+  if (LAST) drawCharts(LAST);
+}
+$("theme").onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; applyTheme(); };
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => LAST && drawCharts(LAST));
+function show(tab) {
+  activeTab = tab;
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+  document.querySelectorAll("section.tab").forEach(s => s.hidden = s.id !== "t-" + tab);
+  if (tab === "results" && LAST) requestAnimationFrame(() => drawCharts(LAST));
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => show(b.dataset.tab));
+
+/* ---------- api ---------- */
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  if (path === "/api/prompt") return r.text();
+  return r.json();
+}
+
+/* ---------- templates ---------- */
+function renderTemplates() {
+  $("tpl").innerHTML = TEMPLATES.map((t, i) => {
+    const s = t.strategy, a = s.about || {};
+    return `<div class="panel card">
+      <div class="cat">${esc(a.category)} · ${esc(a.timeframe)}</div>
+      <h2>${esc(s.name)}</h2>
+      <p>${esc(s.description)}</p>
+      <details><summary>How it works</summary><p style="margin-top:6px">${esc(a.how_it_works)}</p><p style="margin-top:6px"><b>Works best:</b> ${esc(a.works_best)}</p><p style="margin-top:6px"><b>Fails when:</b> ${esc(a.fails_when)}</p></details>
+      <div class="actions"><button class="btn primary small" data-run="${i}">Backtest</button><button class="btn small" data-edit="${i}">Open in builder</button></div>
+    </div>`;
+  }).join("");
+  $("tpl").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => { loadStrategy(structuredClone(TEMPLATES[+b.dataset.edit].strategy)); show("build"); });
+  $("tpl").querySelectorAll("[data-run]").forEach(b => b.onclick = () => { loadStrategy(structuredClone(TEMPLATES[+b.dataset.run].strategy)); runBacktest(b); });
+}
+
+/* ---------- indicator catalog ---------- */
+const info = kind => CAT.indicators.find(i => i.kind === kind);
+function renderCatalog() {
+  $("ind-cat").innerHTML = CAT.indicators.map(i => `<div class="panel card">
+    <div class="cat">${esc(i.category)}${i.overlay ? " · on price chart" : ""}</div>
+    <h2>${esc(i.name)} <code>${esc(i.kind)}</code></h2>
+    <p>${esc(i.description)}</p>
+    <p><b>Settings:</b> ${i.params.length ? i.params.map(p => `${esc(p.name)} = ${p.default} <span class="hint">(${esc(p.description)})</span>`).join(", ") : "none"}</p>
+    <p><b>Outputs:</b> ${i.outputs.map(o => `<code>${esc(o)}</code>`).join(" ")}</p></div>`).join("");
+  $("ind-add-type").innerHTML = CAT.indicators.map(i => `<option value="${i.kind}">${esc(i.name)}</option>`).join("");
+  $("m-interval").innerHTML = CAT.intervals.map(i => `<option>${i}</option>`).join("");
+}
+
+/* ---------- builder ---------- */
+const OPS = { ">": "is above", "<": "is below", ">=": "is at or above", "<=": "is at or below", crosses_above: "crosses above", crosses_below: "crosses below", rising: "is higher than N bars ago", falling: "is lower than N bars ago" };
+const FIELD_NAMES = { open: "open", high: "high", low: "low", close: "close", volume: "volume", hl2: "bar midpoint (hl2)", hlc3: "typical price (hlc3)" };
+function refOptions() {
+  const out = CAT.price_fields.map(f => [f, "Price: " + FIELD_NAMES[f]]);
+  for (const [id, d] of Object.entries(S.indicators || {})) {
+    const inf = info(d.type); if (!inf) continue;
+    if (inf.outputs.length === 1) out.push([id, `${id} (${inf.kind})`]);
+    else inf.outputs.forEach(o => out.push([`${id}.${o}`, `${id}.${o}`]));
+  }
+  return out;
+}
+function splitRef(r) { const m = /^(.*?)\[(\d+)\]$/.exec(String(r)); return m ? [m[1], +m[2]] : [String(r), 0]; }
+function joinRef(base, ago) { return ago > 0 ? `${base}[${ago}]` : base; }
+function isRule(c) { return c && "left" in c; }
+/** Flat group view of a condition, or null if it has nested groups. */
+function asGroup(c) {
+  if (!c) return { mode: "all", rules: [] };
+  if (isRule(c)) return { mode: "all", rules: [c] };
+  const mode = c.all ? "all" : c.any ? "any" : null;
+  if (!mode) return null;
+  const rules = c[mode];
+  return rules.every(isRule) ? { mode, rules } : null;
+}
+
+function renderGroup(el, title, getC, setC, optional) {
+  const c = getC();
+  const g = asGroup(c);
+  const enabled = !!c;
+  let html = `<div class="group-head">${optional ? `<label class="toggle"><input type="checkbox" class="en" ${enabled ? "checked" : ""}> ${title}</label>` : `<b>${title}</b>`}`;
+  if (enabled && g) html += ` when <select class="mode"><option value="all" ${g.mode === "all" ? "selected" : ""}>all</option><option value="any" ${g.mode === "any" ? "selected" : ""}>any</option></select> of these are true:`;
+  html += `</div>`;
+  if (enabled && !g) html += `<p class="hint">This rule uses nested groups. Edit it in the strategy file panel.</p>`;
+  if (enabled && g) {
+    const opts = refOptions();
+    const sel = (v) => { const [b] = splitRef(v); const known = opts.some(o => o[0] === b); return `<select class="ref">${opts.map(o => `<option value="${esc(o[0])}" ${o[0] === b ? "selected" : ""}>${esc(o[1])}</option>`).join("")}${known ? "" : `<option value="${esc(b)}" selected>${esc(b)} (unknown)</option>`}</select>`; };
+    g.rules.forEach((r, i) => {
+      const [lb, la] = splitRef(r.left);
+      const rightNum = typeof r.right === "number" || r.op === "rising" || r.op === "falling";
+      const [rb, ra] = rightNum ? [r.right, 0] : splitRef(r.right);
+      html += `<div class="rule-row" data-i="${i}">
+        ${sel(r.left)}<input type="number" class="ago lago" min="0" value="${la}" title="bars ago"><span class="agol">bars ago</span>
+        <select class="op">${Object.entries(OPS).map(([k, v]) => `<option value="${k}" ${k === r.op ? "selected" : ""}>${v}</option>`).join("")}</select>
+        <select class="rkind"><option value="num" ${rightNum ? "selected" : ""}>number</option>${r.op === "rising" || r.op === "falling" ? "" : `<option value="ref" ${!rightNum ? "selected" : ""}>value</option>`}</select>
+        ${rightNum ? `<input type="number" class="rnum" step="any" value="${esc(rb)}">` : `${sel(r.right)}<input type="number" class="ago rago" min="0" value="${ra}" title="bars ago"><span class="agol">bars ago</span>`}
+        <button class="x" title="Remove">×</button></div>`;
+    });
+    html += `<button class="btn small add-rule" style="margin-top:6px">Add condition</button>`;
+  }
+  el.innerHTML = html;
+  const commit = (rules, mode) => { setC(rules.length ? { [mode]: rules } : null); changed(); };
+  const en = el.querySelector(".en");
+  if (en) en.onchange = () => { setC(en.checked ? { all: [{ left: "close", op: ">", right: 0 }] } : null); changed(); renderBuilder(); };
+  if (!enabled || !g) return;
+  el.querySelector(".mode").onchange = e => commit(g.rules, e.target.value);
+  el.querySelector(".add-rule").onclick = () => { commit([...g.rules, { left: "close", op: ">", right: 0 }], g.mode); renderBuilder(); };
+  el.querySelectorAll(".rule-row").forEach(row => {
+    const i = +row.dataset.i;
+    const read = () => {
+      const refs = row.querySelectorAll("select.ref");
+      const op = row.querySelector(".op").value;
+      const left = joinRef(refs[0].value, +row.querySelector(".lago").value || 0);
+      let right;
+      if (row.querySelector(".rkind").value === "num" || op === "rising" || op === "falling") {
+        right = parseFloat(row.querySelector(".rnum")?.value ?? "1");
+        if (!isFinite(right)) right = op === "rising" || op === "falling" ? 1 : 0;
+      } else right = joinRef(refs[1]?.value ?? "close", +(row.querySelector(".rago")?.value) || 0);
+      return { left, op, right };
+    };
+    row.querySelectorAll("select, input").forEach(inp => inp.onchange = () => {
+      const r = read();
+      if (inp.classList.contains("rkind")) r.right = inp.value === "num" ? 0 : "close";
+      if (inp.classList.contains("op") && (r.op === "rising" || r.op === "falling") && typeof r.right !== "number") r.right = 1;
+      const rules = [...g.rules]; rules[i] = r; commit(rules, g.mode); renderBuilder();
+    });
+    row.querySelector(".x").onclick = () => { const rules = g.rules.filter((_, j) => j !== i); commit(rules, g.mode); renderBuilder(); };
+  });
+}
+
+function renderIndicators() {
+  const list = Object.entries(S.indicators || {});
+  $("ind-list").innerHTML = list.length ? list.map(([id, d]) => {
+    const inf = info(d.type);
+    const params = inf ? inf.params.map(p => `<span class="p">${esc(p.name)}<input type="number" data-p="${p.name}" value="${d[p.name] ?? p.default}" step="${p.integer ? 1 : 0.1}" min="${p.min}"></span>`).join("") : "";
+    return `<div class="ind-row" data-id="${esc(id)}"><input type="text" class="id" value="${esc(id)}" title="id used in rules"><b>${esc(inf ? inf.name : d.type)}</b>${params}<button class="x" title="Remove">×</button></div>`;
+  }).join("") : `<p class="hint">No indicators yet. Rules can still use price fields like close and high.</p>`;
+  $("ind-list").querySelectorAll(".ind-row").forEach(row => {
+    const id = row.dataset.id;
+    row.querySelector(".id").onchange = e => {
+      const nid = e.target.value.trim().replace(/[^A-Za-z0-9_]/g, "_");
+      if (!nid || nid === id || S.indicators[nid]) { e.target.value = id; return; }
+      const next = {}; for (const [k, v] of Object.entries(S.indicators)) next[k === id ? nid : k] = v;
+      S.indicators = next;
+      // Rename references in every rule.
+      const re = new RegExp(`^${id}(?=$|[.\\[])`);
+      const walk = c => { if (!c) return; if (isRule(c)) { if (typeof c.left === "string") c.left = c.left.replace(re, nid); if (typeof c.right === "string") c.right = c.right.replace(re, nid); } else (c.all || c.any || [c.not]).forEach(walk); };
+      [S.entry.long, S.entry.short, S.exit?.long, S.exit?.short].forEach(walk);
+      for (const k of ["stop_loss", "take_profit", "trailing_stop"]) if (S.exit?.[k]?.indicator === id) S.exit[k].indicator = nid;
+      changed(); renderBuilder();
+    };
+    row.querySelectorAll("[data-p]").forEach(inp => inp.onchange = () => { S.indicators[id][inp.dataset.p] = parseFloat(inp.value); changed(); });
+    row.querySelector(".x").onclick = () => { delete S.indicators[id]; changed(); renderBuilder(); };
+  });
+}
+
+function firstAtr() { return Object.entries(S.indicators || {}).find(([, d]) => d.type === "atr")?.[0]; }
+function ensureAtr() { let id = firstAtr(); if (!id) { id = "atr"; S.indicators = S.indicators || {}; S.indicators.atr = { type: "atr", period: 14 }; } return id; }
+function readDist(kind, val) {
+  if (!kind) return undefined;
+  const v = parseFloat(val); const value = isFinite(v) && v > 0 ? v : (kind === "atr" ? 2 : kind === "risk_multiple" ? 2 : 2);
+  return kind === "atr" ? { atr: value, indicator: ensureAtr() } : { [kind]: value };
+}
+function distKind(d) { if (!d) return ""; return "percent" in d ? "percent" : "atr" in d ? "atr" : "risk_multiple" in d ? "risk_multiple" : ""; }
+
+function renderBuilder() {
+  $("f-name").value = S.name || "";
+  $("m-symbol").value = S.market?.symbol || "";
+  $("m-interval").value = S.market?.interval || "1h";
+  renderIndicators();
+  S.exit = S.exit || {};
+  renderGroup($("entry-long"), "Go long (buy)", () => S.entry.long, c => { if (c) S.entry.long = c; else delete S.entry.long; }, true);
+  renderGroup($("entry-short"), "Go short (sell)", () => S.entry.short, c => { if (c) S.entry.short = c; else delete S.entry.short; }, true);
+  renderGroup($("exit-long"), "Close a long early", () => S.exit.long, c => { if (c) S.exit.long = c; else delete S.exit.long; }, true);
+  renderGroup($("exit-short"), "Close a short early", () => S.exit.short, c => { if (c) S.exit.short = c; else delete S.exit.short; }, true);
+  $("exit-long").hidden = !S.entry.long; $("exit-short").hidden = !S.entry.short;
+  const x = S.exit;
+  $("x-stop-kind").value = distKind(x.stop_loss); $("x-stop-val").value = x.stop_loss ? (x.stop_loss.percent ?? x.stop_loss.atr) : "";
+  $("x-tp-kind").value = distKind(x.take_profit); $("x-tp-val").value = x.take_profit ? (x.take_profit.percent ?? x.take_profit.atr ?? x.take_profit.risk_multiple) : "";
+  $("x-trail-kind").value = distKind(x.trailing_stop); $("x-trail-val").value = x.trailing_stop ? (x.trailing_stop.percent ?? x.trailing_stop.atr) : "";
+  $("x-maxbars").value = x.max_bars ?? "";
+  const atrUsed = ["stop_loss", "take_profit", "trailing_stop"].some(k => x[k]?.atr);
+  $("x-atr-hint").textContent = atrUsed ? `ATR-based distances use the "${firstAtr()}" indicator, measured when the signal fires.` : "";
+  const sz = S.sizing || { type: "percent_equity", value: 100 };
+  $("s-kind").value = sz.type; $("s-val").value = sz.value;
+  $("s-lev").value = S.leverage ?? 1;
+  $("c-fee").value = ((S.costs?.fee_bps ?? 10) / 100).toFixed(2);
+  $("c-slip").value = ((S.costs?.slippage_bps ?? 2) / 100).toFixed(2);
+  sizeHint();
+  syncJson();
+}
+function sizeHint() {
+  const lev = S.leverage ?? 1, sz = S.sizing || {};
+  const what = sz.type === "risk_percent" ? `Each trade risks ${sz.value}% of the account at the stop.` : sz.type === "percent_equity" ? `Each trade uses ${sz.value}% of the account as margin (${(sz.value * lev).toFixed(0)}% exposure).` : `Each trade is ${sz.value} units.`;
+  const liq = lev > 1 ? ` At ${lev}x, a move of about ${(100 / lev - 0.5).toFixed(1)}% against a position liquidates it.` : "";
+  $("s-hint").textContent = what + liq;
+}
+function readForm() {
+  S.name = $("f-name").value.trim() || "My strategy";
+  const sym = $("m-symbol").value.trim().toUpperCase();
+  S.market = { ...(sym ? { symbol: sym } : {}), interval: $("m-interval").value };
+  const x = S.exit = S.exit || {};
+  const set = (k, v) => { if (v === undefined) delete x[k]; else x[k] = v; };
+  set("stop_loss", readDist($("x-stop-kind").value, $("x-stop-val").value));
+  set("take_profit", readDist($("x-tp-kind").value, $("x-tp-val").value));
+  set("trailing_stop", readDist($("x-trail-kind").value, $("x-trail-val").value));
+  const mb = parseInt($("x-maxbars").value); set("max_bars", mb > 0 ? mb : undefined);
+  const v = parseFloat($("s-val").value);
+  S.sizing = { type: $("s-kind").value, value: isFinite(v) && v > 0 ? v : 1 };
+  const lev = parseFloat($("s-lev").value); S.leverage = isFinite(lev) ? Math.min(125, Math.max(1, lev)) : 1;
+  S.costs = { ...(S.costs || {}), fee_bps: Math.max(0, parseFloat($("c-fee").value) || 0) * 100, slippage_bps: Math.max(0, parseFloat($("c-slip").value) || 0) * 100 };
+}
+["f-name", "m-symbol", "m-interval", "x-stop-kind", "x-stop-val", "x-tp-kind", "x-tp-val", "x-trail-kind", "x-trail-val", "x-maxbars", "s-kind", "s-val", "s-lev", "c-fee", "c-slip"].forEach(id => $(id).addEventListener("change", () => { readForm(); changed(); renderBuilder(); }));
+$("ind-add").onclick = () => {
+  const kind = $("ind-add-type").value; const inf = info(kind);
+  let id = kind, n = 2; while (S.indicators?.[id]) id = kind + n++;
+  S.indicators = S.indicators || {}; S.indicators[id] = { type: kind };
+  inf.params.forEach(p => S.indicators[id][p.name] = p.default);
+  changed(); renderBuilder();
+};
+
+let checkTimer = null;
+function syncJson() { $("b-json").value = JSON.stringify(S, null, 2); }
+function changed() { syncJson(); clearTimeout(checkTimer); checkTimer = setTimeout(check, 250); }
+async function check() {
+  const r = await api("/api/check", { strategy: S });
+  $("b-explain").innerHTML = r.explanation ? r.explanation.map(p => `<p>${esc(p)}</p>`).join("") : "…";
+  $("b-errors").innerHTML = r.errors?.length ? `<div class="errors"><b>Fix before running:</b><ul>${r.errors.map(e => `<li>${esc(e)}</li>`).join("")}</ul></div>` : `<span class="okmsg">✓ Ready to run</span>`;
+  $("b-run").disabled = !!r.errors?.length;
+  return r;
+}
+function loadStrategy(s) {
+  S = s; S.entry = S.entry || {}; S.exit = S.exit || {}; S.indicators = S.indicators || {};
+  $("b-title").textContent = S.name || "Strategy builder";
+  renderBuilder(); check();
+}
+$("b-json-apply").onclick = async () => {
+  const r = await api("/api/check", { strategy: $("b-json").value });
+  if (!r.ok) { $("b-errors").innerHTML = `<div class="errors"><b>Couldn't read that file:</b><ul>${r.errors.map(e => `<li>${esc(e)}</li>`).join("")}</ul></div>`; return; }
+  loadStrategy(r.strategy);
+};
+$("b-json-copy").onclick = () => navigator.clipboard.writeText($("b-json").value).catch(() => { $("b-json").select(); });
+$("save-file").onclick = () => {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = (S.name || "strategy").toLowerCase().replace(/[^a-z0-9]+/g, "-") + ".json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+$("open-file").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = await api("/api/check", { strategy: await f.text() });
+  if (r.ok) loadStrategy(r.strategy); else alert(r.errors.join("\n"));
+  e.target.value = "";
+};
+$("m-csv").onchange = async e => {
+  const f = e.target.files[0];
+  CSV_TEXT = f ? await f.text() : null;
+  $("m-csv-name").innerHTML = f ? `Using <b>${esc(f.name)}</b>. <a href="#" id="csv-clear">Use Binance instead</a>` : "";
+  if (f) $("csv-clear").onclick = ev => { ev.preventDefault(); CSV_TEXT = null; $("m-csv").value = ""; $("m-csv-name").textContent = ""; };
+};
+
+/* ---------- run ---------- */
+async function runBacktest(btn) {
+  readForm();
+  const b = btn || $("b-run"); const old = b.textContent;
+  b.disabled = true; b.innerHTML = `<span class="spinner"></span> Running…`;
+  $("b-status").textContent = "Downloading candles can take a few seconds the first time.";
+  try {
+    const r = await api("/api/backtest", {
+      strategy: S, symbol: $("m-symbol").value || S.market?.symbol, interval: $("m-interval").value || S.market?.interval,
+      from: $("m-from").value, to: $("m-to").value, capital: parseFloat($("m-capital").value) || 10000, csv: CSV_TEXT,
+    });
+    if (!r.ok) {
+      $("b-errors").innerHTML = `<div class="errors"><b>Backtest failed:</b><ul>${r.errors.map(e => `<li>${esc(e)}</li>`).join("")}</ul></div>`;
+      show("build");
+      return;
+    }
+    LAST = r; renderResults(r); show("results");
+  } catch (e) {
+    $("b-errors").innerHTML = `<div class="errors">Couldn't reach candlerail. Is it still running?</div>`;
+  } finally { b.disabled = false; b.textContent = old; $("b-status").textContent = ""; }
+}
+$("b-run").onclick = () => runBacktest();
+$("r-edit").onclick = () => show("build");
+
+/* ---------- results ---------- */
+const fmt = (v, d = 2) => (v ?? 0).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const money = v => (v < 0 ? "−" : "") + fmt(Math.abs(v));
+const pct = v => (v > 0 ? "+" : v < 0 ? "−" : "") + fmt(Math.abs(v)) + "%";
+const dt = ms => new Date(ms).toISOString().slice(0, 16).replace("T", " ");
+const REASON = { stop_loss: "stop-loss", take_profit: "take-profit", trailing_stop: "trailing stop", liquidation: "LIQUIDATED", exit_rule: "exit rule", max_bars: "time limit", end_of_data: "end of test" };
+
+function renderResults(r) {
+  const rep = r.report, m = rep.metrics;
+  $("r-empty").hidden = true; $("r-body").hidden = false;
+  $("r-title").textContent = rep.strategy;
+  $("r-sub").textContent = `${r.symbol} · ${r.interval} candles · ${dt(rep.start_ts)} to ${dt(rep.end_ts)} UTC · ${rep.bars.toLocaleString()} bars · starting balance ${money(m.start_equity)}`;
+  const k = (l, v, h, cls = "") => `<div class="kpi"><div class="l">${l}</div><div class="v ${cls}">${v}</div><div class="h">${h}</div></div>`;
+  const pf = m.profit_factor == null ? (m.trades ? "∞" : "n/a") : fmt(m.profit_factor);
+  $("r-kpis").innerHTML = [
+    k("Return", pct(m.total_return_pct), `final balance ${money(m.final_equity)}`, m.total_return_pct >= 0 ? "up" : "down"),
+    k("Buy and hold", pct(m.buy_hold_return_pct), "just holding, no leverage", m.buy_hold_return_pct >= 0 ? "up" : "down"),
+    k("Max drawdown", "−" + fmt(m.max_drawdown_pct) + "%", "worst fall from a peak", m.max_drawdown_pct > 30 ? "down" : ""),
+    k("Trades", m.trades, `${fmt(m.exposure_pct, 0)}% of the time in a trade`),
+    k("Win rate", fmt(m.win_rate_pct, 1) + "%", `longest losing run: ${m.longest_losing_streak}`),
+    k("Profit factor", pf, "won ÷ lost; above 1 made money", m.profit_factor != null && m.profit_factor < 1 ? "down" : ""),
+    k("Average win", money(m.avg_win), `average loss ${money(m.avg_loss)}`),
+    k("Expectancy", money(m.expectancy), "average result per trade", m.expectancy >= 0 ? "up" : "down"),
+    k("Sharpe", fmt(m.sharpe), "return per unit of volatility"),
+    k("Fees paid", money(m.fees_paid), m.liquidations ? `${m.liquidations} liquidation(s)` : "no liquidations", m.liquidations ? "down" : ""),
+  ].join("");
+  $("r-warn").innerHTML = rep.warnings.length ? `<div class="warnbox"><b>Before you trust this result:</b><ul>${rep.warnings.map(w => `<li>${esc(w)}</li>`).join("")}</ul></div>` : "";
+  const seg = (t, s) => `<div><b>${t}</b><br>${pct(s.return_pct)} over ${s.trades} trades · win rate ${fmt(s.win_rate_pct, 0)}% · profit factor ${s.profit_factor == null ? (s.trades ? "∞" : "n/a") : fmt(s.profit_factor)}</div>`;
+  $("r-seg").innerHTML = seg("First 70% of the period", rep.in_sample) + seg("Last 30% (the check)", rep.out_of_sample);
+  const tr = rep.trades.slice().reverse();
+  $("r-trades").innerHTML = tr.length ? `<thead><tr><th>Entry (UTC)</th><th>Side</th><th class="n">Entry</th><th class="n">Exit</th><th>Exit (UTC)</th><th>Why it closed</th><th class="n">Bars</th><th class="n">PnL</th><th class="n">On margin</th></tr></thead><tbody>` +
+    tr.slice(0, 500).map(t => `<tr><td>${dt(t.entry_ts)}</td><td><span class="pill ${t.side}">${t.side}</span></td><td class="n">${fmt(t.entry_price, 4)}</td><td class="n">${fmt(t.exit_price, 4)}</td><td>${dt(t.exit_ts)}</td><td>${REASON[t.reason] || t.reason}</td><td class="n">${t.bars}</td><td class="n ${t.pnl >= 0 ? "up" : "down"}">${money(t.pnl)}</td><td class="n">${pct(t.return_on_margin_pct)}</td></tr>`).join("") + `</tbody>` + (tr.length > 500 ? `<tfoot><tr><td colspan="9" class="hint">Showing the latest 500 of ${tr.length} trades.</td></tr></tfoot>` : "")
+    : `<tbody><tr><td class="empty">No trades in this period.</td></tr></tbody>`;
+  const colors = ["#2563eb", "#d97706", "#7c3aed", "#db2777", "#0891b2", "#65a30d", "#dc2626"];
+  $("r-legend").innerHTML = rep.indicators.map((s, i) => `<label><input type="checkbox" data-s="${i}" ${s.overlay && s.output !== "middle" ? "checked" : ""}><i style="background:${colors[i % colors.length]}"></i>${esc(s.id)}${s.output !== "value" ? "." + esc(s.output) : ""} <span class="hint">${s.overlay ? "" : "(lower pane)"}</span></label>`).join("");
+  $("r-legend").querySelectorAll("input").forEach(c => c.onchange = () => drawCharts(LAST));
+  drawCharts(r);
+}
+
+let charts = [];
+function drawCharts(r) {
+  if (activeTab !== "results") return;
+  charts.forEach(c => c.remove()); charts = [];
+  const rep = r.report;
+  const base = { autoSize: true, layout: { background: { color: css("--surface") }, textColor: css("--muted"), fontFamily: "JetBrains Mono, monospace", fontSize: 11 },
+    grid: { vertLines: { color: css("--line") }, horzLines: { color: css("--line") } }, rightPriceScale: { borderColor: css("--line") },
+    timeScale: { borderColor: css("--line"), timeVisible: true, minBarSpacing: 0.01 }, crosshair: { mode: 0 } };
+  const t = ms => Math.floor(ms / 1000);
+  const price = LightweightCharts.createChart($("c-price"), base); charts.push(price);
+  const cs = price.addCandlestickSeries({ upColor: css("--up"), downColor: css("--down"), wickUpColor: css("--up"), wickDownColor: css("--down"), borderVisible: false });
+  cs.setData(r.candles.map(c => ({ time: t(c.ts), open: c.open, high: c.high, low: c.low, close: c.close })));
+  const markers = [], busy = rep.trades.length > 60; // labels only when they fit
+  for (const tr of rep.trades) {
+    const long = tr.side === "long";
+    markers.push({ time: t(tr.entry_ts), position: long ? "belowBar" : "aboveBar", color: long ? css("--up") : css("--down"), shape: long ? "arrowUp" : "arrowDown", text: busy ? "" : long ? "Buy" : "Short" });
+    const tag = { stop_loss: "SL", take_profit: "TP", trailing_stop: "TS", liquidation: "LIQ", exit_rule: "exit", max_bars: "time", end_of_data: "end" }[tr.reason];
+    markers.push({ time: t(tr.exit_ts), position: long ? "aboveBar" : "belowBar", color: tr.pnl >= 0 ? css("--up") : css("--down"), shape: "circle", text: busy ? "" : tag });
+  }
+  markers.sort((a, b) => a.time - b.time);
+  cs.setMarkers(markers);
+  const colors = ["#2563eb", "#d97706", "#7c3aed", "#db2777", "#0891b2", "#65a30d", "#dc2626"];
+  const checked = new Set([...$("r-legend").querySelectorAll("input:checked")].map(c => +c.dataset.s));
+  let osc = null;
+  rep.indicators.forEach((s, i) => {
+    if (!checked.has(i)) return;
+    const data = []; s.values.forEach((v, j) => { if (v != null) data.push({ time: t(r.candles[j].ts), value: v }); });
+    let target = price;
+    if (!s.overlay) { if (!osc) { $("c-osc").hidden = false; osc = LightweightCharts.createChart($("c-osc"), base); charts.push(osc); } target = osc; }
+    const line = target.addLineSeries({ color: colors[i % colors.length], lineWidth: 1.5, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+    line.setData(data);
+  });
+  if (!osc) $("c-osc").hidden = true;
+  const eq = LightweightCharts.createChart($("c-eq"), base); charts.push(eq);
+  const es = eq.addAreaSeries({ lineColor: css("--accent"), topColor: css("--accent-soft"), bottomColor: "rgba(0,0,0,0)", lineWidth: 2, priceLineVisible: false });
+  es.setData(rep.equity.map(e => ({ time: t(e.ts), value: e.equity })));
+  price.timeScale().fitContent(); eq.timeScale().fitContent();
+  // Keep the panes aligned when zooming or scrolling.
+  const linked = [price, osc, eq].filter(Boolean); let syncing = false;
+  linked.forEach(c => c.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    if (syncing || !range) return; syncing = true;
+    linked.forEach(o => o !== c && o.timeScale().setVisibleLogicalRange(range)); syncing = false;
+  }));
+}
+
+/* ---------- AI ---------- */
+let PROMPT = "";
+$("ai-copy").onclick = async () => {
+  if (!PROMPT) PROMPT = await api("/api/prompt");
+  const text = PROMPT + ($("ai-desc").value.trim() || "(describe the strategy here)");
+  try { await navigator.clipboard.writeText(text); $("ai-copied").textContent = "Copied. Paste it into your AI assistant."; }
+  catch (e) { $("ai-reply").value = text; $("ai-copied").textContent = "Couldn't copy automatically. The prompt is in the box below; copy it from there."; }
+};
+$("ai-load").onclick = async () => {
+  const r = await api("/api/check", { strategy: $("ai-reply").value });
+  if (!r.ok) { $("ai-result").innerHTML = `<div class="errors"><b>That doesn't look like a strategy file:</b><ul>${r.errors.map(e => `<li>${esc(e)}</li>`).join("")}</ul><p class="hint">Ask the assistant to reply with the JSON only.</p></div>`; return; }
+  loadStrategy(r.strategy);
+  $("ai-result").innerHTML = `<div class="explain">${r.explanation.map(p => `<p>${esc(p)}</p>`).join("")}</div>` +
+    (r.errors.length ? `<div class="errors" style="margin-top:10px"><b>Needs fixing:</b><ul>${r.errors.map(e => `<li>${esc(e)}</li>`).join("")}</ul><p class="hint">Paste these back to the assistant, or fix them in the builder.</p></div>` : "") +
+    `<div class="row" style="margin-top:10px"><button class="btn primary" id="ai-run" ${r.errors.length ? "disabled" : ""}>Backtest it</button><button class="btn" id="ai-edit">Open in builder</button></div>`;
+  $("ai-run").onclick = e => runBacktest(e.target);
+  $("ai-edit").onclick = () => show("build");
+};
+
+/* ---------- start ---------- */
+(async () => {
+  applyTheme();
+  [CAT, TEMPLATES] = await Promise.all([api("/api/catalog"), api("/api/templates")]);
+  renderCatalog(); renderTemplates();
+  loadStrategy(structuredClone(TEMPLATES.find(t => t.id === "rsi-dip-uptrend")?.strategy || TEMPLATES[0].strategy));
+})();
+</script>
+</body>
+</html>
