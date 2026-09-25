@@ -40,6 +40,8 @@ pub enum ExitReason {
     Liquidation,
     ExitRule,
     MaxBars,
+    /// Closed by an account-level money-management rule.
+    RiskLimit,
     EndOfData,
 }
 
@@ -59,6 +61,8 @@ pub struct Trade {
     pub fees: f64,
     pub bars: u32,
     pub reason: ExitReason,
+    /// PnL in units of the initial risk (distance to the stop × size). `None` without a stop.
+    pub r_multiple: Option<f64>,
 }
 
 #[derive(Debug, Clone)]
@@ -76,6 +80,8 @@ pub struct Position {
     pub best: f64,
     pub fees: f64,
     pub bars: u32,
+    /// Money lost if the initial stop is hit, before costs.
+    pub risk: Option<f64>,
 }
 
 impl Position {
@@ -88,6 +94,9 @@ impl Position {
 #[derive(Debug, Clone, Copy)]
 pub struct EntryOrder {
     pub side: Side,
+    /// Price-level stop and target, when the strategy uses levels.
+    pub stop_level: Option<f64>,
+    pub target_level: Option<f64>,
     /// Distances in price units, measured at signal time for ATR-based exits.
     pub stop_atr: Option<f64>,
     pub trail_atr: Option<f64>,
@@ -105,6 +114,8 @@ pub enum SizeRule {
 pub enum Dist {
     Percent(f64),
     Atr(f64),
+    /// At the level carried by the order.
+    Level,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -112,6 +123,7 @@ pub enum TargetRule {
     Percent(f64),
     Atr(f64),
     RiskMultiple(f64),
+    Level,
 }
 
 #[derive(Debug, Clone)]
@@ -155,16 +167,32 @@ impl Broker {
         let r = &self.rules;
         let buying = o.side == Side::Long;
         let fill = self.slip(bar.open, o.side, buying);
+        let s = o.side.sign();
         let dist = |d: Dist, atr: Option<f64>| match d {
             Dist::Percent(p) => Some(fill * p / 100.0),
             Dist::Atr(m) => atr.map(|a| a * m),
+            // Distance from the fill to the level, which must be on the losing side.
+            Dist::Level => o.stop_level.map(|l| s * (fill - l)),
         };
+        if matches!(r.stop, Some(Dist::Level)) && !dist(Dist::Level, None).is_some_and(|d| d > 0.0) {
+            // The market opened through the planned stop: the setup is gone.
+            self.skipped += 1;
+            return;
+        }
         let stop_dist = r.stop.and_then(|d| dist(d, o.stop_atr));
         let trail_dist = r.trail.and_then(|d| dist(d, o.trail_atr));
         let target_dist = match r.target {
             Some(TargetRule::Percent(p)) => Some(fill * p / 100.0),
             Some(TargetRule::Atr(m)) => o.target_atr.map(|a| a * m),
             Some(TargetRule::RiskMultiple(m)) => stop_dist.map(|d| d * m),
+            Some(TargetRule::Level) => match o.target_level.map(|l| s * (l - fill)) {
+                Some(d) if d > 0.0 => Some(d),
+                // Already at or past the target at the open: nothing left to gain.
+                _ => {
+                    self.skipped += 1;
+                    return;
+                }
+            },
             None => None,
         };
         let equity = self.cash;
@@ -192,7 +220,6 @@ impl Broker {
         let margin = notional / r.leverage;
         let fee = notional * r.fee_rate;
         self.cash -= fee;
-        let s = o.side.sign();
         let liq = (r.leverage > 1.0).then(|| fill * (1.0 - s / r.leverage + s * r.mmr));
         self.position = Some(Position {
             side: o.side,
@@ -208,6 +235,7 @@ impl Broker {
             best: fill,
             fees: fee,
             bars: 0,
+            risk: stop_dist.map(|d| d * qty).filter(|r| *r > 0.0),
         });
     }
 
@@ -230,6 +258,7 @@ impl Broker {
             fees: p.fees + fee,
             bars: p.bars,
             reason,
+            r_multiple: p.risk.map(|r| pnl / r),
         });
     }
 
@@ -325,7 +354,14 @@ mod tests {
         Candle { ts: 1, open: o, high: h, low: l, close: c, volume: 1.0 }
     }
 
-    const LONG: EntryOrder = EntryOrder { side: Side::Long, stop_atr: None, trail_atr: None, target_atr: None };
+    const LONG: EntryOrder = EntryOrder {
+        side: Side::Long,
+        stop_level: None,
+        target_level: None,
+        stop_atr: None,
+        trail_atr: None,
+        target_atr: None,
+    };
 
     #[test]
     fn stop_beats_target_in_the_same_bar() {
@@ -375,6 +411,26 @@ mod tests {
         assert_eq!(b.position.as_ref().unwrap().trail, Some(115.0));
         assert!(b.check_bar(&bar(118.0, 118.0, 110.0, 111.0)));
         assert_eq!((b.trades[0].reason, b.trades[0].exit_price), (ExitReason::TrailingStop, 115.0));
+    }
+
+    #[test]
+    fn level_stops_and_targets() {
+        let mut r = rules(1.0);
+        r.stop = Some(Dist::Level);
+        r.target = Some(TargetRule::Level);
+        r.size = SizeRule::RiskPercent(1.0);
+        let mut b = Broker::new(10_000.0, r);
+        let o = EntryOrder { stop_level: Some(95.0), target_level: Some(110.0), ..LONG };
+        b.open(o, &bar(100.0, 100.0, 100.0, 100.0));
+        let p = b.position.as_ref().unwrap();
+        assert_eq!((p.stop, p.target), (Some(95.0), Some(110.0)));
+        assert!((p.qty - 20.0).abs() < 1e-9, "1% of 10,000 over a 5-point stop");
+        b.check_bar(&bar(100.0, 111.0, 99.0, 110.0));
+        assert!((b.trades[0].r_multiple.unwrap() - 2.0).abs() < 1e-9, "a 10-point win on a 5-point risk is 2R");
+        // Opening below the planned stop skips the trade.
+        b.open(EntryOrder { stop_level: Some(95.0), ..o }, &bar(94.0, 94.0, 94.0, 94.0));
+        assert!(b.position.is_none());
+        assert_eq!(b.skipped, 1);
     }
 
     #[test]
