@@ -6,6 +6,7 @@
 //! candles ──▶ indicators ──▶ strategy rules ──▶ paper broker ──▶ report
 //! ```
 pub mod candle;
+pub mod indicators;
 pub mod time;
 
 pub use candle::{Candle, Interval};
