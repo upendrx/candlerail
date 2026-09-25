@@ -11,6 +11,7 @@
 //! so a new indicator shows up everywhere at once.
 
 mod momentum;
+pub mod price_action;
 mod primitives;
 mod trend;
 mod volatility;
@@ -198,6 +199,60 @@ pub const CATALOG: &[IndicatorInfo] = &[
         outputs: &["middle", "upper", "lower"],
         overlay: true,
     },
+    IndicatorInfo {
+        kind: "patterns",
+        name: "Candlestick patterns",
+        category: "price action",
+        description: "Classic candle patterns as flags: each output is 1 on the candle that completes the pattern, 0 otherwise. Use with == 1.",
+        params: &[
+            p("wick_ratio", 2.0, 1.0, false, "Hammer / shooting star: wick at least this many times the body"),
+            p("doji_percent", 10.0, 1.0, false, "Doji: body at most this % of the range"),
+        ],
+        outputs: &price_action::PATTERN_NAMES,
+        overlay: false,
+    },
+    IndicatorInfo {
+        kind: "swings",
+        name: "Swing support and resistance",
+        category: "price action",
+        description: "Latest swing high (resistance) and swing low (support), confirmed `right` candles later, plus the previous ones. structure is 1 for higher highs and higher lows, -1 for lower highs and lower lows.",
+        params: &[
+            p("left", 3.0, 1.0, true, "Candles before the swing that must be lower (higher for lows)"),
+            p("right", 3.0, 1.0, true, "Candles after the swing needed to confirm it"),
+        ],
+        outputs: &["resistance", "support", "prev_resistance", "prev_support", "structure"],
+        overlay: true,
+    },
+    IndicatorInfo {
+        kind: "period",
+        name: "Higher-timeframe levels",
+        category: "price action",
+        description: "Open, high and low of the current period so far, and the previous period's open, high, low and close. minutes: 60 hour, 240 four hours, 1440 day, 10080 week, 43200 month.",
+        params: &[p("minutes", 1440.0, 1.0, true, "Period length: 60, 240, 1440 (day), 10080 (week), 43200 (month)")],
+        outputs: &["open", "high", "low", "prev_open", "prev_high", "prev_low", "prev_close"],
+        overlay: true,
+    },
+    IndicatorInfo {
+        kind: "opening_range",
+        name: "Opening range",
+        category: "price action",
+        description: "High and low of the first minutes of each session. ready is 1 once the range is complete. session_start is minutes after 00:00 UTC.",
+        params: &[
+            p("minutes", 15.0, 1.0, true, "Length of the opening range"),
+            p("session_start", 0.0, 0.0, true, "Session open, minutes after 00:00 UTC (810 = 13:30 UTC)"),
+        ],
+        outputs: &["high", "low", "ready"],
+        overlay: true,
+    },
+    IndicatorInfo {
+        kind: "volume_avg",
+        name: "Average and relative volume",
+        category: "volume",
+        description: "Average volume of the previous N candles, and this candle's volume relative to it (2 means twice the usual).",
+        params: &[p("period", 20.0, 1.0, true, "Number of candles")],
+        outputs: &["average", "relative"],
+        overlay: false,
+    },
 ];
 
 pub fn info(kind: &str) -> Option<&'static IndicatorInfo> {
@@ -257,6 +312,11 @@ pub fn build(kind: &str, params: &[f64]) -> Result<Box<dyn Indicator>, String> {
         "donchian" => Box::new(volatility::Donchian::new(n(0))),
         "roc" => Box::new(momentum::Roc::new(n(0))),
         "keltner" => Box::new(volatility::Keltner::new(n(0), params[1], n(2))),
+        "patterns" => Box::new(price_action::Patterns::new(params[0], params[1])),
+        "swings" => Box::new(price_action::Swings::new(n(0), n(1))),
+        "period" => Box::new(price_action::Period::new(params[0] as u64)),
+        "opening_range" => Box::new(price_action::OpeningRange::new(params[0] as u64, params[1] as u64)),
+        "volume_avg" => Box::new(price_action::VolumeAvg::new(n(0))),
         other => return Err(format!("unknown indicator `{other}`")),
     })
 }

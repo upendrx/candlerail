@@ -53,6 +53,12 @@ pub fn format(ms: i64) -> String {
     format!("{y:04}-{m:02}-{d:02} {:02}:{:02}", rem / 60, rem % 60)
 }
 
+/// Months since January 1970, for calendar-month periods.
+pub fn month_index(ms: i64) -> i64 {
+    let (y, m, _) = civil_from_days(ms.div_euclid(86_400_000));
+    (y - 1970) * 12 + (m - 1)
+}
+
 /// Day number (for daily resets such as session VWAP).
 pub fn day(ms: i64) -> i64 {
     ms.div_euclid(86_400_000)
@@ -72,5 +78,7 @@ mod tests {
         assert_eq!(parse("1709164800000"), Some(t));
         assert_eq!(parse("2024-13-01"), None);
         assert_eq!(parse("yesterday"), None);
+        assert_eq!(month_index(parse("1970-01-31").unwrap()), 0);
+        assert_eq!(month_index(parse("2024-02-29").unwrap()), 649);
     }
 }

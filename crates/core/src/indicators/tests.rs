@@ -130,3 +130,74 @@ fn parameter_validation() {
     assert_eq!(label(rsi, &[14.0]), "RSI(14)");
     assert_eq!(label(info("bbands").unwrap(), &[20.0, 2.5]), "BBANDS(20, 2.5)");
 }
+
+fn ohlc(i: i64, o: f64, h: f64, l: f64, c: f64) -> Candle {
+    bar(i, o, h, l, c, 10.0)
+}
+
+fn out(kind: &str, name: &str) -> usize {
+    info(kind).unwrap().outputs.iter().position(|o| *o == name).unwrap()
+}
+
+#[test]
+fn candle_patterns() {
+    let p =
+        |bars: &[Candle], name: &str| run("patterns", serde_json::json!({}), bars).get(out("patterns", name)).unwrap();
+    let down = ohlc(0, 10.0, 10.2, 8.8, 9.0);
+    let engulf = ohlc(1, 8.9, 10.5, 8.8, 10.4);
+    assert_eq!(p(&[down, engulf], "bullish_engulfing"), 1.0);
+    assert_eq!(p(&[down, engulf], "bearish_engulfing"), 0.0);
+    assert_eq!(p(&[ohlc(0, 10.0, 10.1, 7.0, 10.05)], "hammer"), 1.0);
+    assert_eq!(p(&[ohlc(0, 10.0, 13.0, 9.95, 9.98)], "shooting_star"), 1.0);
+    assert_eq!(p(&[ohlc(0, 10.0, 11.0, 9.0, 10.02)], "doji"), 1.0);
+    let mother = ohlc(0, 10.0, 12.0, 8.0, 11.0);
+    assert_eq!(p(&[mother, ohlc(1, 10.5, 11.5, 9.0, 10.0)], "inside_bar"), 1.0);
+    assert_eq!(p(&[mother, ohlc(1, 10.5, 12.5, 7.5, 10.0)], "outside_bar"), 1.0);
+    let star = [ohlc(0, 12.0, 12.1, 9.9, 10.0), ohlc(1, 9.8, 10.0, 9.4, 9.7), ohlc(2, 9.8, 11.6, 9.7, 11.5)];
+    assert_eq!(p(&star, "morning_star"), 1.0);
+    let soldiers = [ohlc(0, 10.0, 11.1, 9.9, 11.0), ohlc(1, 10.8, 12.1, 10.7, 12.0), ohlc(2, 11.8, 13.1, 11.7, 13.0)];
+    assert_eq!(p(&soldiers, "three_white_soldiers"), 1.0);
+    assert_eq!(p(&[ohlc(0, 10.0, 12.0, 10.0, 12.0)], "bullish_marubozu"), 1.0);
+}
+
+#[test]
+fn swings_confirm_without_looking_ahead() {
+    // Highs rise to a peak at bar 3, then fall.
+    let highs = [10.0, 11.0, 12.0, 15.0, 13.0, 12.0, 11.0];
+    let bars: Vec<Candle> =
+        highs.iter().enumerate().map(|(i, &h)| ohlc(i as i64, h - 1.0, h, h - 2.0, h - 0.5)).collect();
+    let args = serde_json::json!({"left": 2, "right": 2});
+    assert!(run("swings", args.clone(), &bars[..5]).get(0).is_none(), "not yet confirmed one bar after the peak");
+    assert_eq!(run("swings", args, &bars[..6]).get(0), Some(15.0), "confirmed two bars later");
+}
+
+#[test]
+fn higher_timeframe_levels() {
+    let h = 3_600_000;
+    let day = 24 * h;
+    let bars = [
+        Candle { ts: 0, open: 100.0, high: 105.0, low: 99.0, close: 104.0, volume: 1.0 },
+        Candle { ts: 12 * h, open: 104.0, high: 110.0, low: 95.0, close: 108.0, volume: 1.0 },
+        Candle { ts: day, open: 108.0, high: 109.0, low: 107.0, close: 108.5, volume: 1.0 },
+    ];
+    let p = run("period", serde_json::json!({"minutes": 1440}), &bars);
+    let g = |name: &str| p.get(out("period", name)).unwrap();
+    assert_eq!((g("prev_high"), g("prev_low"), g("prev_close"), g("prev_open")), (110.0, 95.0, 108.0, 100.0));
+    assert_eq!((g("open"), g("high")), (108.0, 109.0));
+}
+
+#[test]
+fn opening_range_and_relative_volume() {
+    let m = 60_000;
+    let bars: Vec<Candle> = (0..30)
+        .map(|i| Candle { ts: i * 5 * m, open: 10.0, high: 10.0 + (i % 4) as f64, low: 9.0, close: 10.0, volume: 1.0 })
+        .collect();
+    let or = run("opening_range", serde_json::json!({"minutes": 15}), &bars[..3]);
+    assert_eq!((or.get(0), or.get(2)), (Some(12.0), Some(0.0)), "first three 5m bars form the range");
+    let or = run("opening_range", serde_json::json!({"minutes": 15}), &bars[..4]);
+    assert_eq!(or.get(2), Some(1.0));
+    let mut v: Vec<Candle> = (0..21).map(|i| bar(i, 1.0, 1.0, 1.0, 1.0, 100.0)).collect();
+    v.push(bar(21, 1.0, 1.0, 1.0, 1.0, 300.0));
+    let va = run("volume_avg", serde_json::json!({"period": 20}), &v);
+    assert!((va.get(1).unwrap() - 3.0).abs() < 1e-9, "a 300 bar after twenty 100 bars is 3x");
+}
