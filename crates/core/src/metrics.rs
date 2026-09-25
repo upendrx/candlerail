@@ -34,6 +34,11 @@ pub struct Metrics {
     pub longest_losing_streak: usize,
     /// Entries that couldn't be sized.
     pub skipped_entries: u32,
+    /// Average result per trade in units of initial risk (needs a stop-loss).
+    pub avg_r: Option<f64>,
+    /// Kelly estimate of the % of equity to risk per trade, from the win rate and
+    /// the average win and loss in R. Most traders use a half or less.
+    pub kelly_risk_pct: Option<f64>,
 }
 
 /// Summary of part of the test period.
@@ -99,6 +104,23 @@ pub fn compute(
         }
     }
 
+    let rs: Vec<f64> = trades.iter().filter_map(|t| t.r_multiple).collect();
+    let avg_r = (!rs.is_empty()).then(|| mean(&rs));
+    let kelly_risk_pct = (rs.len() >= 10)
+        .then(|| {
+            let wins: Vec<f64> = rs.iter().copied().filter(|r| *r > 0.0).collect();
+            let losses: Vec<f64> = rs.iter().filter(|r| **r <= 0.0).map(|r| -r).collect();
+            let (w, l) = (mean(&wins), mean(&losses));
+            if wins.is_empty() {
+                return Some(0.0);
+            }
+            if losses.is_empty() || l <= 0.0 {
+                return None;
+            }
+            let p = wins.len() as f64 / rs.len() as f64;
+            Some(100.0 * (p - (1.0 - p) / (w / l)))
+        })
+        .flatten();
     let first = candles.first().map_or(1.0, |c| c.open);
     let last = candles.last().map_or(1.0, |c| c.close);
     Metrics {
@@ -122,6 +144,8 @@ pub fn compute(
         fees_paid: trades.iter().map(|t| t.fees).sum(),
         longest_losing_streak: longest,
         skipped_entries: skipped,
+        avg_r,
+        kelly_risk_pct,
     }
 }
 
@@ -184,6 +208,17 @@ pub fn warnings(s: &Strategy, m: &Metrics, is: &Segment, oos: &Segment, cfg: &Ba
             s.leverage,
             100.0 / s.leverage
         ));
+    }
+    if let Some(k) = m.kelly_risk_pct {
+        if k <= 0.0 {
+            w.push("By the Kelly measure this strategy has no edge: the win rate and payoff don't support risking anything per trade.".into());
+        } else if s.sizing.kind == crate::spec::SizingType::RiskPercent && s.sizing.value > k / 2.0 {
+            w.push(format!(
+                "You risk {}% per trade, more than half-Kelly ({:.1}%) for these results. Many traders stay at or below half-Kelly.",
+                s.sizing.value,
+                k / 2.0
+            ));
+        }
     }
     if m.skipped_entries > 0 {
         w.push(format!(
