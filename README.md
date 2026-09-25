@@ -10,9 +10,13 @@ have done, in plain English and with the numbers that matter.
 ![A backtest in candlerail: metrics, warnings and the price chart with trades](docs/images/results.png)
 
 ```bash
-cargo build --release
-./target/release/candlerail serve        # then open http://127.0.0.1:8787
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/upendrx/candlerail/main/scripts/install.sh | sh
+candlerail serve                         # then open http://127.0.0.1:8787
 ```
+
+Windows, building from source and troubleshooting are on the
+**[quick-start page](https://upendrx.github.io/candlerail/)**.
 
 It runs entirely on your computer (Windows, macOS or Linux). Candles come
 from Binance's public API with no account needed, or from any CSV file for
@@ -20,9 +24,10 @@ stocks, forex, futures or anything else.
 
 ## Three ways to make a strategy
 
-**Start from a template.** Ten ready-made strategies (trend following, mean
-reversion, breakouts, momentum, intraday). Each explains how it works, when
-it works best, and when it fails.
+**Start from a template.** 18 ready-made strategies: trend following, mean
+reversion, breakouts, momentum, intraday, and eight pure price-action setups
+from 1-minute scalps to monthly levels. Each explains how it works, when it
+works best, and when it fails.
 
 **Use the builder.** Choose indicators from a list, then write rules like
 *"RSI crosses below 30 **and** close is above the 200 SMA"* with dropdowns. A
@@ -39,13 +44,23 @@ candlerail understands, and you read the summary before anything runs.
 - **14 indicators:** SMA, EMA, RSI, MACD, Bollinger Bands, ATR, stochastic,
   session VWAP, SuperTrend, ADX, OBV, Donchian channel, rate of change,
   Keltner channel.
-- **Rules:** above, below, crosses above/below, rising and falling over N
-  bars, values from N bars ago, combined with AND, OR and NOT.
+- **Price action:** 13 candle patterns, candle body and wicks, swing support
+  and resistance, market structure, previous hour/day/week/month levels on
+  any timeframe, opening ranges and relative volume.
+  [Price action guide](docs/price-action.md).
+- **Rules:** above, below, equals, crosses above/below, rising and falling
+  over N bars, values from N bars ago, formulas like `lower_wick > 2 * body`,
+  combined with AND, OR and NOT.
 - **Long, short or both**, with leverage from 1x to 125x.
-- **Exits:** stop-loss and take-profit (by %, by ATR, or as a multiple of
-  the risk), trailing stops, exit rules, time limits.
-- **Position sizing:** risk a % of the account per trade, use a % as margin,
-  or a fixed quantity.
+- **Exits:** stop-loss and take-profit by %, by ATR, as a multiple of the
+  risk, or at a price level such as under the signal candle or at the last
+  swing high; trailing stops, exit rules, time limits.
+- **Money management:** risk a % of the account per trade, daily and monthly
+  loss limits, a drawdown circuit breaker, trade caps and pauses after losing
+  streaks. Results report R-multiples and a Kelly estimate.
+  [Money management guide](docs/money-management.md).
+- **Sharing:** export a strategy with its real result; anyone can re-run it
+  to check. [Sharing](docs/sharing.md).
 
 ## Honest backtests
 
@@ -73,6 +88,7 @@ candlerail explain mine.json                          # read it back in plain En
 candlerail backtest mine.json --symbol ETHUSDT --interval 4h --from 2024-01-01
 candlerail backtest mine.json --csv my-stock.csv      # any market
 candlerail prompt                                     # instructions for an AI assistant
+candlerail share mine.json --author me                # strategy + result, to share
 ```
 
 ## Documentation
@@ -80,6 +96,8 @@ candlerail prompt                                     # instructions for an AI a
 - [Getting started](docs/getting-started.md)
 - [A guide to strategy types](docs/strategy-guide.md): trend, mean reversion,
   breakout, momentum, intraday, and common mistakes
+- [Price action](docs/price-action.md), [Money management](docs/money-management.md)
+  and [Sharing strategies](docs/sharing.md)
 - [The strategy file](docs/strategy-format.md) and its [JSON Schema](schema/strategy.schema.json)
 - [How backtests work](docs/backtesting.md)
 - [Writing strategies with AI](docs/using-ai.md)
