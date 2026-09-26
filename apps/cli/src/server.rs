@@ -156,8 +156,17 @@ struct BacktestReq {
     capital: Option<f64>,
 }
 
-fn err(status: StatusCode, msgs: Vec<String>) -> Response {
-    (status, Json(json!({ "ok": false, "errors": msgs }))).into_response()
+/// A failed request: a status and messages for the person using the app.
+struct ApiError(StatusCode, Vec<String>);
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        (self.0, Json(json!({ "ok": false, "errors": self.1 }))).into_response()
+    }
+}
+
+fn err(status: StatusCode, msgs: Vec<String>) -> ApiError {
+    ApiError(status, msgs)
 }
 
 struct Loaded {
@@ -168,7 +177,7 @@ struct Loaded {
 
 /// Loads the candles a request describes. The strategy's `market`, if any,
 /// fills in a missing symbol or interval.
-async fn load(app: Arc<App>, req: DataReq, strategy: Option<&Strategy>) -> Result<Loaded, Response> {
+async fn load(app: Arc<App>, req: DataReq, strategy: Option<&Strategy>) -> Result<Loaded, ApiError> {
     let market = strategy.map(|s| &s.market);
     let interval = match req.interval.as_deref().filter(|x| !x.is_empty()) {
         Some(i) => i.parse::<Interval>().map_err(|e| err(StatusCode::BAD_REQUEST, vec![e]))?,
@@ -230,7 +239,7 @@ fn valid_strategy(v: &Value) -> Result<Strategy, Vec<String>> {
 async fn run_request(
     app: Arc<App>,
     req: BacktestReq,
-) -> Result<(Strategy, String, Interval, candlerail_core::Report, Vec<candlerail_core::Candle>), Response> {
+) -> Result<(Strategy, String, Interval, candlerail_core::Report, Vec<candlerail_core::Candle>), ApiError> {
     let s = valid_strategy(&req.strategy).map_err(|e| err(StatusCode::BAD_REQUEST, e))?;
     let Loaded { symbol, interval, candles } = load(app, req.data, Some(&s)).await?;
     let capital = req.capital.filter(|c| *c > 0.0).unwrap_or(10_000.0);
@@ -249,7 +258,7 @@ async fn backtest(State(app): State<Arc<App>>, Json(req): Json<BacktestReq>) -> 
             Json(json!({ "ok": true, "symbol": symbol, "interval": interval, "report": report, "candles": candles }))
                 .into_response()
         }
-        Err(r) => r,
+        Err(e) => e.into_response(),
     }
 }
 
@@ -270,7 +279,7 @@ async fn share(State(app): State<Arc<App>>, Json(req): Json<ShareReq>) -> Respon
             sh.notes = req.notes.filter(|n| !n.trim().is_empty());
             Json(json!({ "ok": true, "share": sh })).into_response()
         }
-        Err(r) => r,
+        Err(e) => e.into_response(),
     }
 }
 
@@ -286,7 +295,7 @@ async fn candles(State(app): State<Arc<App>>, Json(req): Json<DataReq>) -> Respo
     match load(app, req, None).await {
         Ok(l) => Json(json!({ "ok": true, "symbol": l.symbol, "interval": l.interval, "candles": l.candles }))
             .into_response(),
-        Err(r) => r,
+        Err(e) => e.into_response(),
     }
 }
 
@@ -301,11 +310,11 @@ struct ScanReq {
 async fn scan(State(app): State<Arc<App>>, Json(req): Json<ScanReq>) -> Response {
     let s = match valid_strategy(&req.strategy) {
         Ok(s) => s,
-        Err(e) => return err(StatusCode::BAD_REQUEST, e),
+        Err(e) => return err(StatusCode::BAD_REQUEST, e).into_response(),
     };
     let l = match load(app, req.data, Some(&s)).await {
         Ok(l) => l,
-        Err(r) => return r,
+        Err(e) => return e.into_response(),
     };
     match candlerail_core::scan::scan(&s, &l.candles) {
         Ok(m) => {
@@ -313,6 +322,6 @@ async fn scan(State(app): State<Arc<App>>, Json(req): Json<ScanReq>) -> Response
             Json(json!({ "ok": true, "bars": l.candles.len(), "long": ts(&m.long), "short": ts(&m.short) }))
                 .into_response()
         }
-        Err(e) => err(StatusCode::BAD_REQUEST, e),
+        Err(e) => err(StatusCode::BAD_REQUEST, e).into_response(),
     }
 }
