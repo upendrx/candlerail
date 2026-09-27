@@ -1,0 +1,61 @@
+{
+  "interval": "1d",
+  "from": "2020-01-01",
+  "split": "2024-07-01",
+  "cost_bps": 6,
+  "id": "pairs",
+  "name": "Pairs trading (statistical arbitrage)",
+  "kind": "pairs",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "BNBUSDT",
+    "XRPUSDT",
+    "ADAUSDT",
+    "DOGEUSDT",
+    "SOLUSDT",
+    "DOTUSDT",
+    "LINKUSDT",
+    "LTCUSDT",
+    "BCHUSDT",
+    "AVAXUSDT",
+    "TRXUSDT",
+    "ATOMUSDT",
+    "XLMUSDT",
+    "ETCUSDT",
+    "FILUSDT",
+    "UNIUSDT",
+    "AAVEUSDT",
+    "NEARUSDT",
+    "ALGOUSDT",
+    "VETUSDT",
+    "SANDUSDT",
+    "MANAUSDT",
+    "AXSUSDT"
+  ],
+  "description": "Market-neutral: for every pair of coins whose daily returns moved closely together before the split, short the one that has run ahead and buy the one that has lagged when their price ratio is unusually stretched, and close when it returns to normal. Futures costs on both legs.",
+  "grid": {
+    "window": [
+      20,
+      40,
+      60
+    ],
+    "entry": [
+      1.5,
+      2.0,
+      2.5
+    ],
+    "exit": [
+      0.0,
+      0.5
+    ],
+    "max_hold": [
+      10,
+      20
+    ],
+    "min_corr": [
+      0.75,
+      0.85
+    ]
+  }
+}
