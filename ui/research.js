@@ -7,7 +7,7 @@
  * with per-market detail fetched on demand.
  */
 (() => {
-const R = { index: null, studies: {}, carry: {}, page: null, cur: null, cost: 0, tf: "", show: "all", metric: "is", sort: { key: "ris", dir: -1 }, open: null };
+const R = { index: null, studies: {}, carry: {}, quant: {}, qsort: { key: "ish", dir: -1 }, qshow: "all", qopen: null, scale: 1, page: null, cur: null, cost: 0, tf: "", show: "all", metric: "is", sort: { key: "ris", dir: -1 }, open: null };
 const PAGE_KEY = "candlerail-research-page";
 
 /* ---------- data helpers ---------- */
@@ -42,10 +42,12 @@ const sameParams = (a, b) => Object.keys(b).every(k => a[k] === b[k]) && Object.
 async function load() {
   R.index = await api("/api/research");
   const ids = [...new Set(R.index.groups.flatMap(g => g.pages.map(p => p.study)).filter(Boolean).concat(Object.keys(STUDY1)))];
-  const carries = R.index.groups.flatMap(g => g.pages.flatMap(p => p.carry || []));
+  const carries = [...new Set(R.index.groups.flatMap(g => g.pages.flatMap(p => p.carry || [])).concat(["carry-recent", "carry-earlier"]))];
+  const quants = [...new Set(R.index.groups.flatMap(g => g.pages.flatMap(p => [p.quant, p.also].filter(Boolean))))];
   await Promise.all([
     ...ids.map(async id => { R.studies[id] = await api("/api/studies/" + id); }),
     ...carries.map(async id => { R.carry[id] = await api("/api/carry/" + id); }),
+    ...quants.map(async id => { R.quant[id] = await api("/api/quant/" + id); }),
   ]);
   let start = null; try { start = localStorage.getItem(PAGE_KEY); } catch (e) {}
   nav(); go(allPages().some(p => p.number === start) ? start : "2.0");
@@ -70,6 +72,10 @@ function go(number) {
   if (p.kind === "study") { R.cur = p.study; R.tf = ""; R.open = null; R.cost = 0; R.show = "all"; R.sort = { key: R.studies[p.study].study.split > 0 ? "ris" : "roos", dir: -1 }; controls(); explore(); }
   if (p.kind === "plan") plan();
   if (p.kind === "carry") carry();
+  if (p.kind === "quant") { R.qopen = null; R.qshow = "all"; quantPage(); }
+  if (p.kind === "combo") comboPage();
+  if (p.kind === "risk") riskPage();
+  if (p.kind === "overview3") overview3();
 }
 
 /* ---------- Study 1 summary ---------- */
@@ -372,6 +378,203 @@ $("rs-rerun").onclick = async e => {
     R.studies[R.cur] = d; R.open = null; controls(); explore();
   } finally { b.disabled = false; b.textContent = old; }
 };
+
+
+/* ---------- Study 3: monthly series ---------- */
+const toMap = (m0, arr) => Object.fromEntries(arr.map((v, i) => [m0 + i, v]));
+function pickSeries(k) {
+  const pk = R.index.picks[k], main = findRow(pk.study, pk), conf = findRow(pk.confirm, pk, true);
+  if (!main || !conf) return null;
+  return { ...toMap(R.studies[pk.confirm].month0, conf.monthly.slice(0, -1)), ...toMap(R.studies[pk.study].month0, main.monthly) };
+}
+function quantVariant(id, params) { return R.quant[id]?.variants.find(v => sameParams(v.params, params)); }
+function componentSeries(c) {
+  if (c.kind === "pick") return pickSeries(c.pick);
+  if (c.kind === "quant") { const v = quantVariant(c.id, c.params); return v ? toMap(R.quant[c.id].month0, v.monthly) : null; }
+  if (c.kind === "carry") { const a = R.carry["carry-earlier"], b = R.carry["carry-recent"]; return a && b ? { ...toMap(a.month0, a.portfolio_always.slice(0, -1)), ...toMap(b.month0, b.portfolio_always) } : null; }
+  return null;
+}
+/** Compounded statistics of monthly % returns. */
+function mstats(x) {
+  let eq = 1, pk = 1, dd = 0, under = 0, longest = 0;
+  for (const v of x) { eq *= 1 + v / 100; pk = Math.max(pk, eq); dd = Math.min(dd, eq / pk - 1); under = eq < pk ? under + 1 : 0; longest = Math.max(longest, under); }
+  const m = mean(x), sd = Math.sqrt(mean(x.map(v => (v - m) ** 2)));
+  return { avg: m, worst: x.length ? Math.min(...x) : 0, best: x.length ? Math.max(...x) : 0, up: x.filter(v => v > 0).length, n: x.length, dd: 100 * dd, total: 100 * (eq - 1), sd, longest, p25: quant(x, 0.25), p75: quant(x, 0.75) };
+}
+function corrOf(x, y) {
+  const mx = mean(x), my = mean(y); let a = 0, b = 0, c = 0;
+  for (let i = 0; i < x.length; i++) { a += (x[i] - mx) * (y[i] - my); b += (x[i] - mx) ** 2; c += (y[i] - my) ** 2; }
+  return b > 0 && c > 0 ? a / Math.sqrt(b * c) : 0;
+}
+function comboData() {
+  const cfg = R.index.combo; if (!cfg) return null;
+  const comps = cfg.components.map(c => ({ ...c, s: componentSeries(c) })), extras = cfg.extras.map(c => ({ ...c, s: componentSeries(c) }));
+  if (comps.some(c => !c.s)) return null;
+  const rot = R.quant.rotation, btc = toMap(rot.month0, rot.benchmark_monthly);
+  const lastFull = monthOf(Date.now()) - 1;
+  const months = Object.keys(comps[0].s).map(Number).filter(m => m <= lastFull && comps.every(c => m in c.s) && extras.every(c => !c.s || m in c.s) && m in btc).sort((a, b) => a - b);
+  const [y, mo] = cfg.split.split("-").map(Number), split = (y - 1970) * 12 + mo - 1;
+  const col = s => months.map(m => s[m] ?? 0);
+  const inIS = months.map(m => m < split);
+  const vol = x => { const v = x.filter((_, i) => inIS[i]); const m = mean(v); return Math.sqrt(mean(v.map(a => (a - m) ** 2))); };
+  const cols = comps.map(c => col(c.s)), inv = cols.map(x => 1 / vol(x)), wsum = inv.reduce((a, b) => a + b, 0), w = inv.map(v => v / wsum);
+  const mix = months.map((_, i) => cols.reduce((t, x, j) => t + w[j] * x[i], 0));
+  return { cfg, comps, extras, months, split, w, cols, mix, btc: col(btc), inIS, extraCols: extras.map(c => c.s ? col(c.s) : null) };
+}
+const oosOf = (x, d) => x.filter((_, i) => !d.inIS[i]);
+
+/* ---------- 3.0 ---------- */
+function overview3() {
+  const d = comboData();
+  const pros = [
+    ["Market making", "Quoting both sides of the order book all day and earning the spread, often with exchange fee rebates. Needs very low fees, fast connections and constant risk control.", "no", "not for one account"],
+    ["Speed arbitrage", "Buying on one exchange and selling on another in milliseconds when prices differ. Needs co-located servers and deep capital on many exchanges.", "no", "not for one account"],
+    ["Funding and basis at scale", "The carry trade in 2.3 run with millions at VIP fee tiers, moving between coins and exchanges as rates change. It works for a small account too, just slowly.", "meh", "small but real"],
+    ["Liquidation and news speed", "Trading the seconds after large liquidations or announcements. Needs fast data feeds and execution; slower traders pay the fast ones.", "no", "not for one account"],
+    ["Systematic trend and momentum", "Rules like Study 2's and coin rotation, run on many markets at once and sized as a portfolio. Checks every few hours or once a week: made for a bot.", "yes", "usable"],
+  ];
+  const q = id => R.quant[id], cnt = id => { const x = q(id); if (!x) return ""; const s = x.variants.filter(v => v.selected).length, v = x.variants.filter(v => v.survived).length; return `${x.variants.length} variants, ${s} selected, ${v} survived`; };
+  const tests = [
+    ["3.2 Coin rotation", cnt("rotation"), "yes", "Holding the strongest coins, with a BTC trend filter, held up in the held-out years; drawdowns are large on its own."],
+    ["3.3 Fear & Greed sentiment", cnt("sentiment"), "meh", "The survivors are mostly a plain trend filter; the index itself added little."],
+    ["3.4 Time of day and weekday", cnt("seasonality"), "no", "Hour patterns reversed after the split even before costs; weekday survivors are mostly market exposure."],
+    ["3.5 Pairs trading", cnt("pairs"), "no", "Crypto pairs didn't revert reliably enough to pay the costs of both legs."],
+  ];
+  let plan = "";
+  if (d) {
+    const all = mstats(d.mix), oos = mstats(oosOf(d.mix, d)), b = mstats(d.btc);
+    const scen = [500, 1000, 5000].map(c => `<tr><td><b>${usd(c)}</b></td><td class="n ${rcls(all.avg)}">${usd(c * all.avg / 100)}</td><td class="n">${usd(c * all.p25 / 100)} to ${usd(c * all.p75 / 100)}</td><td class="n down">${usd(c * all.worst / 100)}</td><td class="n down">${usd(c * all.dd / 100)}</td></tr>`).join("");
+    plan = `<div class="panel pickcard">
+      <div><div class="eyebrow" style="margin:0 0 4px">The combined plan</div><h2 style="margin:0">Trend following plus weekly coin rotation</h2><p class="hint" style="margin:4px 0 0">${esc(d.cfg.rule)}</p></div>
+      <div class="rulebox"><b>${fmt(100 * d.w[0], 0)}% of the account: trend.</b> ${esc(R.index.picks[0].rule)} Ten coins, each with a tenth of this part, risking 2% of that tenth per trade.<br><br><b>${fmt(100 * d.w[1], 0)}% of the account: rotation.</b> ${esc(d.cfg.rotation_rule)}</div>
+      <div class="pick-stats">
+        <div><b class="${rcls(all.avg)}">${pct(all.avg)}</b><span>average month, ${all.n} months</span></div>
+        <div><b class="${rcls(oos.avg)}">${pct(oos.avg)}</b><span>average month since the split (${oos.n} months, never used to choose)</span></div>
+        <div><b>${all.up}/${all.n}</b><span>months that made money</span></div>
+        <div><b class="down">${pct(all.worst)}</b><span>worst month</span></div>
+        <div><b class="down">${pct(all.dd)}</b><span>largest fall from a peak</span></div>
+        <div><b>${all.longest}</b><span>longest months below a peak</span></div>
+      </div>
+      ${monthBars(d.mix, { benchmark: d.btc, month0: d.months[0], split: d.months.indexOf(d.split), splitLabel: "weights fixed; held out →", clipBenchmark: true, label: "Combined plan month by month" })}
+      <div class="tw"><table class="ptable"><thead><tr><th>Account</th><th class="n">Average month</th><th class="n">Middle half of months</th><th class="n">Worst month</th><th class="n">Largest fall</th></tr></thead><tbody>${scen}</tbody></table></div>
+      <p class="hint">Buying and holding BTC over the same months: average ${pct(b.avg)}, worst month ${pct(b.worst)}, largest fall ${pct(b.dd)}. See 3.1 for what changes at other risk levels, and 3.6 for how the two parts combine.</p>
+    </div>`;
+  }
+  $("rs-ov3").innerHTML = `<div class="panel"><h2>Where the big algorithmic profits come from</h2><p class="sub">Screenshots of huge daily gains are usually one of these, or leverage that works until it doesn't.</p>
+      <div class="cards3">${pros.map(([t, p, c, l]) => `<div><span class="tag2 ${c}">${esc(l)}</span><b class="t">${esc(t)}</b><p>${esc(p)}</p></div>`).join("")}</div></div>
+    <div class="panel"><h2>What Study 3 tested</h2><p class="sub">Six years of daily data (hourly for time of day), 43 coins including ones that collapsed or were delisted. Chosen before July 2024, judged after. ${esc(q("rotation")?.selection || "")}</p>
+      <div class="cards3">${tests.map(([t, n, c, p]) => `<div><span class="tag2 ${c}">${c === "yes" ? "held up" : c === "meh" ? "weak" : "didn't hold"}</span><b class="t">${esc(t)}</b><p><b>${esc(n)}.</b> ${esc(p)}</p></div>`).join("")}</div></div>
+    ${plan}
+    <div class="grid two">
+      <div class="panel prose"><h2>Running it as a bot on Binance</h2>
+        <p><b>Two schedules, no chart watching.</b> Every 4 hours, at the candle close, the bot checks SuperTrend on the ten coins and opens, closes or reverses futures positions. Every Monday at 00:00 UTC it ranks the coins and rebalances the rotation on spot.</p>
+        <p><b>API keys:</b> create them in your Binance account with trading enabled and <b>withdrawals disabled</b>, restricted to your computer's IP address. Keys are free; no paid data or AI service is needed.</p>
+        <p><b>Start in paper mode.</b> Let the bot log the orders it would place for a few weeks and compare them with these backtests before real money.</p>
+        <p class="hint">candlerail doesn't place orders yet; a paper and live runner for these two rules is the next step.</p></div>
+      <div class="panel prose"><h2>Honest limits</h2>
+        <p><b>This isn't a daily income.</b> ${d ? (() => { const a = mstats(d.mix); return `Even the combined plan lost money in ${a.n - a.up} of ${a.n} months and once went ${a.longest} months without a new high.`; })() : ""}</p>
+        <p><b>Six years is two big crypto cycles.</b> Momentum and trend are among the most documented effects in markets, which is why they're worth trusting more than a pattern found by searching, but they can go quiet for years.</p>
+        <p><b>More risk isn't free.</b> 3.1 shows how returns and drawdowns scale together, and how often a year would end down.</p>
+        <p class="hint">Research on past data, not financial advice.</p></div>
+    </div>`;
+}
+
+/* ---------- 3.1 ---------- */
+function riskPage() {
+  const d = comboData(); if (!d) { $("rs-risk").innerHTML = ""; return; }
+  const base = { combo: d.mix, trend: d.cols[0] };
+  const rng = seed => () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+  const sim = (x, k) => {
+    // 5,000 random years made of 12 months drawn from the record.
+    const r = rng(7), out = [], falls = [];
+    for (let i = 0; i < 5000; i++) {
+      let eq = 1, pk = 1, dd = 0;
+      for (let j = 0; j < 12; j++) { eq *= 1 + k * x[Math.floor(r() * x.length)] / 100; pk = Math.max(pk, eq); dd = Math.min(dd, eq / pk - 1); }
+      out.push(100 * (eq - 1)); falls.push(100 * dd);
+    }
+    return { med: quant(out, 0.5), p5: quant(out, 0.05), p95: quant(out, 0.95), down: out.filter(v => v < 0).length / 50, fall30: falls.filter(v => v <= -30).length / 50, fall50: falls.filter(v => v <= -50).length / 50 };
+  };
+  const row = (x, k) => { const m = mstats(x.map(v => v * k)), s = sim(x, k);
+    return `<tr${k === 1 ? ` style="background:var(--accent-soft)"` : ""}><td><b>${fmt(k, k % 1 ? 1 : 0)}×</b></td><td class="n ${rcls(m.avg)}">${pct(m.avg)}</td><td class="n down">${pct(m.worst)}</td><td class="n down">${pct(m.dd)}</td><td class="n">${pct(s.med)}</td><td class="n">${pct(s.p5)}</td><td class="n">${fmt(s.down, 0)}%</td><td class="n">${fmt(s.fall30, 0)}%</td><td class="n">${fmt(s.fall50, 0)}%</td><td class="n">${usd(500 * m.avg / 100)}</td></tr>`; };
+  const scales = [0.5, 1, 1.5, 2, 3, 5];
+  const table = (x, title, note) => `<div class="panel"><h2>${title}</h2><p class="sub">${note}</p><div class="tw"><table class="ptable"><thead><tr><th>Scale</th><th class="n">Average month</th><th class="n">Worst month</th><th class="n">Largest fall</th><th class="n">Typical year</th><th class="n">Bad year (worst 5%)</th><th class="n">Years down</th><th class="n">Falls 30%+ in a year</th><th class="n">Falls 50%+</th><th class="n">Average month on $500</th></tr></thead><tbody>${scales.map(k => row(x, k)).join("")}</tbody></table></div></div>`;
+  const kelly = x => { const m = mean(x) / 100, v = mean(x.map(a => (a / 100 - m) ** 2)); return v > 0 ? m / v : 0; };
+  $("rs-risk").innerHTML = `<div class="panel prose" style="max-width:none"><h2>Returns and losses scale together</h2>
+      <p>The monthly results on these pages come from small positions: the trend rule risks 2% of each coin's tenth of the account, 0.2% of the whole account per trade. Doubling every position roughly doubles the average month, <b>and</b> the worst month, and the largest fall grows faster than that because losses compound. The "typical year" and "bad year" columns come from 5,000 simulated years, each made of 12 months drawn at random from the record. Real losing months tend to come in clusters, so real bad years can be worse than these.</p>
+      <p>By the Kelly formula applied to the monthly record, growth would be fastest at about ${fmt(kelly(d.mix), 1)}× for the combined plan and ${fmt(kelly(d.cols[0]), 1)}× for the trend rule alone. That assumes the future looks exactly like the past, which it won't, so professionals use a quarter to a half of Kelly at most.</p></div>
+    ${table(base.combo, "The combined plan (3.0)", "1× is the plan as tested: trend and rotation weighted as in 3.6.")}
+    ${table(base.trend, "The trend rule alone (Study 2)", "1× risks 0.2% of the account per trade, as tested in 2.1.")}`;
+}
+
+/* ---------- 3.2 to 3.5 ---------- */
+const QCOLS = [
+  ["set", "Settings", v => esc(Object.entries(v.params).map(([k, x]) => `${k} ${x}`).join(" · ")), v => JSON.stringify(v.params)],
+  ["isa", "Year, before", v => `<span class="${rcls(v.in_sample.annual_pct)}">${pct(v.in_sample.annual_pct)}</span>`, v => v.in_sample.annual_pct, "n"],
+  ["ish", "Sharpe, before", v => fmt(v.in_sample.sharpe), v => v.in_sample.sharpe, "n"],
+  ["isd", "Fall, before", v => pct(v.in_sample.max_drawdown_pct), v => v.in_sample.max_drawdown_pct, "n"],
+  ["osa", "Year, after", v => `<span class="${rcls(v.out_of_sample.annual_pct)}">${pct(v.out_of_sample.annual_pct)}</span>`, v => v.out_of_sample.annual_pct, "n"],
+  ["osh", "Sharpe, after", v => fmt(v.out_of_sample.sharpe), v => v.out_of_sample.sharpe, "n"],
+  ["osd", "Fall, after", v => pct(v.out_of_sample.max_drawdown_pct), v => v.out_of_sample.max_drawdown_pct, "n"],
+  ["tr", "Trades/month", v => fmt(v.trades_per_month, 1), v => v.trades_per_month, "n"],
+  ["st", "", v => v.survived ? `<span class="badge2 surv">survived</span>` : v.selected ? `<span class="badge2 sel">selected</span>` : "", v => (v.survived ? 2 : 0) + (v.selected ? 1 : 0)],
+];
+function quantTable(q, el, limit, onRow) {
+  const rows = q.variants.filter(v => R.qshow === "all" || (R.qshow === "selected" ? v.selected : v.survived));
+  const col = QCOLS.find(c => c[0] === R.qsort.key) || QCOLS[2];
+  rows.sort((a, b) => { const x = col[3](a), y = col[3](b); return (x < y ? -1 : x > y ? 1 : 0) * R.qsort.dir; });
+  const shown = rows.slice(0, limit);
+  el.innerHTML = `<table class="qtable"><thead><tr>${QCOLS.map(c => `<th data-k="${c[0]}" class="${c[4] || ""} ${c[0] === R.qsort.key ? "sorted" : ""}" style="cursor:pointer">${c[1]}${c[0] === R.qsort.key ? (R.qsort.dir < 0 ? " ↓" : " ↑") : ""}</th>`).join("")}</tr></thead><tbody>` +
+    shown.map((v, i) => `<tr data-i="${i}" class="${R.qopen === v ? "cur" : ""}">${QCOLS.map(c => `<td class="${c[4] || ""}">${c[2](v)}</td>`).join("")}</tr>`).join("") + `</tbody></table>`;
+  el.querySelectorAll("th").forEach(th => th.onclick = () => { const k = th.dataset.k; R.qsort = { key: k, dir: R.qsort.key === k ? -R.qsort.dir : -1 }; quantPage(); });
+  if (onRow) el.querySelectorAll("tbody tr").forEach(tr => tr.onclick = () => onRow(shown[+tr.dataset.i]));
+  return rows.length;
+}
+function quantPage() {
+  const q = R.quant[R.page.quant], also = R.page.also ? R.quant[R.page.also] : null;
+  if (!q) { $("rs-quant").innerHTML = ""; return; }
+  const sel = q.variants.filter(v => v.selected).length, surv = q.variants.filter(v => v.survived).length;
+  const splitIdx = monthOf(q.split_ts) - q.month0;
+  const detail = R.qopen ? (() => { const v = R.qopen, m = mstats(v.monthly);
+    return `<div class="rs-detail"><h3 style="margin:0">${esc(Object.entries(v.params).map(([k, x]) => `${k} ${x}`).join(" · "))}</h3>
+      <p class="hint" style="margin:0">${m.up} of ${m.n} months made money, average ${pct(m.avg)}, worst ${pct(m.worst)}, largest fall ${pct(m.dd)}. ${fmt(v.trades_per_month, 1)} positions opened a month; average exposure ${fmt(100 * v.exposure, 0)}% of the account.</p>
+      ${monthBars(v.monthly, { benchmark: q.benchmark_monthly, month0: q.month0, split: splitIdx, clipBenchmark: true })}</div>`; })() : "";
+  $("rs-quant").innerHTML = `<div class="panel">
+      <p style="margin:0 0 10px;color:var(--ink2)">${esc(q.description)}</p>
+      <div class="pick-stats" style="margin-bottom:12px">
+        <div><b>${q.variants.length}</b><span>variants</span></div><div><b>${sel}</b><span>selected before ${dday(q.split_ts)}</span></div><div><b class="${surv ? "up" : "down"}">${surv}</b><span>survived after it</span></div>
+        <div><b>${pct(q.benchmark_in_sample.annual_pct)} / ${pct(q.benchmark_out_of_sample.annual_pct)}</b><span>BTC buy and hold a year, before / after</span></div>
+      </div>
+      <p class="hint" style="margin:0 0 10px">${esc(q.selection)} Data ${dday(q.from)} to ${dday(q.to)}.</p>
+      ${q.notes?.length ? `<p class="hint" style="margin:0 0 10px">${q.notes.map(esc).join("<br>")}</p>` : ""}
+      <div class="row" style="margin-bottom:8px"><div class="segc" id="rs-qshow"><button data-v="all">All</button><button data-v="selected">Selected</button><button data-v="survived">Survived</button></div></div>
+      <div class="tw" style="max-height:520px;overflow-y:auto" id="rs-qt"></div>
+      <p class="hint" id="rs-qnote"></p>
+      ${detail}
+    </div>
+    ${also ? `<div class="panel"><h2>${esc(also.name)}</h2><p class="sub">${esc(also.description)} ${also.variants.filter(v => v.selected).length} selected, ${also.variants.filter(v => v.survived).length} survived.</p><div class="tw" style="max-height:360px;overflow-y:auto" id="rs-qt2"></div></div>` : ""}`;
+  $("rs-qshow").querySelectorAll("button").forEach(b => { b.classList.toggle("on", b.dataset.v === R.qshow); b.onclick = () => { R.qshow = b.dataset.v; quantPage(); }; });
+  const n = quantTable(q, $("rs-qt"), 200, v => { R.qopen = v; quantPage(); });
+  $("rs-qnote").textContent = `${n} variants${n > 200 ? ", showing 200" : ""}. "Before" is the selection period, "after" is from ${dday(q.split_ts)}. Click a row for its months.`;
+  if (also) quantTable(also, $("rs-qt2"), 30);
+}
+
+/* ---------- 3.6 ---------- */
+function comboPage() {
+  const d = comboData(); if (!d) { $("rs-combo").innerHTML = ""; return; }
+  const names = [...d.comps.map(c => c.label), ...d.extras.filter(c => c.s).map(c => c.label), "Buy and hold BTC"];
+  const cols = [...d.cols, ...d.extraCols.filter(Boolean), d.btc];
+  const corr = `<table class="ptable corr"><thead><tr><th></th>${names.map((n, i) => `<th title="${esc(n)}">${i + 1}</th>`).join("")}</tr></thead><tbody>${names.map((n, i) => `<tr><td>${i + 1}. ${esc(n)}</td>${cols.map((c, j) => { const v = corrOf(cols[i], c), a = Math.abs(v); return `<td style="background:rgba(91,91,214,${i === j ? 0 : a * 0.35})">${i === j ? "–" : fmt(v, 2)}</td>`; }).join("")}</tr>`).join("")}</tbody></table>`;
+  const line = (label, x) => { const a = mstats(x), o = mstats(oosOf(x, d)); return `<tr><td><b>${esc(label)}</b></td><td class="n ${rcls(a.avg)}">${pct(a.avg)}</td><td class="n down">${pct(a.worst)}</td><td class="n down">${pct(a.dd)}</td><td class="n">${a.up}/${a.n}</td><td class="n ${rcls(o.avg)}">${pct(o.avg)}</td><td class="n down">${pct(o.dd)}</td></tr>`; };
+  $("rs-combo").innerHTML = `<div class="panel prose" style="max-width:none"><h2>Why combine</h2>
+      <p>Two strategies that make money in different months smooth each other out. When they're weakly correlated, the combination's worst stretches are shallower than either's, so the whole can be run at a higher size for the same pain. That, not a secret signal, is how systematic funds get more return per unit of risk.</p>
+      <p class="hint">${esc(d.cfg.rule)}</p></div>
+    <div class="panel"><h2>Weights</h2><div class="pick-stats">${d.comps.map((c, i) => `<div><b>${fmt(100 * d.w[i], 0)}%</b><span>${esc(c.label)}</span></div>`).join("")}</div></div>
+    <div class="panel"><h2>Results, month by month</h2><p class="sub">${d.months.length} months, ${monthName(d.months[0])} to ${monthName(d.months[d.months.length - 1])}; "after" is from ${monthName(d.split)}, never used for the weights.</p>
+      <div class="tw"><table class="ptable"><thead><tr><th></th><th class="n">Average month</th><th class="n">Worst month</th><th class="n">Largest fall</th><th class="n">Months up</th><th class="n">Average month, after</th><th class="n">Largest fall, after</th></tr></thead><tbody>
+      ${d.comps.map((c, i) => line(c.label, d.cols[i])).join("")}${line("Combined", d.mix)}${d.extras.map((c, i) => d.extraCols[i] ? line(c.label, d.extraCols[i]) : "").join("")}${line("Buy and hold BTC", d.btc)}</tbody></table></div>
+      ${monthBars(d.mix, { benchmark: d.btc, month0: d.months[0], split: d.months.indexOf(d.split), splitLabel: "held out →", clipBenchmark: true, label: "Combined month by month" })}</div>
+    <div class="panel"><h2>How the parts move together</h2><p class="sub">Correlation of monthly results: 1 moves in lockstep, 0 unrelated.</p><div class="tw">${corr}</div></div>`;
+}
 
 let loaded = false;
 window.researchShown = async () => {

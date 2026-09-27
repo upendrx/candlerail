@@ -424,6 +424,20 @@ table.rs-table tbody tr.cur { background: var(--accent-soft); }
 .mbars .lg { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 6px; }
 .mbars .lg i { display: inline-block; width: 12px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
 .ptable td, .ptable th { font-size: 13.5px; }
+
+.qtable td, .qtable th { font-size: 13px; padding: 7px 8px; }
+.qtable tbody tr { cursor: pointer; }
+.qtable tbody tr.cur { background: var(--accent-soft); }
+.corr td { text-align: center; font-variant-numeric: tabular-nums; }
+.corr td:first-child { text-align: left; }
+.slider-row { display: grid; grid-template-columns: 170px 1fr 90px; gap: 10px; align-items: center; font-size: 14px; }
+.bigline { font: 800 34px/1.1 var(--display); letter-spacing: -.02em; }
+.cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.cards3 > div { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--surface2); display: grid; gap: 4px; align-content: start; }
+.cards3 b.t { font: 700 15px var(--display); }
+.cards3 p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.cards3 .tag2 { justify-self: start; font: 700 10.5px var(--body); letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 2px 8px; }
+.tag2.no { background: var(--down-soft); color: var(--down); } .tag2.yes { background: var(--up-soft); color: var(--up); } .tag2.meh { background: var(--warn-soft); color: var(--warn); }
 </style>
 </head>
 <body>
@@ -777,6 +791,10 @@ table.rs-table tbody tr.cur { background: var(--accent-soft); }
       </div>
       <div class="rs-p" data-kind="plan" id="rs-plan" hidden></div>
       <div class="rs-p" data-kind="carry" id="rs-carry" hidden></div>
+      <div class="rs-p" data-kind="overview3" id="rs-ov3" hidden></div>
+      <div class="rs-p" data-kind="risk" id="rs-risk" hidden></div>
+      <div class="rs-p" data-kind="quant" id="rs-quant" hidden></div>
+      <div class="rs-p" data-kind="combo" id="rs-combo" hidden></div>
       <div class="rs-p" data-kind="ai" hidden>
         <div class="grid two">
           <div class="panel prose">
