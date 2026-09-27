@@ -143,6 +143,52 @@
           "result": "Correlation 0.46: together they fall far less than either alone"
         }
       ]
+    },
+    {
+      "number": "4",
+      "title": "Weekly swings, market opens and early entries",
+      "question": "Do weekly candle patterns entered on the daily chart work across many coins, especially with BTC's trend as a filter? Are intraday trades better around the London and New York opens? Does entering a daily pattern early on the hourly chart help? And would the results survive real trading?",
+      "answer": "Weekly patterns did, and they were the strongest pattern result so far: a weekly bullish engulfing, bought on a daily close above the previous day's high, only while BTC was above its 50-day average, held up to four weeks, averaged about +1R a trade in both the selection years and the two held-out years, on 43 coins and again on 24 coins it had never seen, and survived doubled costs. Replayed through one account at 0.5% risk per trade it made about 40% a year with a largest fall near 20%, with most months flat. Trading only around the London and New York opens didn't help: before costs every intraday setup was about break-even, and the session filter only cut the number of trades. Entering daily patterns early on hourly candles didn't help either: tighter hourly stops were hit far more often and paid five times the fees.",
+      "verdict": "yes",
+      "pages": [
+        {
+          "number": "4.0",
+          "kind": "overview4",
+          "title": "Summary and the weekly plan",
+          "result": "Weekly engulfing with a BTC filter: about +1R a trade, on seen and unseen coins"
+        },
+        {
+          "number": "4.1",
+          "kind": "study",
+          "study": "weekly-patterns",
+          "title": "Weekly patterns on 43 coins",
+          "result": "369 selected, 127 survived; the BTC filter and daily confirmation helped"
+        },
+        {
+          "number": "4.2",
+          "kind": "study",
+          "study": "session-opens",
+          "title": "Intraday around the market opens",
+          "result": "0 selected; the session filter didn't improve any setup"
+        },
+        {
+          "number": "4.3",
+          "kind": "study",
+          "study": "daily-hourly",
+          "title": "Daily patterns, hourly entries",
+          "result": "Hourly entries: more trades, tighter stops, worse results"
+        },
+        {
+          "number": "4.4",
+          "kind": "replay",
+          "replay": [
+            "replay-weekly",
+            "replay-weekly-new-coins"
+          ],
+          "title": "One account, real costs",
+          "result": "About 40% a year at 0.5% risk; weaker on unseen coins since 2024"
+        }
+      ]
     }
   ],
   "picks": [
@@ -220,5 +266,12 @@
       }
     ],
     "rotation_rule": "Every Monday, rank the coins by their return over the last 30 days and put the rotation's share of the account equally into the top 5, but only while BTC closes above its 100-day average; otherwise hold cash. Spot, no leverage."
+  },
+  "plan4": {
+    "replay": "replay-weekly",
+    "new_coins": "replay-weekly-new-coins",
+    "risk_pct": 0.5,
+    "max_open": 20,
+    "rule": "Every day after the 00:00 UTC close, for each coin: if last week (Monday to Sunday) was a bullish engulfing week, and today's daily candle closed green and above yesterday's high, and BTC's daily close is above its 50-day average, buy at the next open. Stop 2 ATR (14-day) below the entry. Sell after 28 days if the stop hasn't been hit. Risk 0.5% of the account per trade, at most 20 positions at once. Spot, no leverage."
   }
 }

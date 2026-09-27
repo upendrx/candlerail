@@ -14,6 +14,7 @@
 //! | `POST /api/scan` | every candle where a strategy's entry rules hold |
 //! | `GET /api/research` | how the studies are grouped and numbered, and what each found |
 //! | `GET /api/carry/{id}` | a recorded funding-rate carry run |
+//! | `GET /api/replay/{id}` | a recorded portfolio replay |
 //! | `GET /api/quant/{id}` | a recorded portfolio study (rotation, sentiment, seasonality, pairs) |
 //! | `GET /api/studies` | recorded research studies |
 //! | `GET /api/studies/{id}` | one study's full result |
@@ -53,6 +54,14 @@ const STUDIES: &[(&str, &str)] = &[
     ("confirm-earlier-period", include_str!("../../../research/results/confirm-earlier-period.json")),
     ("swing-trend", include_str!("../../../research/results/swing-trend.json")),
     ("swing-trend-confirm", include_str!("../../../research/results/swing-trend-confirm.json")),
+    ("weekly-patterns", include_str!("../../../research/results/weekly-patterns.json")),
+    ("session-opens", include_str!("../../../research/results/session-opens.json")),
+    ("daily-hourly", include_str!("../../../research/results/daily-hourly.json")),
+];
+/// Recorded portfolio replays: one strategy on many markets through one account.
+const REPLAY: &[(&str, &str)] = &[
+    ("replay-weekly", include_str!("../../../research/results/replay-weekly.json")),
+    ("replay-weekly-new-coins", include_str!("../../../research/results/replay-weekly-new-coins.json")),
 ];
 /// How the studies are grouped and numbered, with what each one found.
 const RESEARCH_INDEX: &str = include_str!("../../../research/index.json");
@@ -106,6 +115,7 @@ pub fn serve(listen: &str, ui_dir: Option<PathBuf>, cache: PathBuf, api: String)
         .route("/api/research", get(|| async { ([(header::CONTENT_TYPE, "application/json")], RESEARCH_INDEX) }))
         .route("/api/carry/{id}", get(get_carry))
         .route("/api/quant/{id}", get(get_quant))
+        .route("/api/replay/{id}", get(get_replay))
         .route("/api/studies", get(list_studies))
         .route("/api/studies/{id}", get(get_study))
         .route("/api/studies/{id}/strategy", post(study_strategy))
@@ -516,5 +526,12 @@ async fn get_quant(UrlPath(id): UrlPath<String>) -> Response {
     match QUANT.iter().find(|(i, _)| *i == id) {
         Some((_, text)) => ([(header::CONTENT_TYPE, "application/json")], *text).into_response(),
         None => err(StatusCode::NOT_FOUND, vec![format!("no portfolio study `{id}`")]).into_response(),
+    }
+}
+
+async fn get_replay(UrlPath(id): UrlPath<String>) -> Response {
+    match REPLAY.iter().find(|(i, _)| *i == id) {
+        Some((_, text)) => ([(header::CONTENT_TYPE, "application/json")], *text).into_response(),
+        None => err(StatusCode::NOT_FOUND, vec![format!("no replay `{id}`")]).into_response(),
     }
 }
