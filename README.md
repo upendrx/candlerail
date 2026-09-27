@@ -71,7 +71,8 @@ candlerail understands, and you read the summary before anything runs.
   [Two recorded studies](docs/research.md): 15 intraday setups (none gave
   a repeatable profit after fees) and 11 swing and trend strategies on ten
   coins over six years (4-hour trend following held up in three different
-  markets), plus the funding-rate carry trade.
+  markets), plus the funding-rate carry trade, and a third on coin rotation,
+  sentiment, time of day, pairs and combining strategies.
 
 ## Honest backtests
 
@@ -102,6 +103,7 @@ candlerail prompt                                     # instructions for an AI a
 candlerail share mine.json --author me                # strategy + result, to share
 candlerail study research/swing-trend.json           # hundreds of variants, judged out of sample
 candlerail carry                                      # the funding-rate carry trade on ten coins
+candlerail quant research/rotation.json               # rotate into the strongest of 43 coins
 ```
 
 ## Documentation

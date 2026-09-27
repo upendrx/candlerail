@@ -20,6 +20,12 @@ All notable changes are recorded here. The format follows
   buying and holding, and a plan page for a small account.
 - Funding-rate carry (`candlerail carry`, `candlerail_core::carry`) using
   Binance's public funding history.
+- Portfolio research (`candlerail quant`, `candlerail_core::quant`): coin
+  rotation, Fear & Greed sentiment (`candlerail_data::sentiment`), time of
+  day and weekday, and pairs, on 43 coins including delisted ones.
+- Study 3: those four studies, how position size changes returns and
+  drawdowns (with simulated years), and combining the trend rule with coin
+  rotation, with `GET /api/quant/{id}`.
 - Numbered research pages (`research/index.json`, `GET /api/research`,
   `GET /api/carry/{id}`); studies record monthly portfolio results and a
   buy-and-hold benchmark, grid values can hold placeholders, and families
