@@ -68,8 +68,10 @@ candlerail understands, and you read the summary before anything runs.
   to check. [Sharing](docs/sharing.md).
 - **Research studies:** test hundreds of variants of a setup across coins and
   timeframes, chosen on one period and judged on another.
-  [A day-trading study](docs/research.md) of 15 intraday setups is included:
-  none gave a repeatable profit after fees, and the page shows why.
+  [Two recorded studies](docs/research.md): 15 intraday setups (none gave
+  a repeatable profit after fees) and 11 swing and trend strategies on ten
+  coins over six years (4-hour trend following held up in three different
+  markets), plus the funding-rate carry trade.
 
 ## Honest backtests
 
@@ -98,7 +100,8 @@ candlerail backtest mine.json --symbol ETHUSDT --interval 4h --from 2024-01-01
 candlerail backtest mine.json --csv my-stock.csv      # any market
 candlerail prompt                                     # instructions for an AI assistant
 candlerail share mine.json --author me                # strategy + result, to share
-candlerail study research/intraday-reversals-2.json   # hundreds of variants, judged out of sample
+candlerail study research/swing-trend.json           # hundreds of variants, judged out of sample
+candlerail carry                                      # the funding-rate carry trade on ten coins
 ```
 
 ## Documentation

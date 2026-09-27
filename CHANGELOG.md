@@ -15,6 +15,15 @@ All notable changes are recorded here. The format follows
   XRP (two rounds and two confirmation runs), and a Research tab to explore
   it, see what fees do to tight stops, and re-run it on the latest data.
 - `/api/studies` endpoints.
+- Study 2: eleven swing and trend strategies on ten coins over three years,
+  re-tested on the three years before, with month-by-month results against
+  buying and holding, and a plan page for a small account.
+- Funding-rate carry (`candlerail carry`, `candlerail_core::carry`) using
+  Binance's public funding history.
+- Numbered research pages (`research/index.json`, `GET /api/research`,
+  `GET /api/carry/{id}`); studies record monthly portfolio results and a
+  buy-and-hold benchmark, grid values can hold placeholders, and families
+  can be limited to some timeframes.
 - Chart Lab: select 1 to 5 candles on a chart to turn their shape into
   rules, see every match and what followed, loosen rules automatically,
   backtest with setup-based stops, and compare across timeframes and coins.
