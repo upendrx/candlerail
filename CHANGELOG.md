@@ -20,6 +20,16 @@ All notable changes are recorded here. The format follows
   buying and holding, and a plan page for a small account.
 - Funding-rate carry (`candlerail carry`, `candlerail_core::carry`) using
   Binance's public funding history.
+- A context market for rules (`"context": "BTCUSDT"`, `"on": "context"`),
+  patterns on higher timeframes (`patterns` with `minutes`, plus
+  `bar_high`/`bar_low` outputs), and stock-market opens with daylight saving
+  (`opening_range` with `market`, plus a `minutes` output).
+- Portfolio replay (`candlerail replay`, `candlerail_core::quant::replay`,
+  `GET /api/replay/{id}`) and `candlerail study --export`.
+- Study 4: weekly patterns on 43 coins with a BTC filter, intraday trades
+  around the London and New York opens, daily patterns entered on hourly
+  candles, and the weekly pick replayed through one account on seen and
+  unseen coins.
 - Portfolio research (`candlerail quant`, `candlerail_core::quant`): coin
   rotation, Fear & Greed sentiment (`candlerail_data::sentiment`), time of
   day and weekday, and pairs, on 43 coins including delisted ones.

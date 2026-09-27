@@ -72,7 +72,9 @@ candlerail understands, and you read the summary before anything runs.
   a repeatable profit after fees) and 11 swing and trend strategies on ten
   coins over six years (4-hour trend following held up in three different
   markets), plus the funding-rate carry trade, and a third on coin rotation,
-  sentiment, time of day, pairs and combining strategies.
+  sentiment, time of day, pairs and combining strategies, and a fourth on
+  weekly patterns with a BTC filter, market-open intraday trades and early
+  entries, replayed through one account.
 
 ## Honest backtests
 
@@ -104,6 +106,7 @@ candlerail share mine.json --author me                # strategy + result, to sh
 candlerail study research/swing-trend.json           # hundreds of variants, judged out of sample
 candlerail carry                                      # the funding-rate carry trade on ten coins
 candlerail quant research/rotation.json               # rotate into the strongest of 43 coins
+candlerail replay pick.json --symbols ... --interval 1d --from 2020-05-21 --split 2024-08-15
 ```
 
 ## Documentation
