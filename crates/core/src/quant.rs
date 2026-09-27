@@ -338,6 +338,124 @@ pub fn slot(ts: i64, weekday: bool) -> usize {
     if weekday { (time::day(ts) + 3).rem_euclid(7) as usize } else { (ts.rem_euclid(86_400_000) / 3_600_000) as usize }
 }
 
+/// One trade from a per-market backtest, for replaying through a shared account.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ReplayTrade {
+    pub symbol: String,
+    pub entry_ts: i64,
+    pub exit_ts: i64,
+    /// Result in units of the trade's risk, after costs.
+    pub r: f64,
+}
+
+/// What happened when every market's signals shared one account.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct Replay {
+    pub risk_pct: f64,
+    pub max_open: usize,
+    /// Profit month by month, as a % of the account at the start of the month.
+    pub monthly: Vec<f64>,
+    pub month0: i64,
+    pub final_equity: f64,
+    pub max_drawdown_pct: f64,
+    pub annual_pct: f64,
+    pub signals: usize,
+    pub taken: usize,
+    /// Signals skipped because `max_open` positions were already open.
+    pub skipped: usize,
+    pub max_open_seen: usize,
+    pub avg_open: f64,
+    /// Number of days with 0, 1, 2 ... new signals, over the whole period.
+    pub signals_per_day: Vec<usize>,
+}
+
+/// Replays trades through one account: each trade risks `risk_pct` of the
+/// account's value when it opens, at most `max_open` positions are held at
+/// once, and results are booked when trades close. Starts at 1.
+pub fn replay(trades: &[ReplayTrade], risk_pct: f64, max_open: usize, from: i64, to: i64) -> Replay {
+    let mut t: Vec<&ReplayTrade> = trades.iter().filter(|x| x.entry_ts >= from && x.entry_ts < to).collect();
+    t.sort_by_key(|x| (x.entry_ts, x.exit_ts));
+    let mut equity = 1.0f64;
+    let mut open: Vec<(i64, f64)> = vec![]; // (exit time, amount at risk)
+    let (mut peak, mut dd, mut taken, mut skipped, mut max_seen) = (1.0f64, 0.0f64, 0usize, 0usize, 0usize);
+    let (m0, m1) = (time::month_index(from), time::month_index(to));
+    let mut month_end = vec![f64::NAN; (m1 - m0 + 1).max(0) as usize];
+    let mut open_sum = 0.0;
+    // Closed results, booked in time order.
+    let mut closes: Vec<(i64, f64)> = vec![];
+    for tr in &t {
+        // Book everything that closed before this trade opens.
+        closes.sort_by_key(|c| c.0);
+        let mut k = 0;
+        while k < closes.len() && closes[k].0 <= tr.entry_ts {
+            equity += closes[k].1;
+            peak = peak.max(equity);
+            dd = dd.min(equity / peak - 1.0);
+            let mi = (time::month_index(closes[k].0) - m0) as usize;
+            if mi < month_end.len() {
+                month_end[mi] = equity;
+            }
+            k += 1;
+        }
+        closes.drain(..k);
+        open.retain(|(exit, _)| *exit > tr.entry_ts);
+        if open.len() >= max_open {
+            skipped += 1;
+            continue;
+        }
+        let risk = equity * risk_pct / 100.0;
+        open.push((tr.exit_ts, risk));
+        max_seen = max_seen.max(open.len());
+        open_sum += open.len() as f64;
+        taken += 1;
+        closes.push((tr.exit_ts, tr.r * risk));
+    }
+    closes.sort_by_key(|c| c.0);
+    for (ts, pnl) in closes {
+        equity += pnl;
+        peak = peak.max(equity);
+        dd = dd.min(equity / peak - 1.0);
+        let mi = (time::month_index(ts) - m0) as usize;
+        if mi < month_end.len() {
+            month_end[mi] = equity;
+        }
+    }
+    // Month-end equity, carried forward through months without closes.
+    let mut last = 1.0;
+    let mut monthly = Vec::with_capacity(month_end.len());
+    for e in month_end {
+        let now = if e.is_finite() { e } else { last };
+        monthly.push(100.0 * (now / last - 1.0));
+        last = now;
+    }
+    let mut per_day: BTreeMap<i64, usize> = BTreeMap::new();
+    for tr in &t {
+        *per_day.entry(tr.entry_ts.div_euclid(86_400_000)).or_insert(0) += 1;
+    }
+    let days = ((to - from) / 86_400_000).max(1) as usize;
+    let mut hist = vec![0usize; per_day.values().copied().max().unwrap_or(0) + 1];
+    hist[0] = days.saturating_sub(per_day.len());
+    for n in per_day.values() {
+        hist[*n] += 1;
+    }
+    let years = (to - from) as f64 / (365.0 * 86_400_000.0);
+    Replay {
+        risk_pct,
+        max_open,
+        monthly,
+        month0: m0,
+        final_equity: equity,
+        max_drawdown_pct: 100.0 * dd,
+        annual_pct: 100.0 * (equity.max(1e-12).powf(1.0 / years.max(1e-9)) - 1.0),
+        signals: t.len(),
+        taken,
+        skipped,
+        max_open_seen: max_seen,
+        avg_open: if taken > 0 { open_sum / taken as f64 } else { 0.0 },
+        signals_per_day: hist,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -401,5 +519,17 @@ mod tests {
         // 1970-01-05 was a Monday.
         assert_eq!(slot(4 * 86_400_000, true), 0);
         assert_eq!(slot(3 * 3_600_000, false), 3);
+    }
+
+    #[test]
+    fn replay_sizes_from_the_account_and_caps_open_positions() {
+        let d = 86_400_000;
+        let t = |s: &str, a: i64, b: i64, r: f64| ReplayTrade { symbol: s.into(), entry_ts: a * d, exit_ts: b * d, r };
+        let trades = vec![t("A", 0, 5, 2.0), t("B", 1, 6, -1.0), t("C", 2, 3, 1.0), t("D", 7, 8, 1.0)];
+        let r = replay(&trades, 1.0, 2, 0, 30 * d);
+        assert_eq!((r.taken, r.skipped, r.max_open_seen), (3, 1, 2), "C is skipped: A and B are open");
+        // +2% and -1% on a 1.0 account, then D risks 1% of 1.01.
+        assert!((r.final_equity - (1.01 + 0.0101)).abs() < 1e-12, "{}", r.final_equity);
+        assert_eq!(r.signals_per_day[1], 4);
     }
 }

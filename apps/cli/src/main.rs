@@ -17,6 +17,7 @@ mod carry;
 mod community;
 mod prompt;
 mod quant;
+mod replay;
 mod report;
 mod server;
 mod study;
@@ -94,6 +95,9 @@ enum Cmd {
         /// Write the compact digest the app's Research tab reads.
         #[arg(long)]
         digest: Option<PathBuf>,
+        /// Print one variant's strategy file instead of running: family,variant,interval,cost
+        #[arg(long)]
+        export: Option<String>,
         #[command(flatten)]
         data: DataArgs,
     },
@@ -132,6 +136,33 @@ enum Cmd {
         output: Option<PathBuf>,
         #[arg(long, default_value = candlerail_data::sentiment::DEFAULT_API)]
         fear_greed_api: String,
+        #[command(flatten)]
+        data: DataArgs,
+    },
+    /// Backtest one strategy on many markets and replay every trade through one shared
+    /// account, at several risk levels and limits on open positions.
+    Replay {
+        strategy: String,
+        #[arg(long, value_delimiter = ',')]
+        symbols: Vec<String>,
+        #[arg(long)]
+        interval: String,
+        #[arg(long)]
+        from: String,
+        /// Report results before and after this date separately.
+        #[arg(long)]
+        split: String,
+        /// Risk per trade, % of the account.
+        #[arg(long, value_delimiter = ',', default_value = "0.5,1,2")]
+        risk: Vec<f64>,
+        #[arg(long, value_delimiter = ',', default_value = "5,10,20")]
+        max_open: Vec<usize>,
+        #[arg(long)]
+        name: Option<String>,
+        #[arg(long)]
+        description: Option<String>,
+        #[arg(short, long)]
+        output: Option<PathBuf>,
         #[command(flatten)]
         data: DataArgs,
     },
@@ -373,9 +404,25 @@ fn main() -> Result<()> {
             print!("{}", prompt::build());
             Ok(())
         }
-        Cmd::Study { file, output, digest, data } => {
+        Cmd::Study { file, output, digest, export, data } => {
             let spec =
                 study::parse(&std::fs::read_to_string(&file).with_context(|| format!("reading {}", file.display()))?)?;
+            if let Some(e) = export {
+                let p: Vec<&str> = e.split(',').collect();
+                let [fam, variant, interval, cost] = p[..] else {
+                    bail!("--export takes family,variant,interval,cost")
+                };
+                let f = spec.families.iter().find(|f| f.id == fam).with_context(|| format!("no family `{fam}`"))?;
+                let v = candlerail_core::study::variants(&spec, f)
+                    .into_iter()
+                    .nth(variant.parse()?)
+                    .context("no such variant")?;
+                let c = spec.costs.get(cost.parse::<usize>()?).context("no such cost scenario")?;
+                let s = candlerail_core::study::instantiate(f, &v, interval.parse().map_err(anyhow::Error::msg)?, c)
+                    .map_err(anyhow::Error::msg)?;
+                println!("{}", serde_json::to_string_pretty(&s)?);
+                return Ok(());
+            }
             let started = std::time::Instant::now();
             let r = study::run(&spec, &data.binance_api, &data.cache(), &|p| match p {
                 study::Progress::Loading { symbol, interval } => {
@@ -413,6 +460,32 @@ fn main() -> Result<()> {
             let spec: quant::Spec = serde_json::from_str(&text).context("not a valid portfolio study file")?;
             let r = quant::run(&spec, &data.binance_api, &fear_greed_api, &data.cache())?;
             quant::print(&r);
+            if let Some(out) = output {
+                std::fs::write(&out, study::to_json(&r)?)?;
+                println!("\nresult written to {}", out.display());
+            }
+            Ok(())
+        }
+        Cmd::Replay { strategy, symbols, interval, from, split, risk, max_open, name, description, output, data } => {
+            let s = load_strategy(&strategy)?;
+            ensure_valid(&s)?;
+            let iv: Interval = interval.parse().map_err(anyhow::Error::msg)?;
+            let from = time::parse(&from).context("bad --from")?;
+            let split = time::parse(&split).context("bad --split")?;
+            let costs = vec![
+                ("normal costs".to_string(), s.costs.fee_bps, s.costs.slippage_bps),
+                ("double costs".to_string(), 2.0 * s.costs.fee_bps, 2.0 * s.costs.slippage_bps),
+                ("0.1% fee, 0.5% slippage".to_string(), 10.0, 50.0),
+            ];
+            let mut r =
+                replay::run(&s, &symbols, iv, from, split, &risk, &max_open, &costs, &data.binance_api, &data.cache())?;
+            if let Some(n) = name {
+                r.name = n;
+            }
+            if let Some(d) = description {
+                r.description = d;
+            }
+            replay::print(&r);
             if let Some(out) = output {
                 std::fs::write(&out, study::to_json(&r)?)?;
                 println!("\nresult written to {}", out.display());
