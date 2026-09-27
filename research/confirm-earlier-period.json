@@ -1,0 +1,152 @@
+{
+  "name": "Confirmation B: the round 2 survivor on the 90 days before",
+  "description": "The same rule, unchanged, on the four original coins over the 90 days before the study period. Every trade counts as unseen data.",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "XRPUSDT"
+  ],
+  "intervals": [
+    "15m"
+  ],
+  "days": 90,
+  "split": 0.0,
+  "capital": 10000,
+  "costs": [
+    {
+      "label": "futures taker",
+      "fee_bps": 5,
+      "slippage_bps": 1
+    },
+    {
+      "label": "spot taker",
+      "fee_bps": 10,
+      "slippage_bps": 2
+    }
+  ],
+  "selection": {
+    "portfolio": true,
+    "min_trades_per_day": 1.5,
+    "max_trades_per_day": 20,
+    "min_avg_r": 0.05,
+    "min_markets": 3
+  },
+  "grid": {
+    "rr": [
+      2
+    ],
+    "stop": [
+      {
+        "label": "1.2%",
+        "v": {
+          "percent": 1.2
+        }
+      }
+    ],
+    "trend": [
+      {
+        "label": "with the 8h trend",
+        "long": {
+          "left": "close",
+          "op": ">",
+          "right": "trend"
+        },
+        "short": {
+          "left": "close",
+          "op": "<",
+          "right": "trend"
+        }
+      }
+    ]
+  },
+  "families": [
+    {
+      "id": "pin-level",
+      "name": "Pin bar at swing level",
+      "idea": "A hammer that holds the latest swing low, or a shooting star that holds the latest swing high.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Pin bar at swing level",
+        "indicators": {
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          },
+          "pa": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "pa.hammer",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "low",
+                "op": "<=",
+                "right": "sw.support + 0.3 * atr"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "sw.support"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "pa.shooting_star",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "high",
+                "op": ">=",
+                "right": "sw.resistance - 0.3 * atr"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "sw.resistance"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:8}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    }
+  ],
+  "offset_days": 90
+}
