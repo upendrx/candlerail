@@ -1,0 +1,1145 @@
+{
+  "name": "Intraday trades around the London and New York opens",
+  "description": "Opening-range breakouts and false breaks after the first 30 minutes of the London (08:00 local) and New York (09:30 local) opens, with daylight saving, and Study 1's reversal setups restricted to 1, 2 or 4 hours after the open or allowed any time, on ten major coins at 5 and 15 minutes over the last year. Chosen on the first eight months, judged on the last four, under futures and doubled costs.",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "XRPUSDT",
+    "BNBUSDT",
+    "DOGEUSDT",
+    "ADAUSDT",
+    "AVAXUSDT",
+    "LINKUSDT",
+    "LTCUSDT"
+  ],
+  "intervals": [
+    "5m",
+    "15m"
+  ],
+  "days": 365,
+  "split": 0.6667,
+  "capital": 10000,
+  "costs": [
+    {
+      "label": "futures taker",
+      "fee_bps": 5,
+      "slippage_bps": 1
+    },
+    {
+      "label": "double costs",
+      "fee_bps": 10,
+      "slippage_bps": 2
+    }
+  ],
+  "selection": {
+    "portfolio": true,
+    "min_trades_per_day": 1,
+    "max_trades_per_day": 40,
+    "min_avg_r": 0.05,
+    "min_markets": 6
+  },
+  "families": [
+    {
+      "id": "orb-break",
+      "name": "Opening-range breakout",
+      "idea": "After the first 30 minutes of the London or New York open, trade a close through that range's high (long) or low (short).",
+      "kind": "intraday",
+      "grid": {
+        "session": [
+          {
+            "label": "London",
+            "m": 2
+          },
+          {
+            "label": "New York",
+            "m": 1
+          }
+        ],
+        "window": [
+          {
+            "label": "first hour after the range",
+            "min": 30,
+            "max": 90
+          },
+          {
+            "label": "first 2 hours",
+            "min": 30,
+            "max": 150
+          },
+          {
+            "label": "first 4 hours",
+            "min": 30,
+            "max": 270
+          }
+        ],
+        "stop": [
+          {
+            "label": "other side of the range",
+            "v": {
+              "below": "or.low",
+              "above": "or.high"
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "rr": [
+          1,
+          2
+        ],
+        "trend": [
+          {
+            "label": "any",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "with the 8h trend",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": "trend"
+            },
+            "short": {
+              "left": "close",
+              "op": "<",
+              "right": "trend"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Opening-range breakout",
+        "indicators": {
+          "or": {
+            "type": "opening_range",
+            "minutes": 30,
+            "market": "{{session.m}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "or.ready",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "close",
+                "op": "crosses_above",
+                "right": "or.high"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "or.ready",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "close",
+                "op": "crosses_below",
+                "right": "or.low"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "orb-fade",
+      "name": "Opening-range false break",
+      "idea": "After the range, a candle pokes through its low (high) and closes back inside: trade back into the range.",
+      "kind": "intraday",
+      "grid": {
+        "session": [
+          {
+            "label": "London",
+            "m": 2
+          },
+          {
+            "label": "New York",
+            "m": 1
+          }
+        ],
+        "window": [
+          {
+            "label": "first hour after the range",
+            "min": 30,
+            "max": 90
+          },
+          {
+            "label": "first 2 hours",
+            "min": 30,
+            "max": 150
+          },
+          {
+            "label": "first 4 hours",
+            "min": 30,
+            "max": 270
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the signal candle",
+            "v": {
+              "below": "low - 0.1 * range",
+              "above": "high + 0.1 * range"
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "rr": [
+          1,
+          2
+        ],
+        "trend": [
+          {
+            "label": "any",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "with the 8h trend",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": "trend"
+            },
+            "short": {
+              "left": "close",
+              "op": "<",
+              "right": "trend"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Opening-range false break",
+        "indicators": {
+          "or": {
+            "type": "opening_range",
+            "minutes": 30,
+            "market": "{{session.m}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "or.ready",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "low",
+                "op": "<",
+                "right": "or.low"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "or.low"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "or.ready",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "high",
+                "op": ">",
+                "right": "or.high"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "or.high"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "s-sweep",
+      "name": "Stop sweep and reclaim, by session",
+      "idea": "Study 1's liquidity sweep of the last swing low or high, only in the chosen window after the open (or any time, for comparison).",
+      "kind": "intraday",
+      "grid": {
+        "session": [
+          {
+            "label": "London",
+            "m": 2
+          },
+          {
+            "label": "New York",
+            "m": 1
+          }
+        ],
+        "window": [
+          {
+            "label": "first hour after the range",
+            "min": 30,
+            "max": 90
+          },
+          {
+            "label": "first 2 hours",
+            "min": 30,
+            "max": 150
+          },
+          {
+            "label": "first 4 hours",
+            "min": 30,
+            "max": 270
+          },
+          {
+            "label": "any time (no session filter)",
+            "min": -100000,
+            "max": 100000
+          }
+        ],
+        "stop": [
+          {
+            "label": "1.2%",
+            "v": {
+              "percent": 1.2
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "rr": [
+          1.5,
+          2
+        ],
+        "trend": [
+          {
+            "label": "any",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "with the 8h trend",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": "trend"
+            },
+            "short": {
+              "left": "close",
+              "op": "<",
+              "right": "trend"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Stop sweep and reclaim, by session",
+        "indicators": {
+          "or": {
+            "type": "opening_range",
+            "minutes": 30,
+            "market": "{{session.m}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          },
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "low",
+                "op": "<",
+                "right": "sw.support"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "sw.support"
+              },
+              {
+                "left": "lower_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "high",
+                "op": ">",
+                "right": "sw.resistance"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "sw.resistance"
+              },
+              {
+                "left": "upper_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "s-pin",
+      "name": "Pin bar at swing level, by session",
+      "idea": "Study 1's pin bar at the latest swing low or high, only in the chosen window after the open.",
+      "kind": "intraday",
+      "grid": {
+        "session": [
+          {
+            "label": "London",
+            "m": 2
+          },
+          {
+            "label": "New York",
+            "m": 1
+          }
+        ],
+        "window": [
+          {
+            "label": "first hour after the range",
+            "min": 30,
+            "max": 90
+          },
+          {
+            "label": "first 2 hours",
+            "min": 30,
+            "max": 150
+          },
+          {
+            "label": "first 4 hours",
+            "min": 30,
+            "max": 270
+          },
+          {
+            "label": "any time (no session filter)",
+            "min": -100000,
+            "max": 100000
+          }
+        ],
+        "stop": [
+          {
+            "label": "1.2%",
+            "v": {
+              "percent": 1.2
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "rr": [
+          1.5,
+          2
+        ],
+        "trend": [
+          {
+            "label": "any",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "with the 8h trend",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": "trend"
+            },
+            "short": {
+              "left": "close",
+              "op": "<",
+              "right": "trend"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Pin bar at swing level, by session",
+        "indicators": {
+          "or": {
+            "type": "opening_range",
+            "minutes": 30,
+            "market": "{{session.m}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          },
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          },
+          "pa": {
+            "type": "patterns"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "pa.hammer",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "low",
+                "op": "<=",
+                "right": "sw.support + 0.3 * atr"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "sw.support"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "pa.shooting_star",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "high",
+                "op": ">=",
+                "right": "sw.resistance - 0.3 * atr"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "sw.resistance"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "s-engulf",
+      "name": "Engulfing at swing level, by session",
+      "idea": "Study 1's engulfing at the latest swing low or high, only in the chosen window after the open.",
+      "kind": "intraday",
+      "grid": {
+        "session": [
+          {
+            "label": "London",
+            "m": 2
+          },
+          {
+            "label": "New York",
+            "m": 1
+          }
+        ],
+        "window": [
+          {
+            "label": "first hour after the range",
+            "min": 30,
+            "max": 90
+          },
+          {
+            "label": "first 2 hours",
+            "min": 30,
+            "max": 150
+          },
+          {
+            "label": "first 4 hours",
+            "min": 30,
+            "max": 270
+          },
+          {
+            "label": "any time (no session filter)",
+            "min": -100000,
+            "max": 100000
+          }
+        ],
+        "stop": [
+          {
+            "label": "1.2%",
+            "v": {
+              "percent": 1.2
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "rr": [
+          1.5,
+          2
+        ],
+        "trend": [
+          {
+            "label": "any",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "with the 8h trend",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": "trend"
+            },
+            "short": {
+              "left": "close",
+              "op": "<",
+              "right": "trend"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Engulfing at swing level, by session",
+        "indicators": {
+          "or": {
+            "type": "opening_range",
+            "minutes": 30,
+            "market": "{{session.m}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          },
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          },
+          "pa": {
+            "type": "patterns"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "pa.bullish_engulfing",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "low",
+                "op": "<=",
+                "right": "sw.support + 0.5 * atr"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "pa.bearish_engulfing",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "high",
+                "op": ">=",
+                "right": "sw.resistance - 0.5 * atr"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "s-hour",
+      "name": "Previous-hour rejection, by session",
+      "idea": "Study 1's rejection of the previous hour's low or high, only in the chosen window after the open.",
+      "kind": "intraday",
+      "grid": {
+        "session": [
+          {
+            "label": "London",
+            "m": 2
+          },
+          {
+            "label": "New York",
+            "m": 1
+          }
+        ],
+        "window": [
+          {
+            "label": "first hour after the range",
+            "min": 30,
+            "max": 90
+          },
+          {
+            "label": "first 2 hours",
+            "min": 30,
+            "max": 150
+          },
+          {
+            "label": "first 4 hours",
+            "min": 30,
+            "max": 270
+          },
+          {
+            "label": "any time (no session filter)",
+            "min": -100000,
+            "max": 100000
+          }
+        ],
+        "stop": [
+          {
+            "label": "1.2%",
+            "v": {
+              "percent": 1.2
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "rr": [
+          1.5,
+          2
+        ],
+        "trend": [
+          {
+            "label": "any",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "with the 8h trend",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": "trend"
+            },
+            "short": {
+              "left": "close",
+              "op": "<",
+              "right": "trend"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Previous-hour rejection, by session",
+        "indicators": {
+          "or": {
+            "type": "opening_range",
+            "minutes": 30,
+            "market": "{{session.m}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          },
+          "ph": {
+            "type": "period",
+            "minutes": 60
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "low",
+                "op": "<",
+                "right": "ph.prev_low"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "ph.prev_low"
+              },
+              {
+                "left": "lower_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "high",
+                "op": ">",
+                "right": "ph.prev_high"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "ph.prev_high"
+              },
+              {
+                "left": "upper_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              {
+                "left": "or.minutes",
+                "op": ">=",
+                "right": "{{window.min}}"
+              },
+              {
+                "left": "or.minutes",
+                "op": "<=",
+                "right": "{{window.max}}"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    }
+  ]
+}
