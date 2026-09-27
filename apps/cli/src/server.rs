@@ -12,11 +12,16 @@
 //! | `GET /api/community` | strategies shared by the community, with their results |
 //! | `POST /api/candles` | candles for a market and period, for the chart lab |
 //! | `POST /api/scan` | every candle where a strategy's entry rules hold |
+//! | `GET /api/studies` | recorded research studies |
+//! | `GET /api/studies/{id}` | one study's full result |
+//! | `POST /api/studies/{id}/strategy` | the strategy file for one variant of a study |
+//! | `POST /api/studies/{id}/detail` | one variant's per-market and per-trend detail |
+//! | `POST /api/studies/{id}/run` | re-run a study on the latest data |
 //! | `GET /api/prompt` | instructions for an AI assistant |
 //! | `GET /schema.json` | JSON Schema for strategy files |
 
-use crate::{community, default_span, now_ms, prompt, templates};
-use axum::extract::State;
+use crate::{community, default_span, now_ms, prompt, study, templates};
+use axum::extract::{Path as UrlPath, State};
 use axum::http::{StatusCode, header};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
@@ -24,17 +29,32 @@ use axum::{Json, Router};
 use candlerail_core::indicators::CATALOG;
 use candlerail_core::share::Share;
 use candlerail_core::spec::PRICE_FIELDS;
+use candlerail_core::study::{self as core_study, Digest};
 use candlerail_core::{BacktestConfig, Interval, Strategy, explain, time};
 use candlerail_data::{Query, binance};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 const INDEX: &str = include_str!("../../../ui/index.html");
 const LAB: &str = include_str!("../../../ui/lab.js");
 const CHARTS: &str = include_str!("../../../ui/vendor/lightweight-charts.js");
 const SCHEMA: &str = include_str!("../../../schema/strategy.schema.json");
+/// Recorded study digests, shipped with the app, in the order the Research tab tells them.
+const STUDIES: &[(&str, &str)] = &[
+    ("intraday-reversals", include_str!("../../../research/results/intraday-reversals.json")),
+    ("intraday-reversals-2", include_str!("../../../research/results/intraday-reversals-2.json")),
+    ("confirm-other-coins", include_str!("../../../research/results/confirm-other-coins.json")),
+    ("confirm-earlier-period", include_str!("../../../research/results/confirm-earlier-period.json")),
+];
+
+fn studies() -> &'static Vec<(String, Digest)> {
+    static PARSED: OnceLock<Vec<(String, Digest)>> = OnceLock::new();
+    PARSED.get_or_init(|| {
+        STUDIES.iter().filter_map(|(id, text)| serde_json::from_str(text).ok().map(|r| (id.to_string(), r))).collect()
+    })
+}
 
 struct App {
     cache: PathBuf,
@@ -61,6 +81,11 @@ pub fn serve(listen: &str, ui_dir: Option<PathBuf>, cache: PathBuf, api: String)
         .route("/api/community", get(community))
         .route("/api/candles", post(candles))
         .route("/api/scan", post(scan))
+        .route("/api/studies", get(list_studies))
+        .route("/api/studies/{id}", get(get_study))
+        .route("/api/studies/{id}/strategy", post(study_strategy))
+        .route("/api/studies/{id}/detail", post(study_detail))
+        .route("/api/studies/{id}/run", post(run_study))
         .with_state(app);
     let rt = tokio::runtime::Builder::new_multi_thread().worker_threads(2).enable_all().build()?;
     rt.block_on(async {
@@ -323,5 +348,103 @@ async fn scan(State(app): State<Arc<App>>, Json(req): Json<ScanReq>) -> Response
                 .into_response()
         }
         Err(e) => err(StatusCode::BAD_REQUEST, e).into_response(),
+    }
+}
+
+async fn list_studies() -> Json<Value> {
+    let list: Vec<Value> = studies()
+        .iter()
+        .map(|(id, r)| {
+            json!({
+                "id": id,
+                "name": r.study.name,
+                "description": r.study.description,
+                "generated_at": r.generated_at,
+                "variants": r.rows.len(),
+                "selected": r.rows.iter().filter(|x| x.selected).count(),
+                "survived": r.rows.iter().filter(|x| x.survived).count(),
+            })
+        })
+        .collect();
+    Json(Value::Array(list))
+}
+
+async fn get_study(UrlPath(id): UrlPath<String>) -> Response {
+    match STUDIES.iter().find(|(i, _)| *i == id) {
+        Some((_, text)) => ([(header::CONTENT_TYPE, "application/json")], *text).into_response(),
+        None => err(StatusCode::NOT_FOUND, vec![format!("no study `{id}`")]).into_response(),
+    }
+}
+
+#[derive(Deserialize)]
+struct VariantReq {
+    family: String,
+    variant: usize,
+    interval: Interval,
+    cost: usize,
+}
+
+/// Rebuilds the exact strategy file a study tested.
+async fn study_strategy(UrlPath(id): UrlPath<String>, Json(req): Json<VariantReq>) -> Response {
+    let Some((_, r)) = studies().iter().find(|(i, _)| *i == id) else {
+        return err(StatusCode::NOT_FOUND, vec![format!("no study `{id}`")]).into_response();
+    };
+    let s = &r.study;
+    let (Some(fam), Some(cost)) = (s.families.iter().find(|f| f.id == req.family), s.costs.get(req.cost)) else {
+        return err(StatusCode::NOT_FOUND, vec!["no such family or cost scenario".into()]).into_response();
+    };
+    let Some(v) = core_study::variants(s, fam).into_iter().nth(req.variant) else {
+        return err(StatusCode::NOT_FOUND, vec!["no such variant".into()]).into_response();
+    };
+    match core_study::instantiate(fam, &v, req.interval, cost) {
+        Ok(st) => Json(json!({ "ok": true, "strategy": st, "idea": fam.idea })).into_response(),
+        Err(e) => err(StatusCode::BAD_REQUEST, vec![e]).into_response(),
+    }
+}
+
+/// Per-market and per-trend detail for one variant: recorded for selected
+/// variants, recomputed on the recorded data window for the rest.
+async fn study_detail(
+    State(app): State<Arc<App>>,
+    UrlPath(id): UrlPath<String>,
+    Json(req): Json<VariantReq>,
+) -> Response {
+    let Some((_, d)) = studies().iter().find(|(i, _)| *i == id) else {
+        return err(StatusCode::NOT_FOUND, vec![format!("no study `{id}`")]).into_response();
+    };
+    let Some(family) = d.study.families.iter().position(|f| f.id == req.family) else {
+        return err(StatusCode::NOT_FOUND, vec!["no such family".into()]).into_response();
+    };
+    if let Some(s) = d.details.iter().find(|s| {
+        s.family == req.family && s.variant == req.variant && s.interval == req.interval && s.cost == req.cost
+    }) {
+        return Json(json!({ "ok": true, "summary": s, "recorded": true })).into_response();
+    }
+    let res = tokio::task::spawn_blocking(move || {
+        study::detail(d, family, req.variant, req.interval, req.cost, &app.api, &app.cache)
+    })
+    .await;
+    match res {
+        Ok(Ok(s)) => Json(json!({ "ok": true, "summary": s, "recorded": false })).into_response(),
+        Ok(Err(e)) => err(StatusCode::BAD_GATEWAY, vec![format!("{e:#}")]).into_response(),
+        Err(e) => err(StatusCode::INTERNAL_SERVER_ERROR, vec![e.to_string()]).into_response(),
+    }
+}
+
+/// Runs a recorded study again on the latest candles. This downloads months of
+/// 1-minute data the first time, so it can take several minutes.
+async fn run_study(State(app): State<Arc<App>>, UrlPath(id): UrlPath<String>) -> Response {
+    let Some((_, r)) = studies().iter().find(|(i, _)| *i == id) else {
+        return err(StatusCode::NOT_FOUND, vec![format!("no study `{id}`")]).into_response();
+    };
+    let spec = r.study.clone();
+    let res = tokio::task::spawn_blocking(move || {
+        study::run(&spec, &app.api, &app.cache, &|_| {}).and_then(|r| study::to_json(&Digest::new(&r)))
+    })
+    .await;
+    match res {
+        Ok(Ok(text)) => ([(header::CONTENT_TYPE, "application/json")], text).into_response(),
+        Ok(Err(e)) => err(StatusCode::BAD_GATEWAY, vec![format!("{e:#}")]).into_response(),
+        Err(e) => err(StatusCode::INTERNAL_SERVER_ERROR, vec![e.to_string()]).into_response(),
     }
 }
