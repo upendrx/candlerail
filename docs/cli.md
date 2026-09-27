@@ -96,7 +96,8 @@ judged on the rest.
 candlerail study <file> [-o FULL.json] [--digest DIGEST.json] [--cache-dir DIR] [--binance-api URL]
 ```
 
-It prints the selected variants, best in sample first, with their held-out
+With `--export family,variant,interval,cost` it prints that variant's
+strategy file instead of running. Otherwise it prints the selected variants, best in sample first, with their held-out
 results. `-o` writes every variant's full per-market result; `--digest`
 writes the compact form the app's Research tab reads.
 
@@ -126,6 +127,23 @@ candlerail quant <file> [-o FILE] [--cache-dir DIR] [--binance-api URL] [--fear-
 The file names a `kind` (`rotation`, `sentiment`, `seasonality` or `pairs`),
 the coins, the interval, `from` and `split` dates, a cost in basis points,
 and a `grid` of settings (or explicit `combos`). See `research/*.json`.
+
+## replay
+
+Backtests one strategy on many markets, then replays every trade through one
+shared account, the way a live bot would trade it: each trade risks a share
+of the account's value when it opens, and signals are skipped while the
+limit of open positions is reached.
+
+```text
+candlerail replay <strategy> --symbols A,B,C --interval 1d --from DATE --split DATE
+                  [--risk 0.5,1,2] [--max-open 5,10,20] [-o FILE]
+```
+
+It reports each combination with normal costs, doubled costs, and 0.1% fees
+with 0.5% slippage, for the whole period and before and after `--split`.
+`candlerail study FILE --export family,variant,interval,cost` prints any
+study variant as a strategy file to replay.
 
 ## Exit codes
 

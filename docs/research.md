@@ -27,6 +27,11 @@ explorer for every variant.
 | 3.4 | Time of day and day of week | Hour patterns reversed out of sample, even before costs |
 | 3.5 | Pairs trading | No pair survived costs |
 | 3.6 | Combining strategies | Correlation 0.46: together they fall far less than either alone |
+| **4** | Weekly swings, market opens and early entries | **Weekly engulfing with a BTC filter: about +1R a trade, on seen and unseen coins** |
+| 4.1 | Weekly patterns on 43 coins, entered on the daily chart | 369 selected, 127 survived; BTC filter and daily confirmation helped |
+| 4.2 | Intraday around the London and New York opens | 0 selected; the session filter didn't improve any setup |
+| 4.3 | Daily patterns entered on hourly candles | More trades, tighter stops, worse results |
+| 4.4 | One account, real costs | About 40% a year at 0.5% risk; weaker on unseen coins since 2024 |
 
 # Study 1: intraday reversals on major coins
 
@@ -303,6 +308,80 @@ On $500 the combined plan's average month is about $22, with a worst month
 of about −$48. Doubling every position roughly doubles both: 2× averaged
 +8.7% a month with a largest fall of about 37%. The Research tab's 3.1 page
 simulates 5,000 random years at each size.
+
+# Study 4: weekly swings, market opens and early entries
+
+Three questions: do weekly candle patterns, entered on the daily chart,
+work across many coins, especially with bitcoin's trend as a filter? Are
+intraday trades better around the London and New York opens? Does entering
+a daily pattern early on the hourly chart help? And would any of it survive
+real trading?
+
+New engine features made these testable: patterns on higher timeframes
+(`patterns` with `minutes`), a context market that rules can read
+(`"context": "BTCUSDT"` with `"on": "context"`), stock-market opens that
+follow daylight saving (`opening_range` with `market`), and a portfolio
+replay that trades every coin through one account.
+
+## 4.1 Weekly patterns, daily entries
+
+Six weekly setups (engulfing, hammer or shooting star, morning or evening
+star, three soldiers or crows, marubozu, inside-week breakout) on 43 coins
+including dead ones, entered at the next week's open, on a daily close
+above the previous day's high, or on a pullback, with no BTC filter or with
+BTC above its 50-day or 20-week average; stops beyond the pattern week or
+at 2 ATR; targets 2R, 3R or hold up to four weeks; long only or long and
+short. 49,536 backtests, chosen on May 2020 to August 2024.
+
+**369 selected, 127 survived.** Long-only medians after the split: BTC above
+its 50-day average +0.21R (none +0.09R); daily confirmation +0.28R (at the
+open +0.05R); holding up to four weeks beat fixed targets. The best: a
+weekly bullish engulfing, bought on a daily close above the previous day's
+high while BTC is above its 50-day average, 2 ATR stop, held up to 28 days:
+**+1.0R a trade before the split, +1.25R after**, profitable on 34 of 43
+coins, +1.23R with doubled costs.
+
+## 4.2 Intraday around the market opens
+
+Opening-range breakouts and false breaks after the first 30 minutes of the
+London (08:00 local) and New York (09:30 local) opens, and Study 1's
+reversal setups limited to 1, 2 or 4 hours after the open or allowed any
+time, on ten coins at 5 and 15 minutes over a year. **None selected.**
+Before costs every group averaged about 0R; the session filter cut trades
+from about 25 a day to 2 to 5 across the ten coins without improving them.
+
+## 4.3 Daily patterns, hourly entries
+
+Four daily setups traded on hourly candles or, for comparison, on daily
+candles. Hourly entries with a tight stop under the entry candle averaged
+−0.28R after the split, won 24% of trades and paid 0.25R in fees; with the
+stop beyond the pattern day they were about equal to entering on the daily
+chart (+0.01R against +0.04R).
+
+## 4.4 One account, real costs
+
+The 4.1 pick replayed through one account, every signal on all 43 coins:
+
+| Risk per trade, max open | A year, 2020 to 2026 | Largest fall | A year since Aug 2024 |
+|---|---|---|---|
+| 0.5%, 20 | +43% | −21% | +52% |
+| 1%, 20 | +78% | −37% | +96% |
+| 0.5%, 20, 0.5% slippage | +36% | −24% | +44% |
+
+On 24 coins it never saw (OP, ARB, SUI, PEPE, TON, INJ, HBAR and others):
++1.00R a trade on 243 trades, profitable on 21 of 24; +18% a year at 0.5%
+risk, and +8% a year since August 2024.
+
+About 1.9 signals a week across 43 coins; 11% of days have one. The median
+month is 0% (the BTC filter keeps the account in cash), and the best five
+months produced about 87% of the whole gain. With a stop about 10% away,
+0.5% risk makes each position about 5% of the account, so 20 positions fit
+a spot account without leverage.
+
+```bash
+candlerail study research/weekly-patterns.json --export w-engulf,53,1d,0 > pick.json
+candlerail replay pick.json --symbols BTCUSDT,ETHUSDT,... --interval 1d --from 2020-05-21 --split 2024-08-15
+```
 
 ## Running a study
 

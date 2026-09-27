@@ -36,6 +36,7 @@ definition is [`schema/strategy.schema.json`](../schema/strategy.schema.json).
 | `name` | yes | Display name |
 | `description`, `about` | no | Text for people; `about` holds `category`, `timeframe`, `how_it_works`, `works_best`, `fails_when` |
 | `market` | no | Default `symbol` and `interval` (`1m 5m 15m 30m 1h 4h 1d 1w`); the app and CLI can override them |
+| `context` | no | A second market, e.g. `"BTCUSDT"`, that indicators can read with `"on": "context"` (see [Context market](#context-market)) |
 | `indicators` | no | Indicators by id: `"<id>": { "type": "<kind>", <settings> }`. Missing settings use defaults. |
 | `entry` | yes | `long` and/or `short` conditions |
 | `exit` | see below | Exit rules and protective orders |
@@ -164,6 +165,29 @@ Positions closed by these rules exit at the next open with reason
 `risk_limit`. The report counts every blocked entry by rule. See
 [Money management](money-management.md) for how to choose the numbers.
 
+## Context market
+
+Altcoins mostly follow bitcoin. To use another market's trend in rules, name
+it in `context` and give an indicator `"on": "context"`; that indicator is
+fed the context market's candles, matched by time, instead of the traded
+market's:
+
+```json
+"context": "BTCUSDT",
+"indicators": {
+  "btc":   { "type": "sma", "period": 1,  "on": "context" },
+  "btc50": { "type": "sma", "period": 50, "on": "context" }
+},
+"entry": { "long": { "all": [
+  { "left": "close", "op": ">", "right": "high[1]" },
+  { "left": "btc", "op": ">", "right": "btc50" }
+] } }
+```
+
+A 1-period average is the context market's close. The app, `candlerail
+backtest` and studies download the context market's candles for the same
+period automatically.
+
 ## Price-action indicators
 
 These describe raw price rather than smoothing it. The
@@ -171,10 +195,10 @@ These describe raw price rather than smoothing it. The
 
 | `type` | Settings | Outputs |
 |---|---|---|
-| `patterns` | `wick_ratio` (2), `doji_percent` (10) | `bullish_engulfing`, `bearish_engulfing`, `hammer`, `shooting_star`, `doji`, `inside_bar`, `outside_bar`, `morning_star`, `evening_star`, `three_white_soldiers`, `three_black_crows`, `bullish_marubozu`, `bearish_marubozu`: 1 on the candle that completes the pattern, else 0 |
+| `patterns` | `wick_ratio` (2), `doji_percent` (10), `minutes` (0) | With `minutes` 1440 or 10080, patterns are read on daily or weekly candles built from the chart's, known at the close of the period's last candle and kept on through the next period. `bar_high`, `bar_low`, `bar2_high`, `bar2_low`: the last two candles' extremes (on that timeframe), for stops. Flags: `bullish_engulfing`, `bearish_engulfing`, `hammer`, `shooting_star`, `doji`, `inside_bar`, `outside_bar`, `morning_star`, `evening_star`, `three_white_soldiers`, `three_black_crows`, `bullish_marubozu`, `bearish_marubozu`: 1 on the candle that completes the pattern, else 0 |
 | `swings` | `left` (3), `right` (3) | `resistance`, `support` (latest confirmed swing high and low), `prev_resistance`, `prev_support`, `structure` (1 higher highs and lows, −1 lower, 0 mixed) |
 | `period` | `minutes` (1440) | `open`, `high`, `low` of the current higher-timeframe period so far; `prev_open`, `prev_high`, `prev_low`, `prev_close` of the last completed one. 60, 240, 1440 (UTC day), 10080 (week from Monday) or 43200 (calendar month) |
-| `opening_range` | `minutes` (15), `session_start` (0) | `high`, `low` of the first `minutes` of each session, and `ready` (1 once complete). `session_start` is minutes after 00:00 UTC, e.g. 810 for 13:30 UTC |
+| `opening_range` | `minutes` (15), `session_start` (0), `market` (0) | `high`, `low` of the first `minutes` of each session, `ready` (1 once complete), and `minutes`: minutes since the session opened. `session_start` is minutes after 00:00 UTC; `market` 1, 2 or 3 follows the New York (09:30), London (08:00) or Tokyo (09:00) open through daylight saving |
 | `volume_avg` | `period` (20) | `average` volume of the previous candles, and `relative`: this candle's volume ÷ that average |
 
 A swing is only confirmed `right` candles after it happens, and `period`
