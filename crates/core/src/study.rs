@@ -373,12 +373,13 @@ pub fn evaluate(
     strategy: &Strategy,
     symbol: &str,
     candles: &[Candle],
+    context: &[Candle],
     capital: f64,
     interval: Interval,
     split_ts: i64,
 ) -> Result<MarketResult, Vec<String>> {
     let cfg = BacktestConfig { capital, interval, record_indicators: false, ..BacktestConfig::default() };
-    let r = backtest::run(strategy, candles, &cfg)?;
+    let r = backtest::run_with_context(strategy, candles, context, &cfg)?;
     let (mut is, mut oos) = (Part::default(), Part::default());
     let mut by_trend = ByTrend::default();
     let mut monthly = BTreeMap::new();
@@ -640,6 +641,9 @@ pub struct Digest {
     pub monthly: Vec<Vec<f64>>,
 }
 
+/// Selected variants kept with full per-market detail in a digest.
+pub const MAX_DETAILS: usize = 60;
+
 impl Digest {
     pub fn new(r: &StudyResult) -> Self {
         let fam = |id: &str| r.study.families.iter().position(|f| f.id == id).unwrap_or(0);
@@ -674,7 +678,16 @@ impl Digest {
                     survived: s.survived,
                 })
                 .collect(),
-            details: r.summaries.iter().filter(|s| s.selected || r.summaries.len() <= 50).cloned().collect(),
+            details: {
+                // Full detail for the best selected variants; the rest is recomputed on demand.
+                let mut d: Vec<Summary> =
+                    r.summaries.iter().filter(|s| s.selected || r.summaries.len() <= 50).cloned().collect();
+                d.sort_by(|a, b| {
+                    b.in_sample.avg_r().partial_cmp(&a.in_sample.avg_r()).unwrap_or(std::cmp::Ordering::Equal)
+                });
+                d.truncate(MAX_DETAILS);
+                d
+            },
             errors: r.errors.clone(),
             month0: r.month0,
             buy_hold_monthly: r.buy_hold_monthly.clone(),
@@ -781,7 +794,7 @@ mod tests {
                  "exit": { "max_bars": 1, "stop_loss": { "percent": 1 } }, "sizing": { "type": "risk_percent", "value": 1 } }"#,
         )
         .unwrap();
-        let m = evaluate(&s, "X", &candles, 10_000.0, Interval::M5, i64::MAX).unwrap();
+        let m = evaluate(&s, "X", &candles, &[], 10_000.0, Interval::M5, i64::MAX).unwrap();
         assert!(m.by_trend.up.trades > 0, "trades just after the rally count as uptrend");
         assert!(m.by_trend.sideways.trades > 0);
         assert_eq!(m.by_trend.down.trades, 0);

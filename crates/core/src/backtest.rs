@@ -225,6 +225,31 @@ fn charted(kind: &str) -> bool {
 
 /// Runs a backtest. Fails only if the strategy doesn't validate or there are no candles.
 pub fn run(strategy: &Strategy, candles: &[Candle], cfg: &BacktestConfig) -> Result<Report, Vec<String>> {
+    run_with_context(strategy, candles, &[], cfg)
+}
+
+/// The context market's candle at each of `candles`' times, if it has one.
+pub fn align<'a>(candles: &[Candle], context: &'a [Candle]) -> Vec<Option<&'a Candle>> {
+    let mut j = 0;
+    candles
+        .iter()
+        .map(|c| {
+            while j < context.len() && context[j].ts < c.ts {
+                j += 1;
+            }
+            context.get(j).filter(|x| x.ts == c.ts)
+        })
+        .collect()
+}
+
+/// Runs a backtest with the candles of the strategy's context market.
+pub fn run_with_context(
+    strategy: &Strategy,
+    candles: &[Candle],
+    context: &[Candle],
+    cfg: &BacktestConfig,
+) -> Result<Report, Vec<String>> {
+    let ctx = align(candles, context);
     if candles.is_empty() {
         return Err(vec!["no candles to test on".into()]);
     }
@@ -252,7 +277,7 @@ pub fn run(strategy: &Strategy, candles: &[Candle], cfg: &BacktestConfig) -> Res
     let mut bars_in_market = 0usize;
     let mut guard = Guard::new(&strategy.risk, cfg.capital, candles[0].ts);
 
-    for bar in candles {
+    for (k, bar) in candles.iter().enumerate() {
         guard.new_bar(bar.ts, equity.last().map_or(cfg.capital, |e: &EquityPoint| e.equity));
         // 1. Fill what was decided at the last close.
         if let Some(reason) = pending_exit.take() {
@@ -272,7 +297,7 @@ pub fn run(strategy: &Strategy, candles: &[Candle], cfg: &BacktestConfig) -> Res
             broker.check_bar(bar);
         }
         // 3. Close: update indicators and evaluate rules.
-        c.push(bar, &mut history);
+        c.push(bar, ctx[k], &mut history);
         let mut k = 0;
         for slot in c.slots.iter().filter(|slot| cfg.record_indicators && charted(slot.info.kind)) {
             for o in 0..slot.info.outputs.len() {

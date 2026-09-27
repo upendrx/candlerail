@@ -239,6 +239,19 @@ struct Loaded {
     candles: Vec<Candle>,
 }
 
+/// Candles of the strategy's context market over the same period, if it names one.
+fn load_context(s: &Strategy, m: &MarketArgs, d: &DataArgs, l: &Loaded) -> Result<Vec<Candle>> {
+    let (Some(ctx), Some(first), Some(last)) = (&s.context, l.candles.first(), l.candles.last()) else {
+        return Ok(vec![]);
+    };
+    if m.csv.is_some() {
+        bail!("strategies with a context market need Binance data for it; run without --csv");
+    }
+    let q =
+        Query { symbol: ctx.to_uppercase(), interval: l.interval, from: first.ts, to: last.ts + l.interval.millis() };
+    binance::load(&d.binance_api, &d.cache(), &q, |_| {})
+}
+
 fn load_candles(s: Option<&Strategy>, m: &MarketArgs, d: &DataArgs) -> Result<Loaded> {
     let interval: Interval = match m.interval.as_deref() {
         Some(i) => i.parse().map_err(anyhow::Error::msg)?,
@@ -280,7 +293,9 @@ fn main() -> Result<()> {
             ensure_valid(&s)?;
             let l = load_candles(Some(&s), &market, &data)?;
             let cfg = BacktestConfig { capital: market.capital, interval: l.interval, ..BacktestConfig::default() };
-            let r = candlerail_core::run(&s, &l.candles, &cfg).map_err(|e| anyhow::anyhow!(e.join("\n")))?;
+            let context = load_context(&s, &market, &data, &l)?;
+            let r = candlerail_core::backtest::run_with_context(&s, &l.candles, &context, &cfg)
+                .map_err(|e| anyhow::anyhow!(e.join("\n")))?;
             report::print(&r, &l.symbol, l.interval);
             if let Some(path) = json {
                 std::fs::write(&path, serde_json::to_string_pretty(&r)?)?;
@@ -409,7 +424,9 @@ fn main() -> Result<()> {
             ensure_valid(&s)?;
             let l = load_candles(Some(&s), &market, &data)?;
             let cfg = BacktestConfig { capital: market.capital, interval: l.interval, ..BacktestConfig::default() };
-            let r = candlerail_core::run(&s, &l.candles, &cfg).map_err(|e| anyhow::anyhow!(e.join("\n")))?;
+            let context = load_context(&s, &market, &data, &l)?;
+            let r = candlerail_core::backtest::run_with_context(&s, &l.candles, &context, &cfg)
+                .map_err(|e| anyhow::anyhow!(e.join("\n")))?;
             let mut sh = candlerail_core::share::Share::new(&s, &r, &l.symbol, l.interval, env!("CARGO_PKG_VERSION"));
             sh.author = author;
             sh.notes = notes;

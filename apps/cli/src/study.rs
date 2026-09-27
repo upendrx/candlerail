@@ -55,7 +55,7 @@ pub fn run(study: &Study, api: &str, cache: &Path, progress: &(dyn Fn(Progress) 
         }
     }
 
-    let mut jobs = vec![];
+    let mut jobs: Vec<Job> = vec![];
     let mut errors = vec![];
     let mut variants = vec![];
     for (fi, fam) in study.families.iter().enumerate() {
@@ -77,6 +77,22 @@ pub fn run(study: &Study, api: &str, cache: &Path, progress: &(dyn Fn(Progress) 
         variants.push(vs);
     }
 
+    // Context markets (such as BTC for a BTC trend filter), on each timeframe.
+    let mut contexts: BTreeMap<(String, Interval), Vec<Candle>> = BTreeMap::new();
+    for job in &jobs {
+        if let Some(ctx) = &job.strategy.context {
+            let key = (ctx.to_uppercase(), job.interval);
+            if let std::collections::btree_map::Entry::Vacant(e) = contexts.entry(key.clone()) {
+                let c = match data.get(&key) {
+                    Some(c) => c.clone(),
+                    None => {
+                        binance::load(api, cache, &Query { symbol: key.0.clone(), interval: key.1, from, to }, |_| {})?
+                    }
+                };
+                e.insert(c);
+            }
+        }
+    }
     let symbols: Vec<String> = study.symbols.iter().map(|s| s.to_uppercase()).collect();
     let total = jobs.len() * symbols.len();
     let next = AtomicUsize::new(0);
@@ -94,7 +110,13 @@ pub fn run(study: &Study, api: &str, cache: &Path, progress: &(dyn Fn(Progress) 
                     }
                     let (job, sym) = (&jobs[k / symbols.len()], &symbols[k % symbols.len()]);
                     let candles = &data[&(sym.clone(), job.interval)];
-                    match study::evaluate(&job.strategy, sym, candles, study.capital, job.interval, split_ts) {
+                    let ctx = job
+                        .strategy
+                        .context
+                        .as_ref()
+                        .and_then(|c| contexts.get(&(c.to_uppercase(), job.interval)))
+                        .map_or(&[][..], |v| &v[..]);
+                    match study::evaluate(&job.strategy, sym, candles, ctx, study.capital, job.interval, split_ts) {
                         Ok(m) => results
                             .lock()
                             .expect("results lock")
@@ -257,11 +279,20 @@ pub fn detail(
     let c = s.costs.get(cost).ok_or_else(|| anyhow::anyhow!("no cost scenario {cost}"))?;
     let strategy = study::instantiate(fam, &v, interval, c).map_err(anyhow::Error::msg)?;
     let mut markets = vec![];
+    let (from, to) = d
+        .data
+        .iter()
+        .filter(|r| r.interval == interval)
+        .fold((i64::MAX, i64::MIN), |(a, b), r| (a.min(r.from), b.max(r.to + interval.millis())));
+    let context = match &strategy.context {
+        Some(c) => binance::load(api, cache, &Query { symbol: c.to_uppercase(), interval, from, to }, |_| {})?,
+        None => vec![],
+    };
     for r in d.data.iter().filter(|r| r.interval == interval) {
         let q = Query { symbol: r.symbol.clone(), interval, from: r.from, to: r.to + interval.millis() };
         let candles = binance::load(api, cache, &q, |_| {})?;
         markets.push(
-            study::evaluate(&strategy, &r.symbol, &candles, s.capital, interval, d.split_ts)
+            study::evaluate(&strategy, &r.symbol, &candles, &context, s.capital, interval, d.split_ts)
                 .map_err(|e| anyhow::anyhow!(e.join("; ")))?,
         );
     }

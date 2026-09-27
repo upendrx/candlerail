@@ -38,6 +38,10 @@ pub struct Strategy {
     pub about: Option<About>,
     #[serde(default)]
     pub market: Market,
+    /// A second market whose candles indicators can read with `"on": "context"`,
+    /// e.g. BTCUSDT to trade altcoins only when bitcoin's trend is up.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub context: Option<String>,
     /// Indicators by the id rules use to refer to them.
     #[serde(default)]
     pub indicators: BTreeMap<String, Map<String, Value>>,
@@ -419,6 +423,8 @@ pub struct IndicatorSlot {
     pub params: Vec<f64>,
     pub label: String,
     pub ind: Box<dyn Indicator>,
+    /// Fed the context market's candles instead of the traded market's.
+    pub on_context: bool,
 }
 
 /// A strategy with references resolved, ready to run bar by bar.
@@ -759,11 +765,31 @@ pub fn compile(s: &Strategy) -> Result<Compiled, Vec<String>> {
             cx.errors.push(format!("indicators.{id}: unknown type `{kind}` (available: {})", known.join(", ")));
             continue;
         };
-        match indicators::resolve_params(info, def) {
+        let on_context = match def.get("on") {
+            None => false,
+            Some(v) if v.as_str() == Some("context") => {
+                if s.context.is_none() {
+                    cx.errors.push(format!(
+                        "indicators.{id}: \"on\": \"context\" needs a context market, e.g. \"context\": \"BTCUSDT\""
+                    ));
+                }
+                true
+            }
+            Some(_) => {
+                cx.errors.push(format!("indicators.{id}: \"on\" can only be \"context\""));
+                false
+            }
+        };
+        let mut given = def.clone();
+        given.remove("on");
+        match indicators::resolve_params(info, &given) {
             Ok(params) => {
                 let ind = indicators::build(kind, &params).expect("catalog kinds all build");
-                let label = indicators::label(info, &params);
-                cx.slots.push(IndicatorSlot { id: id.clone(), info, params, label, ind });
+                let mut label = indicators::label(info, &params);
+                if on_context && let Some(c) = &s.context {
+                    label = format!("{c} {label}");
+                }
+                cx.slots.push(IndicatorSlot { id: id.clone(), info, params, label, ind, on_context });
             }
             Err(e) => cx.errors.push(format!("indicators.{id}: {e}")),
         }
@@ -952,9 +978,17 @@ impl Compiled {
     }
 
     /// Feeds a closed candle to every indicator and records the new values.
-    pub fn push(&mut self, c: &Candle, h: &mut History) {
+    /// `context` is the context market's candle for the same time, if it has one;
+    /// indicators on the context market keep their last value when it doesn't.
+    pub fn push(&mut self, c: &Candle, context: Option<&Candle>, h: &mut History) {
         for s in &mut self.slots {
-            s.ind.update(c);
+            if s.on_context {
+                if let Some(x) = context {
+                    s.ind.update(x);
+                }
+            } else {
+                s.ind.update(c);
+            }
         }
         for (i, src) in self.sources.iter().enumerate() {
             let v = match *src {
@@ -1083,10 +1117,10 @@ mod tests {
         let mut h = c.history();
         let bar =
             |o: f64, hi: f64, l: f64, cl: f64| Candle { ts: 0, open: o, high: hi, low: l, close: cl, volume: 1.0 };
-        c.push(&bar(10.0, 10.5, 9.5, 10.0), &mut h);
-        c.push(&bar(10.0, 10.4, 7.0, 10.3), &mut h); // body 0.3, lower wick 3.0, range 3.4
+        c.push(&bar(10.0, 10.5, 9.5, 10.0), None, &mut h);
+        c.push(&bar(10.0, 10.4, 7.0, 10.3), None, &mut h); // body 0.3, lower wick 3.0, range 3.4
         assert!(eval(c.entry_long.as_ref().unwrap(), &h));
-        c.push(&bar(10.0, 12.0, 9.9, 11.9), &mut h); // big bullish body, tiny lower wick
+        c.push(&bar(10.0, 12.0, 9.9, 11.9), None, &mut h); // big bullish body, tiny lower wick
         assert!(!eval(c.entry_long.as_ref().unwrap(), &h));
     }
 
@@ -1115,7 +1149,7 @@ mod tests {
         let bar = |close: f64| Candle { ts: 0, open: close, high: close, low: close, close, volume: 1.0 };
         let mut fired = vec![];
         for x in [5.0, 4.0, 3.0, 4.0, 5.0] {
-            c.push(&bar(x), &mut h);
+            c.push(&bar(x), None, &mut h);
             fired.push(eval(c.entry_long.as_ref().unwrap(), &h));
         }
         // close > previous close, having been <= on the bar before: only at the turn.

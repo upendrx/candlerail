@@ -17,11 +17,17 @@ pub struct Matches {
 /// Evaluates the entry rules at every close. Fails only if the strategy
 /// doesn't compile.
 pub fn scan(strategy: &Strategy, candles: &[Candle]) -> Result<Matches, Vec<String>> {
+    scan_with_context(strategy, candles, &[])
+}
+
+/// [`scan`] with the candles of the strategy's context market.
+pub fn scan_with_context(strategy: &Strategy, candles: &[Candle], context: &[Candle]) -> Result<Matches, Vec<String>> {
+    let ctx = crate::backtest::align(candles, context);
     let mut c = spec::compile(strategy)?;
     let mut history = c.history();
     let mut out = Matches::default();
     for (i, bar) in candles.iter().enumerate() {
-        c.push(bar, &mut history);
+        c.push(bar, ctx[i], &mut history);
         if c.entry_long.as_ref().is_some_and(|r| spec::eval(r, &history)) {
             out.long.push(i);
         }
@@ -67,5 +73,32 @@ mod tests {
         )
         .unwrap();
         assert!(scan(&s, &[]).is_err());
+    }
+
+    #[test]
+    fn rules_can_read_the_context_market() {
+        let candles: Vec<Candle> = (0..6).map(|i| bar(i, 10.0, 11.0, 9.0, 10.5)).collect();
+        // The context market is above 100 only on bars 2 and 3.
+        let btc: Vec<Candle> = (0..6)
+            .map(|i| {
+                let p = if i == 2 || i == 3 { 105.0 } else { 95.0 };
+                bar(i, p, p, p, p)
+            })
+            .collect();
+        let s = Strategy::from_json(
+            r#"{ "name": "btc up", "context": "BTCUSDT",
+                 "indicators": { "btc": { "type": "sma", "period": 1, "on": "context" } },
+                 "entry": { "long": { "left": "btc", "op": ">", "right": 100 } },
+                 "exit": { "max_bars": 2 } }"#,
+        )
+        .unwrap();
+        assert_eq!(scan_with_context(&s, &candles, &btc).unwrap().long, vec![2, 3]);
+        assert!(scan(&s, &candles).unwrap().long.is_empty(), "without the context market, no value");
+        let bad = Strategy::from_json(
+            r#"{ "name": "x", "indicators": { "btc": { "type": "sma", "on": "context" } },
+                 "entry": { "long": { "left": "btc", "op": ">", "right": 1 } }, "exit": { "max_bars": 2 } }"#,
+        )
+        .unwrap();
+        assert!(bad.validate().iter().any(|e| e.contains("context market")));
     }
 }

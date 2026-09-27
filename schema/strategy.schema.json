@@ -54,6 +54,11 @@
         }
       }
     },
+    "context": {
+      "description": "A second market, such as BTCUSDT, whose candles indicators can read with \"on\": \"context\". Used for filters like trading altcoins only while bitcoin is above its average.",
+      "type": "string",
+      "minLength": 1
+    },
     "indicators": {
       "description": "Indicators by id. Rules refer to them by id, or id.output for multi-output indicators.",
       "type": "object",
@@ -87,6 +92,12 @@
               "period",
               "opening_range",
               "volume_avg"
+            ]
+          },
+          "on": {
+            "description": "Feed this indicator the context market's candles instead of the traded market's.",
+            "enum": [
+              "context"
             ]
           }
         },

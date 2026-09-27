@@ -289,17 +289,40 @@ fn valid_strategy(v: &Value) -> Result<Strategy, Vec<String>> {
     Ok(s)
 }
 
+/// The strategy's context market over the same candles, if it names one.
+async fn load_context(
+    app: Arc<App>,
+    s: &Strategy,
+    interval: Interval,
+    candles: &[candlerail_core::Candle],
+) -> Result<Vec<candlerail_core::Candle>, ApiError> {
+    let (Some(ctx), Some(first), Some(last)) = (s.context.clone(), candles.first(), candles.last()) else {
+        return Ok(vec![]);
+    };
+    let q = Query { symbol: ctx.to_uppercase(), interval, from: first.ts, to: last.ts + interval.millis() };
+    match tokio::task::spawn_blocking(move || binance::load(&app.api, &app.cache, &q, |_| {})).await {
+        Ok(Ok(c)) => Ok(c),
+        Ok(Err(e)) => Err(err(StatusCode::BAD_GATEWAY, vec![format!("context market: {e:#}")])),
+        Err(e) => Err(err(StatusCode::INTERNAL_SERVER_ERROR, vec![e.to_string()])),
+    }
+}
+
 /// Loads candles and runs the backtest a request describes.
 async fn run_request(
     app: Arc<App>,
     req: BacktestReq,
 ) -> Result<(Strategy, String, Interval, candlerail_core::Report, Vec<candlerail_core::Candle>), ApiError> {
     let s = valid_strategy(&req.strategy).map_err(|e| err(StatusCode::BAD_REQUEST, e))?;
-    let Loaded { symbol, interval, candles } = load(app, req.data, Some(&s)).await?;
+    let Loaded { symbol, interval, candles } = load(app.clone(), req.data, Some(&s)).await?;
+    let context = load_context(app, &s, interval, &candles).await?;
     let capital = req.capital.filter(|c| *c > 0.0).unwrap_or(10_000.0);
     let cfg = BacktestConfig { capital, interval, ..BacktestConfig::default() };
     let s2 = s.clone();
-    match tokio::task::spawn_blocking(move || (candlerail_core::run(&s2, &candles, &cfg), candles)).await {
+    match tokio::task::spawn_blocking(move || {
+        (candlerail_core::backtest::run_with_context(&s2, &candles, &context, &cfg), candles)
+    })
+    .await
+    {
         Ok((Ok(r), c)) => Ok((s, symbol, interval, r, c)),
         Ok((Err(e), _)) => Err(err(StatusCode::BAD_REQUEST, e)),
         Err(e) => Err(err(StatusCode::INTERNAL_SERVER_ERROR, vec![e.to_string()])),
@@ -366,11 +389,15 @@ async fn scan(State(app): State<Arc<App>>, Json(req): Json<ScanReq>) -> Response
         Ok(s) => s,
         Err(e) => return err(StatusCode::BAD_REQUEST, e).into_response(),
     };
-    let l = match load(app, req.data, Some(&s)).await {
+    let l = match load(app.clone(), req.data, Some(&s)).await {
         Ok(l) => l,
         Err(e) => return e.into_response(),
     };
-    match candlerail_core::scan::scan(&s, &l.candles) {
+    let context = match load_context(app, &s, l.interval, &l.candles).await {
+        Ok(c) => c,
+        Err(e) => return e.into_response(),
+    };
+    match candlerail_core::scan::scan_with_context(&s, &l.candles, &context) {
         Ok(m) => {
             let ts = |v: &[usize]| v.iter().map(|&i| l.candles[i].ts).collect::<Vec<_>>();
             Json(json!({ "ok": true, "bars": l.candles.len(), "long": ts(&m.long), "short": ts(&m.short) }))
