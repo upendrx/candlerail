@@ -9,6 +9,7 @@
 pub mod backtest;
 pub mod broker;
 pub mod candle;
+pub mod carry;
 pub mod explain;
 pub mod indicators;
 pub mod metrics;
