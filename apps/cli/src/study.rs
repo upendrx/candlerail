@@ -61,7 +61,7 @@ pub fn run(study: &Study, api: &str, cache: &Path, progress: &(dyn Fn(Progress) 
     for (fi, fam) in study.families.iter().enumerate() {
         let vs = study::variants(study, fam);
         for v in &vs {
-            for &interval in &study.intervals {
+            for &interval in study.intervals.iter().filter(|i| fam.intervals.is_empty() || fam.intervals.contains(i)) {
                 for (ci, cost) in study.costs.iter().enumerate() {
                     match study::instantiate(fam, v, interval, cost) {
                         Ok(strategy) => jobs.push(Job { family: fi, variant: v.index, interval, cost: ci, strategy }),
@@ -118,6 +118,7 @@ pub fn run(study: &Study, api: &str, cache: &Path, progress: &(dyn Fn(Progress) 
         }
     });
 
+    let months = study::Months::between(from, to);
     let mut summaries: Vec<Summary> = vec![];
     for ((fi, vi, interval, ci), mut markets) in results.into_inner().expect("results lock") {
         markets.sort_by(|a, b| a.symbol.cmp(&b.symbol));
@@ -128,10 +129,37 @@ pub fn run(study: &Study, api: &str, cache: &Path, progress: &(dyn Fn(Progress) 
             ci,
             markets,
             &study.selection,
+            months,
         ));
     }
     errors.extend(run_errors.into_inner().expect("errors lock"));
-    Ok(StudyResult { study: study.clone(), generated_at: now_ms(), split_ts, data: ranges, summaries, errors })
+    // Buy and hold, from the slowest timeframe: each month's first open to its last close.
+    let slowest = study.intervals.iter().max().copied();
+    let mut buy_hold = vec![0.0; months.count];
+    for sym in &symbols {
+        let Some(c) = slowest.and_then(|i| data.get(&(sym.clone(), i))) else { continue };
+        let mut per: BTreeMap<i64, (f64, f64)> = BTreeMap::new();
+        for x in c {
+            let e = per.entry(candlerail_core::time::month_index(x.ts)).or_insert((x.open, x.close));
+            e.1 = x.close;
+        }
+        for (m, (o, cl)) in per {
+            let k = (m - months.first) as usize;
+            if k < buy_hold.len() && o > 0.0 {
+                buy_hold[k] += 100.0 * (cl / o - 1.0) / symbols.len() as f64;
+            }
+        }
+    }
+    Ok(StudyResult {
+        study: study.clone(),
+        generated_at: now_ms(),
+        split_ts,
+        data: ranges,
+        summaries,
+        errors,
+        month0: months.first,
+        buy_hold_monthly: buy_hold,
+    })
 }
 
 pub enum Progress {
@@ -237,5 +265,6 @@ pub fn detail(
                 .map_err(|e| anyhow::anyhow!(e.join("; ")))?,
         );
     }
-    Ok(study::summarize(&fam.id, &v, interval, cost, markets, &s.selection))
+    let months = study::Months { first: d.month0, count: d.buy_hold_monthly.len() };
+    Ok(study::summarize(&fam.id, &v, interval, cost, markets, &s.selection, months))
 }

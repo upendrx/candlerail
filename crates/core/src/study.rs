@@ -107,6 +107,9 @@ pub struct Family {
     pub kind: String,
     #[serde(default)]
     pub grid: BTreeMap<String, Vec<Value>>,
+    /// Run only on these of the study's timeframes (all of them if empty).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub intervals: Vec<Interval>,
     /// The strategy template.
     pub strategy: Value,
 }
@@ -183,11 +186,20 @@ fn text(v: &Value) -> String {
 }
 
 fn substitute(v: &Value, vars: &BTreeMap<String, Value>, interval: Interval) -> Result<Value, String> {
+    substitute_at(v, vars, interval, 0)
+}
+
+/// Grid values can themselves contain placeholders, so substituted values are
+/// expanded again, up to a few levels deep.
+fn substitute_at(v: &Value, vars: &BTreeMap<String, Value>, interval: Interval, depth: usize) -> Result<Value, String> {
+    if depth > 8 {
+        return Err("placeholders refer to each other too deeply".into());
+    }
     Ok(match v {
         Value::String(s) => {
             let t = s.trim();
             if t.starts_with("{{") && t.ends_with("}}") && t.matches("{{").count() == 1 {
-                resolve(&t[2..t.len() - 2], vars, interval)?
+                substitute_at(&resolve(&t[2..t.len() - 2], vars, interval)?, vars, interval, depth + 1)?
             } else if s.contains("{{") {
                 let mut out = String::new();
                 let mut rest = s.as_str();
@@ -203,9 +215,13 @@ fn substitute(v: &Value, vars: &BTreeMap<String, Value>, interval: Interval) -> 
                 v.clone()
             }
         }
-        Value::Array(a) => Value::Array(a.iter().map(|x| substitute(x, vars, interval)).collect::<Result<_, _>>()?),
+        Value::Array(a) => {
+            Value::Array(a.iter().map(|x| substitute_at(x, vars, interval, depth)).collect::<Result<_, _>>()?)
+        }
         Value::Object(m) => Value::Object(
-            m.iter().map(|(k, x)| Ok((k.clone(), substitute(x, vars, interval)?))).collect::<Result<_, String>>()?,
+            m.iter()
+                .map(|(k, x)| Ok((k.clone(), substitute_at(x, vars, interval, depth)?)))
+                .collect::<Result<_, String>>()?,
         ),
         other => other.clone(),
     })
@@ -338,6 +354,9 @@ pub struct MarketResult {
     /// kept in study files.
     #[serde(skip)]
     pub by_trend: ByTrend,
+    /// Profit by calendar month of the exit, as a % of starting capital.
+    #[serde(skip)]
+    pub monthly: BTreeMap<i64, f64>,
     pub max_drawdown_pct: f64,
     /// Average fees per trade as a multiple of the trade's risk.
     pub fees_r: Option<f64>,
@@ -362,6 +381,7 @@ pub fn evaluate(
     let r = backtest::run(strategy, candles, &cfg)?;
     let (mut is, mut oos) = (Part::default(), Part::default());
     let mut by_trend = ByTrend::default();
+    let mut monthly = BTreeMap::new();
     let (mut fee_r, mut fee_n) = (0.0, 0usize);
     let day = (86_400_000 / interval.millis()).max(1) as usize;
     for t in &r.trades {
@@ -370,6 +390,7 @@ pub fn evaluate(
         } else {
             oos.add(t, capital)
         }
+        *monthly.entry(crate::time::month_index(t.exit_ts)).or_insert(0.0) += 100.0 * t.pnl / capital;
         // The market's 24-hour change up to the candle before the entry.
         let i = candles.partition_point(|c| c.ts < t.entry_ts);
         if i > day {
@@ -399,6 +420,7 @@ pub fn evaluate(
         in_sample: is,
         out_of_sample: oos,
         by_trend,
+        monthly,
         max_drawdown_pct: r.metrics.max_drawdown_pct,
         fees_r: (fee_n > 0).then(|| fee_r / fee_n as f64),
     })
@@ -425,6 +447,24 @@ pub struct Summary {
     pub fees_r: Option<f64>,
     pub selected: bool,
     pub survived: bool,
+    /// Month by month, the profit of the markets traded side by side with equal
+    /// capital, as a % of the whole account. Starts at the study's `month0`.
+    #[serde(default)]
+    pub monthly: Vec<f64>,
+}
+
+/// Calendar months covered by a study: the first month's index and how many.
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub struct Months {
+    pub first: i64,
+    pub count: usize,
+}
+
+impl Months {
+    pub fn between(from: i64, to: i64) -> Self {
+        let (a, b) = (crate::time::month_index(from), crate::time::month_index(to));
+        Months { first: a, count: (b - a + 1).max(0) as usize }
+    }
 }
 
 pub fn summarize(
@@ -434,6 +474,7 @@ pub fn summarize(
     cost: usize,
     markets: Vec<MarketResult>,
     sel: &Selection,
+    months: Months,
 ) -> Summary {
     let (mut is, mut oos) = (Part::default(), Part::default());
     let mut by_trend = ByTrend::default();
@@ -454,6 +495,12 @@ pub fn summarize(
         && is.avg_r().is_some_and(|r| r >= sel.min_avg_r)
         && up_is >= sel.min_markets.min(markets.len());
     let survived = selected && oos.avg_r().is_some_and(|r| r > 0.0) && up_oos >= sel.min_markets.min(markets.len());
+    let monthly = (0..months.count)
+        .map(|k| {
+            let m = months.first + k as i64;
+            markets.iter().map(|x| x.monthly.get(&m).copied().unwrap_or(0.0)).sum::<f64>() / n
+        })
+        .collect();
     Summary {
         family: family.to_string(),
         variant: variant.index,
@@ -471,6 +518,7 @@ pub fn summarize(
         markets,
         selected,
         survived,
+        monthly,
     }
 }
 
@@ -495,6 +543,12 @@ pub struct StudyResult {
     /// Templates that couldn't be turned into a valid strategy.
     #[serde(default)]
     pub errors: Vec<String>,
+    /// Index of the first calendar month in every `monthly` series.
+    #[serde(default)]
+    pub month0: i64,
+    /// Buying and holding every market with equal capital, month by month (%).
+    #[serde(default)]
+    pub buy_hold_monthly: Vec<f64>,
 }
 
 /// One summary without its per-market detail, serialized as an array.
@@ -577,6 +631,13 @@ pub struct Digest {
     pub details: Vec<Summary>,
     #[serde(default)]
     pub errors: Vec<String>,
+    #[serde(default)]
+    pub month0: i64,
+    #[serde(default)]
+    pub buy_hold_monthly: Vec<f64>,
+    /// Each row's monthly series, in the same order as `rows`.
+    #[serde(default)]
+    pub monthly: Vec<Vec<f64>>,
 }
 
 impl Digest {
@@ -615,6 +676,9 @@ impl Digest {
                 .collect(),
             details: r.summaries.iter().filter(|s| s.selected || r.summaries.len() <= 50).cloned().collect(),
             errors: r.errors.clone(),
+            month0: r.month0,
+            buy_hold_monthly: r.buy_hold_monthly.clone(),
+            monthly: r.summaries.iter().map(|s| s.monthly.clone()).collect(),
         }
     }
 }
@@ -662,6 +726,19 @@ mod tests {
         assert_eq!(json["entry"]["long"]["right"], "open + 0.5 * range[1]");
         assert_eq!(json["exit"]["take_profit"]["risk_multiple"], 1.0);
         assert!(st.name.contains("stop wide") || st.name.contains("stop tight"));
+    }
+
+    #[test]
+    fn grid_values_can_hold_placeholders() {
+        let mut s = study();
+        s.families[0].grid.insert(
+            "side".into(),
+            vec![json!({ "label": "short too", "entry": { "left": "close", "op": "<", "right": "open - {{k}} * range" } })],
+        );
+        s.families[0].strategy["entry"]["short"] = json!("{{side.entry}}");
+        let v = &variants(&s, &s.families[0])[0];
+        let st = instantiate(&s.families[0], v, Interval::M5, &s.costs[0]).unwrap();
+        assert_eq!(serde_json::to_value(&st).unwrap()["entry"]["short"]["right"], "open - 0.5 * range");
     }
 
     #[test]
@@ -729,6 +806,7 @@ mod tests {
             in_sample: is,
             out_of_sample: oos,
             by_trend: ByTrend::default(),
+            monthly: BTreeMap::from([(0, 1.0), (1, -0.5)]),
             max_drawdown_pct: 1.0,
             fees_r: Some(0.2),
         };
@@ -741,8 +819,10 @@ mod tests {
             0,
             vec![m("A", part(20, 4.0, 3.0), part(10, 1.0, 1.0)), m("B", part(20, 2.0, 1.0), part(10, 0.5, 0.5))],
             &sel,
+            Months { first: 0, count: 3 },
         );
         assert_eq!(s.trades_per_day, 3.0);
+        assert_eq!(s.monthly, vec![1.0, -0.5, 0.0], "equal-weight months, zero when nothing closed");
         assert!((s.in_sample.avg_r().unwrap() - 0.15).abs() < 1e-12);
         assert!(s.selected && s.survived);
         let s2 = summarize(
@@ -752,6 +832,7 @@ mod tests {
             0,
             vec![m("A", part(20, 4.0, 3.0), part(10, -3.0, -1.0)), m("B", part(20, 2.0, 1.0), part(10, 0.5, 0.5))],
             &sel,
+            Months { first: 0, count: 3 },
         );
         assert!(s2.selected && !s2.survived, "picked in sample, failed out of sample");
     }
