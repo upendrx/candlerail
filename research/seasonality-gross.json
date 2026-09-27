@@ -1,0 +1,36 @@
+{
+  "interval": "1h",
+  "from": "2020-09-20",
+  "split": "2024-07-01",
+  "cost_bps": 0,
+  "id": "seasonality-gross",
+  "name": "Time of day and day of week, before costs",
+  "kind": "seasonality",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT"
+  ],
+  "description": "The same test with no trading costs at all, to see whether the patterns exist before fees eat them.",
+  "grid": {
+    "by": [
+      "hour",
+      "weekday"
+    ],
+    "best": [
+      1,
+      2,
+      3,
+      4,
+      6
+    ],
+    "short_worst": [
+      false,
+      true
+    ],
+    "asset": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "both"
+    ]
+  }
+}

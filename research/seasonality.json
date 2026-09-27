@@ -1,0 +1,36 @@
+{
+  "interval": "1h",
+  "from": "2020-09-20",
+  "split": "2024-07-01",
+  "cost_bps": 6,
+  "id": "seasonality",
+  "name": "Time of day and day of week",
+  "kind": "seasonality",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT"
+  ],
+  "description": "Some hours of the UTC day and days of the week have had better average returns than others. This learns the best hours or weekdays before the split, holds only then (and optionally shorts the worst), and checks whether the pattern held afterwards. Futures costs.",
+  "grid": {
+    "by": [
+      "hour",
+      "weekday"
+    ],
+    "best": [
+      1,
+      2,
+      3,
+      4,
+      6
+    ],
+    "short_worst": [
+      false,
+      true
+    ],
+    "asset": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "both"
+    ]
+  }
+}
