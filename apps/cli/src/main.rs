@@ -9,8 +9,10 @@
 //! candlerail prompt                                 instructions for an AI assistant
 //! candlerail fetch --symbol BTCUSDT --interval 1h   download candles into the cache
 //! candlerail study research/intraday-reversals.json test a grid of variants on several markets
+//! candlerail carry                                  the funding-rate carry trade on major coins
 //! ```
 
+mod carry;
 mod community;
 mod prompt;
 mod report;
@@ -90,6 +92,32 @@ enum Cmd {
         /// Write the compact digest the app's Research tab reads.
         #[arg(long)]
         digest: Option<PathBuf>,
+        #[command(flatten)]
+        data: DataArgs,
+    },
+    /// Test the funding-rate carry trade: long spot and short the perpetual future,
+    /// collecting funding, on each coin and as a portfolio.
+    Carry {
+        /// Coins (Binance symbols).
+        #[arg(
+            long,
+            value_delimiter = ',',
+            default_value = "BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT,BNBUSDT,DOGEUSDT,ADAUSDT,AVAXUSDT,LINKUSDT,LTCUSDT"
+        )]
+        symbols: Vec<String>,
+        #[arg(long, default_value_t = 1095)]
+        days: u32,
+        /// End this many days ago instead of now.
+        #[arg(long, default_value_t = 0)]
+        offset_days: u32,
+        #[arg(long)]
+        name: Option<String>,
+        #[arg(long)]
+        description: Option<String>,
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+        #[arg(long, default_value = candlerail_data::funding::DEFAULT_API)]
+        futures_api: String,
         #[command(flatten)]
         data: DataArgs,
     },
@@ -337,6 +365,17 @@ fn main() -> Result<()> {
             if let Some(out) = digest {
                 std::fs::write(&out, study::to_json(&candlerail_core::study::Digest::new(&r))?)?;
                 println!("digest written to {}", out.display());
+            }
+            Ok(())
+        }
+        Cmd::Carry { symbols, days, offset_days, name, description, output, futures_api, data } => {
+            let mut c = carry::run(&symbols, days, offset_days, &futures_api, &data.cache())?;
+            c.name = name.unwrap_or_else(|| "Funding-rate carry".into());
+            c.description = description.unwrap_or_default();
+            carry::print(&c);
+            if let Some(out) = output {
+                std::fs::write(&out, study::to_json(&c)?)?;
+                println!("\nresult written to {}", out.display());
             }
             Ok(())
         }
