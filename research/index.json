@@ -87,6 +87,62 @@
           "result": "Search and honest testing, not predictions"
         }
       ]
+    },
+    {
+      "number": "3",
+      "title": "Beyond one strategy: how quants scale up",
+      "question": "How do algorithmic traders make much more, which other instruments or signals help, and what can a lone trader running a bot on Binance realistically do?",
+      "answer": "Most of the big daily profits in crypto come from businesses a lone trader can't copy: market making with fee rebates, speed arbitrage between exchanges, and funding and basis trades run with millions and the lowest fee tiers. What a single account can use is the professional method: several uncorrelated edges, sized together. Of the new ideas tested on six years of data, rotating into the five strongest of 43 coins each week (only while BTC is above its 100-day average) held up out of sample; sentiment added little beyond a trend filter; time-of-day and pairs trading didn't survive costs. Combining the Study 2 trend rule with coin rotation roughly doubled the average month at a similar worst fall, about +4% a month with a largest fall of about 20% over six years, and about +3% a month in the two held-out years. That is still a risky strategy with long flat and losing stretches, not a daily income.",
+      "verdict": "yes",
+      "pages": [
+        {
+          "number": "3.0",
+          "kind": "overview3",
+          "title": "Summary and a combined plan",
+          "result": "Trend plus coin rotation: about +4% a month, largest fall about 20%"
+        },
+        {
+          "number": "3.1",
+          "kind": "risk",
+          "title": "How much to risk",
+          "result": "Twice the risk: twice the average month, and a largest fall near 32%"
+        },
+        {
+          "number": "3.2",
+          "kind": "quant",
+          "quant": "rotation",
+          "title": "Coin rotation across 43 coins",
+          "result": "204 of 540 selected, 138 survived two held-out years"
+        },
+        {
+          "number": "3.3",
+          "kind": "quant",
+          "quant": "sentiment",
+          "title": "Fear & Greed sentiment",
+          "result": "Survivors are mostly the trend filter; sentiment adds little"
+        },
+        {
+          "number": "3.4",
+          "kind": "quant",
+          "quant": "seasonality",
+          "also": "seasonality-gross",
+          "title": "Time of day and day of week",
+          "result": "Hour patterns reversed out of sample, even before costs"
+        },
+        {
+          "number": "3.5",
+          "kind": "quant",
+          "quant": "pairs",
+          "title": "Pairs trading",
+          "result": "No pair survived costs"
+        },
+        {
+          "number": "3.6",
+          "kind": "combo",
+          "title": "Combining strategies",
+          "result": "Correlation 0.46: together they fall far less than either alone"
+        }
+      ]
     }
   ],
   "picks": [
@@ -122,5 +178,47 @@
       "rule": "On the 4-hour chart of each coin, buy when a candle closes above the upper Keltner channel (the 20-candle EMA plus 2 times the 10-candle ATR). Sell when a candle closes below the middle line, or if price falls 3 ATR below your entry."
     }
   ],
-  "pick_rule": "Among the variants that survived 2.1 and 2.2, keep those that made money in all three periods and spent at most 18 months below their previous peak, then take the best ratio of average month to largest fall from a peak."
+  "pick_rule": "Among the variants that survived 2.1 and 2.2, keep those that made money in all three periods and spent at most 18 months below their previous peak, then take the best ratio of average month to largest fall from a peak.",
+  "combo": {
+    "rule": "Each component is the pick of its own study: the Study 2 futures rule, and the rotation survivor with the best Sharpe before July 2024 among those that rebalance weekly. Weights are proportional to 1 / volatility of each component's monthly results before July 2024, then fixed.",
+    "split": "2024-07",
+    "components": [
+      {
+        "label": "Trend: SuperTrend on 4h (Study 2)",
+        "kind": "pick",
+        "pick": 0
+      },
+      {
+        "label": "Coin rotation, weekly",
+        "kind": "quant",
+        "id": "rotation",
+        "params": {
+          "btc_filter": "100",
+          "every": "7",
+          "long_short": "no",
+          "lookback": "30",
+          "reverse": "no",
+          "top": "5"
+        }
+      }
+    ],
+    "extras": [
+      {
+        "label": "BTC trend filter (3.3)",
+        "kind": "quant",
+        "id": "sentiment",
+        "params": {
+          "asset": "BTCUSDT",
+          "greed_cap": "101",
+          "ma": "50",
+          "rule": "trend_no_euphoria"
+        }
+      },
+      {
+        "label": "Funding carry (2.3)",
+        "kind": "carry"
+      }
+    ],
+    "rotation_rule": "Every Monday, rank the coins by their return over the last 30 days and put the rotation's share of the account equally into the top 5, but only while BTC closes above its 100-day average; otherwise hold cash. Spot, no leverage."
+  }
 }

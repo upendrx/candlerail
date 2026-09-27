@@ -14,6 +14,7 @@
 //! | `POST /api/scan` | every candle where a strategy's entry rules hold |
 //! | `GET /api/research` | how the studies are grouped and numbered, and what each found |
 //! | `GET /api/carry/{id}` | a recorded funding-rate carry run |
+//! | `GET /api/quant/{id}` | a recorded portfolio study (rotation, sentiment, seasonality, pairs) |
 //! | `GET /api/studies` | recorded research studies |
 //! | `GET /api/studies/{id}` | one study's full result |
 //! | `POST /api/studies/{id}/strategy` | the strategy file for one variant of a study |
@@ -55,6 +56,14 @@ const STUDIES: &[(&str, &str)] = &[
 ];
 /// How the studies are grouped and numbered, with what each one found.
 const RESEARCH_INDEX: &str = include_str!("../../../research/index.json");
+/// Recorded portfolio studies: coin rotation, sentiment, seasonality, pairs.
+const QUANT: &[(&str, &str)] = &[
+    ("rotation", include_str!("../../../research/results/rotation.json")),
+    ("sentiment", include_str!("../../../research/results/sentiment.json")),
+    ("seasonality", include_str!("../../../research/results/seasonality.json")),
+    ("seasonality-gross", include_str!("../../../research/results/seasonality-gross.json")),
+    ("pairs", include_str!("../../../research/results/pairs.json")),
+];
 /// Recorded funding-rate carry runs.
 const CARRY: &[(&str, &str)] = &[
     ("carry-recent", include_str!("../../../research/results/carry-recent.json")),
@@ -96,6 +105,7 @@ pub fn serve(listen: &str, ui_dir: Option<PathBuf>, cache: PathBuf, api: String)
         .route("/api/scan", post(scan))
         .route("/api/research", get(|| async { ([(header::CONTENT_TYPE, "application/json")], RESEARCH_INDEX) }))
         .route("/api/carry/{id}", get(get_carry))
+        .route("/api/quant/{id}", get(get_quant))
         .route("/api/studies", get(list_studies))
         .route("/api/studies/{id}", get(get_study))
         .route("/api/studies/{id}/strategy", post(study_strategy))
@@ -472,5 +482,12 @@ async fn get_carry(UrlPath(id): UrlPath<String>) -> Response {
     match CARRY.iter().find(|(i, _)| *i == id) {
         Some((_, text)) => ([(header::CONTENT_TYPE, "application/json")], *text).into_response(),
         None => err(StatusCode::NOT_FOUND, vec![format!("no carry run `{id}`")]).into_response(),
+    }
+}
+
+async fn get_quant(UrlPath(id): UrlPath<String>) -> Response {
+    match QUANT.iter().find(|(i, _)| *i == id) {
+        Some((_, text)) => ([(header::CONTENT_TYPE, "application/json")], *text).into_response(),
+        None => err(StatusCode::NOT_FOUND, vec![format!("no portfolio study `{id}`")]).into_response(),
     }
 }
