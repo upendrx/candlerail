@@ -3,7 +3,7 @@
 //! | Route | |
 //! |---|---|
 //! | `GET /` | the app |
-//! | `GET /lab.js` | the chart lab's script |
+//! | `GET /lab.js`, `GET /research.js` | the chart lab's and research tab's scripts |
 //! | `GET /api/catalog` | indicators, price fields, operators, intervals |
 //! | `GET /api/templates` | built-in strategies |
 //! | `POST /api/check` | validate a strategy and explain it in plain English |
@@ -39,6 +39,7 @@ use std::sync::{Arc, OnceLock};
 
 const INDEX: &str = include_str!("../../../ui/index.html");
 const LAB: &str = include_str!("../../../ui/lab.js");
+const RESEARCH: &str = include_str!("../../../ui/research.js");
 const CHARTS: &str = include_str!("../../../ui/vendor/lightweight-charts.js");
 const SCHEMA: &str = include_str!("../../../schema/strategy.schema.json");
 /// Recorded study digests, shipped with the app, in the order the Research tab tells them.
@@ -67,6 +68,7 @@ pub fn serve(listen: &str, ui_dir: Option<PathBuf>, cache: PathBuf, api: String)
     let router = Router::new()
         .route("/", get(index))
         .route("/lab.js", get(lab))
+        .route("/research.js", get(research))
         .route("/vendor/lightweight-charts.js", get(charts))
         .route("/schema.json", get(|| async { ([(header::CONTENT_TYPE, "application/json")], SCHEMA) }))
         .route("/api/catalog", get(catalog))
@@ -114,6 +116,10 @@ async fn index(State(app): State<Arc<App>>) -> Html<String> {
 
 async fn lab(State(app): State<Arc<App>>) -> impl IntoResponse {
     ([(header::CONTENT_TYPE, "application/javascript; charset=utf-8")], ui_file(&app, "lab.js", LAB))
+}
+
+async fn research(State(app): State<Arc<App>>) -> impl IntoResponse {
+    ([(header::CONTENT_TYPE, "application/javascript; charset=utf-8")], ui_file(&app, "research.js", RESEARCH))
 }
 
 async fn charts() -> impl IntoResponse {

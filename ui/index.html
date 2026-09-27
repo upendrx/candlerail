@@ -348,6 +348,51 @@ input.w-expr { width: 170px; font-family: var(--mono); font-size: 13px; }
 .saved { display: grid; gap: 6px; }
 .saved div { display: flex; align-items: center; gap: 8px; background: var(--surface2); border-radius: 9px; padding: 6px 8px 6px 12px; font-size: 13.5px; }
 .saved div span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* research */
+.rs-bar { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; margin: 14px 0 6px; }
+.rs-bar .grp { display: flex; gap: 8px; align-items: center; }
+.rs-bar .lbl { font-size: 12px; color: var(--faint); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+.verdict { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; border-radius: var(--radius); padding: 20px 22px; border: 1px solid; }
+.verdict.no { background: var(--warn-soft); border-color: rgba(245,158,11,.3); }
+.verdict.yes { background: var(--up-soft); border-color: rgba(15,159,110,.3); }
+.verdict .big { font: 800 44px/1 var(--display); letter-spacing: -.03em; }
+.verdict h2 { font-size: 20px; }
+.verdict p { margin: 4px 0 0; color: var(--ink2); max-width: 90ch; }
+@media (max-width: 700px) { .verdict { grid-template-columns: 1fr; } }
+.funnel { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; align-items: stretch; }
+.fstage { position: relative; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--surface2); display: grid; gap: 4px; align-content: start; }
+.fstage .t { font: 700 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.fstage .n { font: 800 26px/1.1 var(--display); letter-spacing: -.02em; }
+.fstage p { margin: 0; font-size: 13px; color: var(--muted); }
+.fstage.bad { border-color: rgba(229,72,77,.35); background: var(--down-soft); }
+.fstage.good { border-color: rgba(15,159,110,.35); background: var(--up-soft); }
+.fstage:not(:last-child)::after { content: "→"; position: absolute; right: -12px; top: 50%; transform: translate(50%, -50%); color: var(--faint); font-size: 16px; z-index: 1; }
+@media (max-width: 900px) { .fstage:not(:last-child)::after { display: none; } }
+table.rs-fees td, table.rs-fees th { text-align: center; }
+table.rs-fees td:first-child, table.rs-fees th:first-child { text-align: left; }
+.fc { border-radius: 6px; padding: 2px 6px; font-weight: 650; }
+.fc.g { background: var(--up-soft); color: var(--up); } .fc.a { background: var(--warn-soft); color: var(--warn); } .fc.r { background: var(--down-soft); color: var(--down); }
+.heat { display: grid; gap: 3px; min-width: 520px; }
+.heat .hc { border-radius: 7px; padding: 7px 8px; font-size: 12.5px; font-variant-numeric: tabular-nums; text-align: center; font-weight: 650; }
+.heat .hh { font: 650 12px var(--body); color: var(--faint); letter-spacing: .02em; text-align: center; align-self: end; padding-bottom: 4px; }
+.heat .hl { font-size: 13px; color: var(--ink2); align-self: center; padding-right: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.heat .hc small { display: block; font-weight: 500; opacity: .75; font-size: 10.5px; }
+table.rs-table th { cursor: pointer; user-select: none; }
+table.rs-table th.sorted { color: var(--accent); }
+table.rs-table tbody tr { cursor: pointer; }
+table.rs-table tbody tr.cur { background: var(--accent-soft); }
+.badge2 { font: 700 10px var(--body); letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; }
+.badge2.sel { background: var(--accent-soft); color: var(--accent); } .badge2.surv { background: var(--up-soft); color: var(--up); }
+.rs-detail { margin-top: 16px; border: 1px solid var(--accent-line); background: var(--accent-soft); border-radius: 14px; padding: 16px 18px; display: grid; gap: 12px; }
+.trendbars { display: grid; grid-template-columns: 82px minmax(90px, 1fr) max-content; gap: 6px 10px; align-items: center; font-size: 13px; }
+.trendbars .bar { height: 12px; border-radius: 6px; background: var(--surface3); position: relative; overflow: hidden; }
+.trendbars .bar i { position: absolute; top: 0; bottom: 0; border-radius: 6px; }
+.trendbars .bar::before { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--line2); }
+.dailyrow { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 14px; padding: 9px 0; border-bottom: 1px dashed var(--line); align-items: baseline; font-size: 14px; }
+.dailyrow:last-child { border-bottom: 0; }
+.dailyrow b { font: 700 17px var(--display); font-variant-numeric: tabular-nums; }
+.dailyrow span { color: var(--muted); font-size: 12.5px; }
 </style>
 </head>
 <body>
@@ -363,6 +408,7 @@ input.w-expr { width: 170px; font-family: var(--mono); font-size: 13px; }
     <button data-tab="strategies" aria-selected="false">Strategies</button>
     <button data-tab="build" aria-selected="false">Build</button>
     <button data-tab="lab" aria-selected="false">Chart Lab <span class="badge">New</span></button>
+    <button data-tab="research" aria-selected="false">Research</button>
     <button data-tab="ai" aria-selected="false">Ask AI</button>
     <button data-tab="results" aria-selected="false">Results</button>
     <button data-tab="pa" aria-selected="false">Price action</button>
@@ -624,6 +670,74 @@ input.w-expr { width: 170px; font-family: var(--mono); font-size: 13px; }
         <div class="saved" id="lab-saved"></div>
       </div>
     </aside>
+  </div>
+</section>
+
+<!-- RESEARCH -->
+<section class="tab" id="t-research" hidden>
+  <div class="row" style="justify-content:space-between;align-items:end">
+    <div>
+      <div class="eyebrow">Research</div>
+      <h1>Is there a daily profit in intraday candle setups?</h1>
+      <p class="lede">Fifteen well-known day-trading setups, mostly candle reversals at support and resistance, in hundreds of variations, tested long and short on major coins from 1-minute to 1-hour candles with real trading costs and money management. Each variant is chosen on the first 60 days and judged on the 30 it wasn't chosen on, then the best is re-tested on data it never saw.</p>
+    </div>
+  </div>
+  <div id="rs-verdict"></div>
+  <div class="panel">
+    <h2>How the study ran</h2>
+    <p class="sub">Each stage only sees what the stage before decided. Nothing was tuned on the held-out data.</p>
+    <div id="rs-funnel"></div>
+  </div>
+  <div class="grid two">
+    <div class="panel">
+      <h2>Why tight stops can't win: fees in R</h2>
+      <p class="sub">A round trip pays two fees plus slippage. Measured against the stop, that is a fixed loss on every trade, win or lose.</p>
+      <div class="tw"><table class="rs-fees" id="rs-fees"></table></div>
+      <p class="hint" id="rs-fees-measured"></p>
+    </div>
+    <div class="panel">
+      <h2>What it would have made per day</h2>
+      <p class="sub">Every test risked 1% of the account per trade (10x isolated leverage, only to fit the position), stopped for the day after a 3% loss, and paused for an hour after 4 losses in a row. Daily result ≈ trades a day × average R × 1%.</p>
+      <div id="rs-daily"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 style="margin:0">Explore every variant</h2>
+      <button class="btn small" id="rs-rerun" title="Download the latest candles and run the selected study again">Re-run on the latest data</button>
+    </div>
+    <div class="rs-bar">
+      <div class="grp"><span class="lbl">Study</span><div class="segc" id="rs-study"></div></div>
+      <div class="grp"><span class="lbl">Costs</span><div class="segc" id="rs-cost"></div></div>
+      <div class="grp"><span class="lbl">Timeframe</span><div class="segc" id="rs-tf"></div></div>
+      <div class="grp"><span class="lbl">Show</span><div class="segc" id="rs-show"><button data-v="all" class="on">All</button><button data-v="selected">Selected</button><button data-v="survived">Survived</button></div></div>
+      <label class="toggle" style="font-size:13px"><input type="checkbox" id="rs-active" checked> At least 1 trade a day across the coins</label>
+    </div>
+    <p class="hint" id="rs-study-desc" style="margin:4px 0 14px"></p>
+    <h3>Average R by setup and timeframe <span class="hint" style="font-weight:500">median of each setup's variants, <span id="rs-heat-which">in the selection period</span></span></h3>
+    <div class="segc" id="rs-metric" style="margin:4px 0 10px"><button data-v="is" class="on">Selection period</button><button data-v="oos">Held-out month</button></div>
+    <div class="tw"><div id="rs-heat"></div></div>
+    <h3 style="margin-top:20px">Variants</h3>
+    <div class="tw" style="max-height:520px;overflow-y:auto"><table id="rs-table" class="rs-table"></table></div>
+    <p class="hint" id="rs-table-note"></p>
+    <div id="rs-detail"></div>
+  </div>
+  <div class="grid two">
+    <div class="panel prose">
+      <h2>Method</h2>
+      <p><b>Data.</b> Binance spot candles for the last 90 days. Every timeframe of a study ends at the same moment.</p>
+      <p><b>Fills.</b> Signals at a candle's close, orders at the next open, stop before target when a candle touches both. The same engine as every other backtest in candlerail.</p>
+      <p><b>Costs.</b> "Futures taker": 0.05% fee and 0.01% slippage per fill, roughly Binance USDⓈ-M for a regular account. "Spot taker": 0.1% and 0.02%. Futures funding payments are not included.</p>
+      <p><b>Selection, decided in advance.</b> A variant is <i>selected</i> if it trades 1 to 12 times a day per coin (round 1) or 1.5 to 20 times a day across the four coins (round 2), averages at least +0.05R in the first 60 days, and makes money there on at least 3 of the 4 coins. It <i>survives</i> if it then averages above 0R in the last 30 days and makes money on at least 3 coins.</p>
+      <p><b>Trend.</b> Each trade is tagged by the coin's move over the previous 24 hours: up more than 1.5%, down more than 1.5%, or sideways.</p>
+    </div>
+    <div class="panel prose">
+      <h2>What this means for day trading</h2>
+      <p><b>Don't scalp at taker fees.</b> On 1-minute candles the median variant paid 1.4R a trade in fees on futures and 2.4R on spot. No candle pattern has an edge that large.</p>
+      <p><b>Candle patterns alone showed no reliable edge</b> on these coins over these months, before or after costs. The one variant that survived was a pin bar in the direction of the trend, and it lost money on five other coins and on the three months before.</p>
+      <p><b>If you keep looking,</b> test the things that change the cost side: limit orders that earn the maker fee, wider stops and longer holds where fees are a small share of the risk, and fewer, higher-quality trades. Re-run this study as months pass: a result has to hold on data it has never seen.</p>
+      <p class="hint">Research on past data, not advice. Past results don't predict future ones.</p>
+    </div>
   </div>
 </section>
 
@@ -1026,6 +1140,7 @@ function show(tab) {
   document.querySelectorAll("section.tab").forEach(s => s.hidden = s.id !== "t-" + tab);
   if (tab === "results" && LAST) requestAnimationFrame(() => drawCharts(LAST));
   if (tab === "lab" && window.labShown) window.labShown();
+  if (tab === "research" && window.researchShown) window.researchShown();
   window.scrollTo({ top: 0 });
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => show(b.dataset.tab));
@@ -1697,5 +1812,6 @@ $("cm-file").onchange = async e => { const f = e.target.files[0]; if (f) { const
 })();
 </script>
 <script src="/lab.js"></script>
+<script src="/research.js"></script>
 </body>
 </html>
