@@ -7,7 +7,7 @@
  * with per-market detail fetched on demand.
  */
 (() => {
-const R = { index: null, studies: {}, carry: {}, quant: {}, qsort: { key: "ish", dir: -1 }, qshow: "all", qopen: null, scale: 1, page: null, cur: null, cost: 0, tf: "", show: "all", metric: "is", sort: { key: "ris", dir: -1 }, open: null };
+const R = { index: null, studies: {}, carry: {}, quant: {}, replay: {}, rcase: 0, ropen: {}, qsort: { key: "ish", dir: -1 }, qshow: "all", qopen: null, scale: 1, page: null, cur: null, cost: 0, tf: "", show: "all", metric: "is", sort: { key: "ris", dir: -1 }, open: null };
 const PAGE_KEY = "candlerail-research-page";
 
 /* ---------- data helpers ---------- */
@@ -44,10 +44,12 @@ async function load() {
   const ids = [...new Set(R.index.groups.flatMap(g => g.pages.map(p => p.study)).filter(Boolean).concat(Object.keys(STUDY1)))];
   const carries = [...new Set(R.index.groups.flatMap(g => g.pages.flatMap(p => p.carry || [])).concat(["carry-recent", "carry-earlier"]))];
   const quants = [...new Set(R.index.groups.flatMap(g => g.pages.flatMap(p => [p.quant, p.also].filter(Boolean))))];
+  const replays = [...new Set(R.index.groups.flatMap(g => g.pages.flatMap(p => p.replay || [])))];
   await Promise.all([
     ...ids.map(async id => { R.studies[id] = await api("/api/studies/" + id); }),
     ...carries.map(async id => { R.carry[id] = await api("/api/carry/" + id); }),
     ...quants.map(async id => { R.quant[id] = await api("/api/quant/" + id); }),
+    ...replays.map(async id => { R.replay[id] = await api("/api/replay/" + id); }),
   ]);
   let start = null; try { start = localStorage.getItem(PAGE_KEY); } catch (e) {}
   nav(); go(allPages().some(p => p.number === start) ? start : "2.0");
@@ -76,6 +78,8 @@ function go(number) {
   if (p.kind === "combo") comboPage();
   if (p.kind === "risk") riskPage();
   if (p.kind === "overview3") overview3();
+  if (p.kind === "overview4") overview4();
+  if (p.kind === "replay") replayPage();
 }
 
 /* ---------- Study 1 summary ---------- */
@@ -574,6 +578,120 @@ function comboPage() {
       ${d.comps.map((c, i) => line(c.label, d.cols[i])).join("")}${line("Combined", d.mix)}${d.extras.map((c, i) => d.extraCols[i] ? line(c.label, d.extraCols[i]) : "").join("")}${line("Buy and hold BTC", d.btc)}</tbody></table></div>
       ${monthBars(d.mix, { benchmark: d.btc, month0: d.months[0], split: d.months.indexOf(d.split), splitLabel: "held out →", clipBenchmark: true, label: "Combined month by month" })}</div>
     <div class="panel"><h2>How the parts move together</h2><p class="sub">Correlation of monthly results: 1 moves in lockstep, 0 unrelated.</p><div class="tw">${corr}</div></div>`;
+}
+
+/* ---------- Study 4 ---------- */
+/** Median held-out (and selection) average R of a study's rows, grouped by a key. */
+function groups(id, key, filter = () => true, cost = 0) {
+  const d = R.studies[id]; if (!d) return [];
+  const g = new Map();
+  for (const r of rowsOf(d)) {
+    if (r.cost !== cost || !filter(r)) continue;
+    const k = key(r); if (!g.has(k)) g.set(k, []);
+    g.get(k).push(r);
+  }
+  return [...g.entries()].map(([k, rs]) => ({
+    k, n: rs.length,
+    before: med(rs.map(r => avgR(r.is))), after: med(rs.map(r => avgR(r.oos))),
+    gross: med(rs.map(r => avgR(r.is) == null || r.feesR == null ? null : avgR(r.is) + r.feesR)),
+    tpd: med(rs.map(r => r.ptpd)), survived: rs.filter(r => r.survived).length,
+  }));
+}
+function cmpTable(rows, cols) {
+  return `<div class="tw"><table class="ptable"><thead><tr><th></th>${cols.map(c => `<th class="n">${c[0]}</th>`).join("")}</tr></thead><tbody>${rows.map(x => `<tr><td>${esc(x.k)}</td>${cols.map(c => `<td class="n">${c[1](x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+const rcell = v => `<span class="${rcls(v)}">${rfmt(v)}</span>`;
+function replayRun(id, risk, cap, cost = 0) {
+  const x = R.replay[id]; if (!x) return null;
+  return x.costs[cost]?.runs.find(r => r.risk_pct === risk && r.max_open === cap) || null;
+}
+function signalsText(rep) {
+  const h = rep.signals_per_day, days = h.reduce((a, b) => a + b, 0), withSig = days - (h[0] || 0);
+  return { days, withSig, share: days ? withSig / days : 0, perWeek: days ? 7 * rep.signals / days : 0 };
+}
+function overview4() {
+  const lo = r => r.params.side === "long only";
+  const w1 = groups("weekly-patterns", r => r.params.btc, lo), w2 = groups("weekly-patterns", r => r.params.entry || "breakout of an inside week", lo), w3 = groups("weekly-patterns", r => r.name, lo);
+  const s1 = groups("session-opens", r => r.params.window, r => r.family.startsWith("s-")), s2 = groups("session-opens", r => `${r.name} · ${r.params.session}`, r => !r.family.startsWith("s-"));
+  const h1 = groups("daily-hourly", r => `${r.interval === "1h" ? "hourly" : "daily"} entry · stop ${r.params.stop}`);
+  const cols = [["Variants", x => x.n], ["Before", x => rcell(x.before)], ["After", x => rcell(x.after)], ["Trades a day, all coins", x => fmt(x.tpd, 2)]];
+  const colsGross = [["Variants", x => x.n], ["Before, no costs", x => rcell(x.gross)], ["Before", x => rcell(x.before)], ["After", x => rcell(x.after)], ["Trades a day, all coins", x => fmt(x.tpd, 1)]];
+  const pl = R.index.plan4, run = pl && replayRun(pl.replay, pl.risk_pct, pl.max_open), nc = pl && replayRun(pl.new_coins, pl.risk_pct, pl.max_open);
+  let plan = "";
+  if (run) {
+    const a = run.all, af = run.after, rep = R.replay[pl.replay], ms = mstats(a.monthly), sig = signalsText(a);
+    const scen = [500, 1000].map(c => `<tr><td><b>${usd(c)}</b></td><td class="n ${rcls(ms.avg)}">${usd(c * ms.avg / 100)}</td><td class="n down">${usd(c * ms.worst / 100)}</td><td class="n down">${usd(c * a.max_drawdown_pct / 100)}</td><td class="n up">${usd(c * ((1 + a.annual_pct / 100) - 1))}</td></tr>`).join("");
+    plan = `<div class="panel pickcard">
+      <div><div class="eyebrow" style="margin:0 0 4px">The weekly plan</div><h2 style="margin:0">Weekly engulfing, confirmed on the daily chart, with BTC's trend</h2></div>
+      <div class="rulebox">${esc(pl.rule)}</div>
+      <div class="pick-stats">
+        <div><b class="${rcls(a.annual_pct)}">${pct(a.annual_pct)}</b><span>a year, ${dday(rep.from).slice(0, 4)} to ${dday(rep.to).slice(0, 4)}</span></div>
+        <div><b class="${rcls(af.annual_pct)}">${pct(af.annual_pct)}</b><span>a year since ${dday(rep.split_ts)}, never used to choose</span></div>
+        <div><b class="down">${pct(a.max_drawdown_pct)}</b><span>largest fall from a peak</span></div>
+        <div><b>${ms.up}/${ms.n}</b><span>months that made money (most others are flat, in cash)</span></div>
+        <div><b>${fmt(sig.perWeek, 1)}</b><span>signals a week across 43 coins; ${fmt(100 * sig.share, 0)}% of days have one</span></div>
+        <div><b>${a.max_open_seen}</b><span>most positions open at once</span></div>
+      </div>
+      ${monthBars(a.monthly, { month0: a.month0, split: monthOf(rep.split_ts) - a.month0, splitLabel: "held out →", label: "Weekly plan month by month" })}
+      <div class="tw"><table class="ptable"><thead><tr><th>Account</th><th class="n">Average month</th><th class="n">Worst month</th><th class="n">Largest fall</th><th class="n">Average year</th></tr></thead><tbody>${scen}</tbody></table></div>
+      <p class="hint">${(() => { const top = [...a.monthly].sort((x, y) => y - x).slice(0, 5), lnTop = top.reduce((t, v) => t + Math.log(1 + v / 100), 0), lnAll = Math.log(Math.max(1e-9, a.final_equity));
+        return lnAll > 0 ? `The average month is skewed: the best 5 of ${a.monthly.length} months (${top.map(v => pct(v)).join(", ")}) produced about ${fmt(Math.min(100, 100 * lnTop / lnAll), 0)}% of the whole gain. A typical month is small, and missing one big month changes the result a lot.` : ""; })()}</p>
+      ${nc ? `<p class="hint">On 24 coins it never saw, at the same risk: ${pct(nc.all.annual_pct)} a year with a largest fall of ${pct(nc.all.max_drawdown_pct)}, and ${pct(nc.after.annual_pct)} a year since ${dday(rep.split_ts)}. Weaker, but still positive. See 4.4.</p>` : ""}
+    </div>`;
+  }
+  $("rs-ov4").innerHTML = `
+      <div class="panel case"><span class="tag2 yes v">case 1 · held up</span><h2 style="margin:0">Weekly patterns, daily entries, BTC filter</h2>
+        <p class="sub" style="margin:0">Median average R of long-only variants in 4.1, before and after August 2024.</p>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:12px">${cmpTable(w1, cols)}${cmpTable(w2, cols)}</div>${cmpTable(w3, cols)}
+        <p class="hint">BTC above its 50-day average and a daily confirmation helped most; weekly engulfing and strong-bodied weeks held, hammers and three soldiers didn't.</p></div>
+      <div class="panel case"><span class="tag2 no v">case 2 · didn't hold</span><h2 style="margin:0">Intraday around the London and New York opens</h2>
+        <p class="sub" style="margin:0">Median average R in 4.2, futures costs. "No costs" adds the fees back.</p>
+        ${cmpTable(s1, colsGross)}${cmpTable(s2, colsGross)}
+        <p class="hint">Before costs every group is near zero. Limiting trades to the hours after an open cut the number of trades without making them better.</p></div>
+    <div class="panel case"><span class="tag2 no v">case 3 · didn't help</span><h2 style="margin:0">Daily patterns entered early on hourly candles</h2>
+      <p class="sub" style="margin:0">Median average R in 4.3, spot costs, by where the entry and the stop were.</p>
+      ${cmpTable(h1, cols)}
+      <p class="hint">A tight stop under the hourly entry candle looks like a better reward-to-risk, but hourly noise hits it far more often and it pays about five times the fees. Entering on the daily chart was as good or better.</p></div>
+    ${plan}
+    <div class="grid two">
+      <div class="panel prose"><h2>Would it work in real trading?</h2>
+        <p><b>Timing:</b> signals only need the daily close at 00:00 UTC; a bot places a market order right after it. The test assumes that fill at the next open.</p>
+        <p><b>Costs:</b> the result held with doubled costs and with 0.5% slippage on every fill (4.4). Swing trades pay about 0.02R in fees.</p>
+        <p><b>Capital:</b> with a stop about 10% away, 0.5% risk means each position is about 5% of the account, so 20 positions use roughly all of it: this fits a spot account without leverage. At 1% risk it would need twice the capital, or fewer positions.</p>
+        <p><b>Order size:</b> on $500 each position is about $25, above Binance's $5 minimum.</p></div>
+      <div class="panel prose"><h2>What could still go wrong</h2>
+        <p><b>Correlated positions.</b> Up to 20 coins can be long at once, all following BTC. A sudden crash can hit every stop together; the largest fall in the test already includes such days.</p>
+        <p><b>Most months are flat.</b> The BTC filter keeps the account in cash in downtrends, so gains arrive in bursts during uptrends.</p>
+        <p><b>It was the best of about 50,000 tests.</b> The held-out years and the 24 unseen coins are why it's worth considering; they aren't a guarantee.</p>
+        <p class="hint">Research on past data, not financial advice.</p></div>
+    </div>`;
+}
+function replayPage() {
+  const ids = R.page.replay || [];
+  $("rs-replay").innerHTML = ids.map((id, k) => {
+    const x = R.replay[id]; if (!x) return "";
+    const c = x.costs[R.rcase] || x.costs[0], open = R.ropen[id] ?? c.runs.findIndex(r => r.risk_pct === 0.5 && r.max_open === 20);
+    const sel = c.runs[open >= 0 ? open : 0];
+    const rows = c.runs.map((r, i) => { const up = r.all.monthly.filter(m => m > 0).length;
+      return `<tr data-r="${id}:${i}" class="${i === open ? "cur" : ""}" style="cursor:pointer"><td>${fmt(r.risk_pct, 1)}%</td><td class="n">${r.max_open}</td><td class="n ${rcls(r.all.annual_pct)}">${pct(r.all.annual_pct)}</td><td class="n down">${pct(r.all.max_drawdown_pct)}</td><td class="n">${up}/${r.all.monthly.length}</td><td class="n ${rcls(r.after.annual_pct)}">${pct(r.after.annual_pct)}</td><td class="n down">${pct(r.after.max_drawdown_pct)}</td><td class="n">${r.all.taken}</td><td class="n">${r.all.skipped}</td></tr>`; }).join("");
+    const h = sel.all.signals_per_day, max = Math.max(...h.slice(1), 1);
+    const hist = h.slice(1).map((n, i) => `<div style="height:${Math.max(3, 100 * n / max)}%"><i>${n}</i><span>${i + 1}</span></div>`).join("");
+    const sig = signalsText(sel.all);
+    const mk = [...x.markets].sort((a, b) => b.avg_r - a.avg_r).map(m => `<tr><td>${esc(m.symbol.replace("USDT", ""))}</td><td class="n">${m.trades}</td><td class="n">${rcell(m.trades ? m.avg_r : null)}</td></tr>`).join("");
+    return `<div class="panel">
+      <h2>${esc(x.name)}</h2><p class="sub">${esc(x.description)} ${dday(x.from)} to ${dday(x.to)}; "after" is from ${dday(x.split_ts)}. Each trade risks the chosen share of the account's value when it opens; signals are skipped while the limit of open positions is reached.</p>
+      <div class="row" style="margin-bottom:10px"><div class="segc" data-costs="${k}">${x.costs.map((cc, i) => `<button data-v="${i}" class="${i === R.rcase ? "on" : ""}">${esc(cc.label)}</button>`).join("")}</div><span class="hint" style="margin:0">${c.trades} signals, ${rfmt(c.avg_r)} a trade on average</span></div>
+      <div class="tw"><table class="ptable qtable"><thead><tr><th>Risk / trade</th><th class="n">Max open</th><th class="n">A year</th><th class="n">Largest fall</th><th class="n">Months up</th><th class="n">A year, after</th><th class="n">Fall, after</th><th class="n">Taken</th><th class="n">Skipped</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <h3 style="margin:14px 0 4px">${fmt(sel.risk_pct, 1)}% a trade, at most ${sel.max_open} open</h3>
+      ${monthBars(sel.all.monthly, { month0: sel.all.month0, split: monthOf(x.split_ts) - sel.all.month0, splitLabel: "held out →" })}
+      <div class="grid two" style="gap:18px;margin-top:10px">
+        <div><h3 style="margin:0">How often signals come</h3><p class="hint" style="margin:2px 0 22px">${sig.withSig} of ${sig.days} days had at least one new signal (${fmt(100 * sig.share, 0)}%), about ${fmt(sig.perWeek, 1)} a week. Bars: number of days with 1, 2, 3 … signals.</p><div class="hist">${hist}</div></div>
+        <div><h3 style="margin:0 0 6px">By coin</h3><div class="tw" style="max-height:260px;overflow-y:auto"><table class="ptable"><thead><tr><th>Coin</th><th class="n">Trades</th><th class="n">Average</th></tr></thead><tbody>${mk}</tbody></table></div></div>
+      </div>
+    </div>`;
+  }).join("");
+  $("rs-replay").querySelectorAll("[data-costs] button").forEach(b => b.onclick = () => { R.rcase = +b.dataset.v; replayPage(); });
+  $("rs-replay").querySelectorAll("tr[data-r]").forEach(tr => tr.onclick = () => { const [id, i] = tr.dataset.r.split(":"); R.ropen[id] = +i; replayPage(); });
 }
 
 let loaded = false;
