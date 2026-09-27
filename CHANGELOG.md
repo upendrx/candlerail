@@ -7,6 +7,14 @@ All notable changes are recorded here. The format follows
 ## [Unreleased]
 
 ### Added
+- Research studies (`candlerail study`, `candlerail_core::study`): expand
+  strategy templates over a grid, run every variant across markets,
+  timeframes and cost scenarios in parallel, select on the first part of the
+  period and judge on the rest, with results by market trend.
+- A recorded day-trading study of 15 intraday setups on BTC, ETH, SOL and
+  XRP (two rounds and two confirmation runs), and a Research tab to explore
+  it, see what fees do to tight stops, and re-run it on the latest data.
+- `/api/studies` endpoints.
 - Chart Lab: select 1 to 5 candles on a chart to turn their shape into
   rules, see every match and what followed, loosen rules automatically,
   backtest with setup-based stops, and compare across timeframes and coins.
