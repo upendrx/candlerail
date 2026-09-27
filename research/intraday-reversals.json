@@ -1,0 +1,1496 @@
+{
+  "name": "Intraday reversals on major coins",
+  "description": "Fifteen well-known intraday setups, mostly reversals from candle shapes at support and resistance, tested long and short on BTC, ETH, SOL and XRP at 1, 5 and 15 minutes. Each variant is selected on the first 60 days and judged on the last 30, under two cost scenarios, risking 1% of the account per trade with a 3% daily loss limit.",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "XRPUSDT"
+  ],
+  "intervals": [
+    "1m",
+    "5m",
+    "15m"
+  ],
+  "days": 90,
+  "split": 0.6667,
+  "capital": 10000,
+  "costs": [
+    {
+      "label": "futures taker",
+      "fee_bps": 5,
+      "slippage_bps": 1
+    },
+    {
+      "label": "spot taker",
+      "fee_bps": 10,
+      "slippage_bps": 2
+    }
+  ],
+  "selection": {
+    "min_trades_per_day": 1,
+    "max_trades_per_day": 12,
+    "min_avg_r": 0.05,
+    "min_markets": 3
+  },
+  "grid": {
+    "rr": [
+      1,
+      1.5,
+      2
+    ],
+    "stop": [
+      {
+        "label": "beyond the signal candle",
+        "v": {
+          "below": "low - 0.1 * range",
+          "above": "high + 0.1 * range"
+        }
+      },
+      {
+        "label": "1 ATR",
+        "v": {
+          "atr": 1,
+          "indicator": "atr"
+        }
+      },
+      {
+        "label": "1.5 ATR",
+        "v": {
+          "atr": 1.5,
+          "indicator": "atr"
+        }
+      },
+      {
+        "label": "0.3%",
+        "v": {
+          "percent": 0.3
+        }
+      },
+      {
+        "label": "0.6%",
+        "v": {
+          "percent": 0.6
+        }
+      }
+    ],
+    "trend": [
+      {
+        "label": "any",
+        "long": {
+          "left": "close",
+          "op": ">",
+          "right": 0
+        },
+        "short": {
+          "left": "close",
+          "op": ">",
+          "right": 0
+        }
+      },
+      {
+        "label": "with the 8h trend",
+        "long": {
+          "left": "close",
+          "op": ">",
+          "right": "trend"
+        },
+        "short": {
+          "left": "close",
+          "op": "<",
+          "right": "trend"
+        }
+      }
+    ]
+  },
+  "families": [
+    {
+      "id": "engulf-level",
+      "name": "Engulfing at swing level",
+      "idea": "An engulfing candle that forms at the latest swing low (for longs) or swing high (for shorts), within half an ATR of it.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Engulfing at swing level",
+        "indicators": {
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          },
+          "pa": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "pa.bullish_engulfing",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "low",
+                "op": "<=",
+                "right": "sw.support + 0.5 * atr"
+              },
+              {
+                "left": "low",
+                "op": ">=",
+                "right": "sw.support - 1 * atr"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "pa.bearish_engulfing",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "high",
+                "op": ">=",
+                "right": "sw.resistance - 0.5 * atr"
+              },
+              {
+                "left": "high",
+                "op": "<=",
+                "right": "sw.resistance + 1 * atr"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "pin-level",
+      "name": "Pin bar at swing level",
+      "idea": "A hammer that holds the latest swing low, or a shooting star that holds the latest swing high.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Pin bar at swing level",
+        "indicators": {
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          },
+          "pa": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "pa.hammer",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "low",
+                "op": "<=",
+                "right": "sw.support + 0.3 * atr"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "sw.support"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "pa.shooting_star",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "high",
+                "op": ">=",
+                "right": "sw.resistance - 0.3 * atr"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "sw.resistance"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "sweep-reclaim",
+      "name": "Liquidity sweep and reclaim",
+      "idea": "Price runs the stops below the last swing low, then closes back above it with a long lower wick (a false breakout). Mirrored for shorts.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Liquidity sweep and reclaim",
+        "indicators": {
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "low",
+                "op": "<",
+                "right": "sw.support"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "sw.support"
+              },
+              {
+                "left": "lower_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "high",
+                "op": ">",
+                "right": "sw.resistance"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "sw.resistance"
+              },
+              {
+                "left": "upper_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "inside-break",
+      "name": "Small candle, then big breakout candle",
+      "idea": "An inside bar followed by a candle at least 1.5 times its range that closes beyond it.",
+      "kind": "breakout",
+      "strategy": {
+        "name": "Small candle, then big breakout candle",
+        "indicators": {
+          "pa": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "pa.inside_bar[1]",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "high[1]"
+              },
+              {
+                "left": "range",
+                "op": ">=",
+                "right": "1.5 * range[1]"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "open"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "pa.inside_bar[1]",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "low[1]"
+              },
+              {
+                "left": "range",
+                "op": ">=",
+                "right": "1.5 * range[1]"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "open"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "star-level",
+      "name": "Morning or evening star at swing level",
+      "idea": "A three-candle star whose middle candle sits at the latest swing low or high.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Morning or evening star at swing level",
+        "indicators": {
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          },
+          "pa": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "pa.morning_star",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "low[1]",
+                "op": "<=",
+                "right": "sw.support + 0.5 * atr"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "pa.evening_star",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "high[1]",
+                "op": ">=",
+                "right": "sw.resistance - 0.5 * atr"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "outside-reversal",
+      "name": "Outside-bar reversal after a move",
+      "idea": "After three falling closes, a candle takes out the previous low and closes above the previous high. Mirrored for shorts.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Outside-bar reversal after a move",
+        "indicators": {
+          "pa": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "pa.outside_bar",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "high[1]"
+              },
+              {
+                "left": "close[1]",
+                "op": "<",
+                "right": "close[4]"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "pa.outside_bar",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "low[1]"
+              },
+              {
+                "left": "close[1]",
+                "op": ">",
+                "right": "close[4]"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "hour-level-reject",
+      "name": "Rejection of the previous hour's high or low",
+      "idea": "Multi-timeframe: a candle dips under the previous hourly candle's low and closes back above it with a long lower wick. Mirrored at the hour's high.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Rejection of the previous hour's high or low",
+        "indicators": {
+          "ph": {
+            "type": "period",
+            "minutes": 60
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "low",
+                "op": "<",
+                "right": "ph.prev_low"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "ph.prev_low"
+              },
+              {
+                "left": "lower_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "high",
+                "op": ">",
+                "right": "ph.prev_high"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "ph.prev_high"
+              },
+              {
+                "left": "upper_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "h4-level-reject",
+      "name": "Rejection of the previous 4-hour high or low",
+      "idea": "The same rejection, at the previous 4-hour candle's high or low.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Rejection of the previous 4-hour high or low",
+        "indicators": {
+          "p4": {
+            "type": "period",
+            "minutes": 240
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "low",
+                "op": "<",
+                "right": "p4.prev_low"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "p4.prev_low"
+              },
+              {
+                "left": "lower_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "high",
+                "op": ">",
+                "right": "p4.prev_high"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "p4.prev_high"
+              },
+              {
+                "left": "upper_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "day-level-reject",
+      "name": "Rejection of yesterday's high or low",
+      "idea": "The same rejection, at the previous UTC day's high or low.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Rejection of yesterday's high or low",
+        "indicators": {
+          "pd": {
+            "type": "period",
+            "minutes": 1440
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "low",
+                "op": "<",
+                "right": "pd.prev_low"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "pd.prev_low"
+              },
+              {
+                "left": "lower_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "high",
+                "op": ">",
+                "right": "pd.prev_high"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "pd.prev_high"
+              },
+              {
+                "left": "upper_wick",
+                "op": ">=",
+                "right": "0.4 * range"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "vwap-stretch",
+      "name": "Reversal candle far from VWAP",
+      "idea": "Price stretches two ATRs beyond the day's VWAP, then prints an engulfing or pin bar back towards it.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Reversal candle far from VWAP",
+        "indicators": {
+          "vw": {
+            "type": "vwap"
+          },
+          "pa": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "low",
+                "op": "<",
+                "right": "vw - 2 * atr"
+              },
+              {
+                "any": [
+                  {
+                    "left": "pa.bullish_engulfing",
+                    "op": "==",
+                    "right": 1
+                  },
+                  {
+                    "left": "pa.hammer",
+                    "op": "==",
+                    "right": 1
+                  }
+                ]
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "high",
+                "op": ">",
+                "right": "vw + 2 * atr"
+              },
+              {
+                "any": [
+                  {
+                    "left": "pa.bearish_engulfing",
+                    "op": "==",
+                    "right": 1
+                  },
+                  {
+                    "left": "pa.shooting_star",
+                    "op": "==",
+                    "right": 1
+                  }
+                ]
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "band-reclaim",
+      "name": "Bollinger band pierce and reclaim",
+      "idea": "A candle pierces the lower Bollinger band and closes back inside it, up, with a lower wick. Mirrored at the upper band.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Bollinger band pierce and reclaim",
+        "indicators": {
+          "bb": {
+            "type": "bbands",
+            "period": 20,
+            "stddev": 2
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "low",
+                "op": "<",
+                "right": "bb.lower"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "bb.lower"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "open"
+              },
+              {
+                "left": "lower_wick",
+                "op": ">=",
+                "right": "0.3 * range"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "high",
+                "op": ">",
+                "right": "bb.upper"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "bb.upper"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "open"
+              },
+              {
+                "left": "upper_wick",
+                "op": ">=",
+                "right": "0.3 * range"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "rsi-engulf",
+      "name": "Engulfing out of an RSI extreme",
+      "idea": "RSI was below 30 (above 70) on the previous candle and this candle engulfs it the other way.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Engulfing out of an RSI extreme",
+        "indicators": {
+          "rsi": {
+            "type": "rsi",
+            "period": 14
+          },
+          "pa": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "rsi[1]",
+                "op": "<",
+                "right": 30
+              },
+              {
+                "left": "pa.bullish_engulfing",
+                "op": "==",
+                "right": 1
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "rsi[1]",
+                "op": ">",
+                "right": 70
+              },
+              {
+                "left": "pa.bearish_engulfing",
+                "op": "==",
+                "right": 1
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "trend-pullback",
+      "name": "Pullback to the fast average in a trend",
+      "idea": "With the 20 average above the 50 and price above the 8-hour trend, a dip to the 20 average ends in an engulfing or pin bar. Mirrored for shorts.",
+      "kind": "trend",
+      "strategy": {
+        "name": "Pullback to the fast average in a trend",
+        "indicators": {
+          "e20": {
+            "type": "ema",
+            "period": 20
+          },
+          "e50": {
+            "type": "ema",
+            "period": 50
+          },
+          "pa": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "e20",
+                "op": ">",
+                "right": "e50"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "trend"
+              },
+              {
+                "left": "low",
+                "op": "<=",
+                "right": "e20 + 0.1 * atr"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "e20"
+              },
+              {
+                "any": [
+                  {
+                    "left": "pa.bullish_engulfing",
+                    "op": "==",
+                    "right": 1
+                  },
+                  {
+                    "left": "pa.hammer",
+                    "op": "==",
+                    "right": 1
+                  }
+                ]
+              }
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "e20",
+                "op": "<",
+                "right": "e50"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "trend"
+              },
+              {
+                "left": "high",
+                "op": ">=",
+                "right": "e20 - 0.1 * atr"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "e20"
+              },
+              {
+                "any": [
+                  {
+                    "left": "pa.bearish_engulfing",
+                    "op": "==",
+                    "right": 1
+                  },
+                  {
+                    "left": "pa.shooting_star",
+                    "op": "==",
+                    "right": 1
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "exhaustion",
+      "name": "Big candle, small candle, big candle back",
+      "idea": "A large falling candle, then a small one, then a strong rising candle that closes above the small one's high. Mirrored for shorts.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Big candle, small candle, big candle back",
+        "indicators": {
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "close[2]",
+                "op": "<",
+                "right": "open[2]"
+              },
+              {
+                "left": "range[2]",
+                "op": ">=",
+                "right": "1.5 * atr[2]"
+              },
+              {
+                "left": "range[1]",
+                "op": "<=",
+                "right": "0.5 * range[2]"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "open"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "high[1]"
+              },
+              {
+                "left": "body",
+                "op": ">=",
+                "right": "0.5 * range"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "close[2]",
+                "op": ">",
+                "right": "open[2]"
+              },
+              {
+                "left": "range[2]",
+                "op": ">=",
+                "right": "1.5 * atr[2]"
+              },
+              {
+                "left": "range[1]",
+                "op": "<=",
+                "right": "0.5 * range[2]"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "open"
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "low[1]"
+              },
+              {
+                "left": "body",
+                "op": ">=",
+                "right": "0.5 * range"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "structure-break",
+      "name": "Change of character",
+      "idea": "In a downtrend of lower highs and lows, price closes above the last swing high (the first sign of a turn). Mirrored for shorts.",
+      "kind": "reversal",
+      "strategy": {
+        "name": "Change of character",
+        "indicators": {
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "sw.structure",
+                "op": "==",
+                "right": -1
+              },
+              {
+                "left": "close",
+                "op": "crosses_above",
+                "right": "sw.resistance"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "sw.structure",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "close",
+                "op": "crosses_below",
+                "right": "sw.support"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    },
+    {
+      "id": "orb",
+      "name": "Opening range breakout (reference)",
+      "idea": "Trend-following reference: a close through the first 30 minutes of the UTC day. At most one or two trades a day.",
+      "kind": "breakout",
+      "strategy": {
+        "name": "Opening range breakout (reference)",
+        "indicators": {
+          "or": {
+            "type": "opening_range",
+            "minutes": 30,
+            "session_start": 0
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "trend": {
+            "type": "ema",
+            "period": "{{hours:8}}"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "or.ready",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "close",
+                "op": "crosses_above",
+                "right": "or.high"
+              },
+              "{{trend.long}}"
+            ]
+          },
+          "short": {
+            "all": [
+              {
+                "left": "or.ready",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "close",
+                "op": "crosses_below",
+                "right": "or.low"
+              },
+              "{{trend.short}}"
+            ]
+          }
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": "{{rr}}"
+          },
+          "max_bars": "{{hours:4}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 10,
+        "risk": {
+          "daily_loss_percent": 3,
+          "pause_after_losses": 4,
+          "pause_bars": "{{hours:1}}"
+        }
+      }
+    }
+  ]
+}
