@@ -1,0 +1,87 @@
+{
+  "interval": "1d",
+  "from": "2020-01-01",
+  "split": "2024-07-01",
+  "cost_bps": 12,
+  "id": "rotation",
+  "name": "Coin rotation (cross-sectional momentum)",
+  "kind": "rotation",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "BNBUSDT",
+    "XRPUSDT",
+    "ADAUSDT",
+    "DOGEUSDT",
+    "SOLUSDT",
+    "DOTUSDT",
+    "LINKUSDT",
+    "LTCUSDT",
+    "BCHUSDT",
+    "AVAXUSDT",
+    "TRXUSDT",
+    "ATOMUSDT",
+    "XLMUSDT",
+    "ETCUSDT",
+    "FILUSDT",
+    "UNIUSDT",
+    "AAVEUSDT",
+    "NEARUSDT",
+    "ALGOUSDT",
+    "VETUSDT",
+    "SANDUSDT",
+    "MANAUSDT",
+    "AXSUSDT",
+    "EGLDUSDT",
+    "THETAUSDT",
+    "XTZUSDT",
+    "EOSUSDT",
+    "ICPUSDT",
+    "FTMUSDT",
+    "MATICUSDT",
+    "CHZUSDT",
+    "GRTUSDT",
+    "ENJUSDT",
+    "KSMUSDT",
+    "SUSHIUSDT",
+    "COMPUSDT",
+    "FTTUSDT",
+    "LUNAUSDT",
+    "SRMUSDT",
+    "ZECUSDT",
+    "DASHUSDT"
+  ],
+  "description": "Every few days, rank 43 Binance coins by their recent return and hold the strongest, long-only on spot or long the strongest and short the weakest on futures. The universe includes coins that later collapsed or were delisted (FTT, LUNA, SRM, MATIC, FTM, EOS), so a dead coin that was held counts.",
+  "grid": {
+    "lookback": [
+      7,
+      14,
+      30,
+      60,
+      90
+    ],
+    "every": [
+      1,
+      7,
+      14
+    ],
+    "top": [
+      3,
+      5,
+      10
+    ],
+    "long_short": [
+      false,
+      true
+    ],
+    "btc_filter": [
+      null,
+      50,
+      100
+    ],
+    "reverse": [
+      false,
+      true
+    ]
+  }
+}
