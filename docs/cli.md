@@ -114,6 +114,19 @@ candlerail carry [--symbols BTCUSDT,ETHUSDT,...] [--days 1095] [--offset-days N]
 It prints each coin's yearly result held all the time and held only while
 the last seven days' funding was positive, and the equal-weight portfolio.
 
+## quant
+
+Runs a portfolio study that the single-market backtester can't express:
+coin rotation, Fear & Greed sentiment, time of day, or pairs.
+
+```text
+candlerail quant <file> [-o FILE] [--cache-dir DIR] [--binance-api URL] [--fear-greed-api URL]
+```
+
+The file names a `kind` (`rotation`, `sentiment`, `seasonality` or `pairs`),
+the coins, the interval, `from` and `split` dates, a cost in basis points,
+and a `grid` of settings (or explicit `combos`). See `research/*.json`.
+
 ## Exit codes
 
 `0` on success, `1` on any error (invalid strategy, bad arguments, network

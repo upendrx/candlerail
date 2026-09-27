@@ -20,6 +20,13 @@ explorer for every variant.
 | 2.2 | The survivors on 2020 to 2023 | All 44 made money on data they never saw |
 | 2.3 | Funding-rate carry | About 3% a year recently, 6% to 7% in 2020 to 2023 |
 | 2.4 | How traders use AI, for free | Search and honest testing, not predictions |
+| **3** | How quants scale up, and what a lone trader with a bot can use | **Trend plus coin rotation: about +4% a month, largest fall about 20%** |
+| 3.1 | How much to risk | Returns and drawdowns scale together |
+| 3.2 | Coin rotation across 43 coins | 204 of 540 selected, 138 survived |
+| 3.3 | Fear & Greed sentiment | Survivors are mostly the trend filter |
+| 3.4 | Time of day and day of week | Hour patterns reversed out of sample, even before costs |
+| 3.5 | Pairs trading | No pair survived costs |
+| 3.6 | Combining strategies | Correlation 0.46: together they fall far less than either alone |
 
 # Study 1: intraday reversals on major coins
 
@@ -218,6 +225,84 @@ honestly, which is what `candlerail study` does locally. Free chat
 assistants or local models (Ollama, LM Studio) can write strategy files
 from the Ask AI tab's prompt; test anything they write here before trading
 it.
+
+# Study 3: how quants scale up
+
+Where do the big algorithmic profits come from, which other signals help,
+and what can one account running a bot realistically do?
+
+Most large daily profits in crypto come from businesses a lone trader can't
+copy: market making with fee rebates, speed arbitrage between exchanges,
+and funding and basis trades run with millions at the lowest fee tiers.
+What one account can use is the professional method: several uncorrelated
+edges, sized together.
+
+All tests use daily data from January 2020 (hourly from September 2020 for
+time of day), choose on the years before July 2024 and judge on the years
+after. **Selected** means a Sharpe ratio of at least 1 and at least 15% a
+year before the split; **survived** means a Sharpe of at least 0.5 and a
+profit after it. The coin universe has 43 Binance coins, including ones that
+collapsed or were delisted (FTT, LUNA, SRM, MATIC, FTM, EOS), so holding a
+dying coin counts.
+
+## 3.2 Coin rotation
+
+Every 1, 7 or 14 days, rank the coins by their return over 7 to 90 days
+and hold the top 3, 5 or 10 (long-only on spot), or also short the bottom
+ones (futures), optionally only while BTC is above its 50- or 100-day
+average. 540 variants: **204 selected, 138 survived.** Long-only with a BTC
+trend filter did best; buying the weakest coins (reversal) and long-short
+did not. The weekly pick (30-day lookback, top 5, BTC above its 100-day
+average) made about 74% a year after the split against 14% for BTC, with a
+largest fall of about 50%.
+
+```bash
+candlerail quant research/rotation.json -o rotation.json
+```
+
+## 3.3 Fear & Greed sentiment
+
+The free daily Crypto Fear & Greed index (alternative.me) timing BTC and
+ETH: buy extreme fear, buy only while below a greed cap, buy fear in an
+uptrend, or short greed in a downtrend. 186 variants, 31 selected, 17
+survived, but the best survivors are a plain trend filter with the greed
+cap switched off, or "buy when the index is under 50 in an uptrend".
+The index itself added little.
+
+## 3.4 Time of day and day of week
+
+Learn the best hours or weekdays for BTC and ETH before the split and hold
+only then. With futures costs no hour-based variant made money even in the
+selection period; with no costs at all, the best hours had a Sharpe above 2
+before the split and **lost money after it**. The patterns were noise.
+Weekday variants that survived are mostly just holding the market four or
+five days a week.
+
+## 3.5 Pairs trading
+
+For pairs whose daily returns were correlated above 0.75 before the split
+(BTC/ETH, BTC/LTC, ETH/LTC, XRP/XLM, LTC/BCH), short the one that ran ahead
+and buy the laggard when their price ratio is 1.5 to 2.5 standard deviations
+from normal. 72 variants, **none selected**.
+
+## 3.6 Combining strategies, and 3.1 how much to risk
+
+The Study 2 trend rule and the weekly rotation pick had a monthly
+correlation of 0.46. Weighted by 1 / volatility measured before July 2024
+(about 79% trend, 21% rotation) and fixed:
+
+| Oct 2020 to Sep 2026 | Trend alone | Rotation alone | Combined | Buy and hold BTC |
+|---|---|---|---|---|
+| Average month | +2.3% | +11.9% | **+4.4%** | +4.2% |
+| Worst month | −9.1% | −30.6% | **−9.5%** | −37.3% |
+| Largest fall | −17% | −51% | **−20%** | −73% |
+| Months up | 39 of 72 | 31 of 72 | **40 of 72** | 40 of 72 |
+| After July 2024: average month / largest fall | +2.1% / −17% | +7.2% / −40% | **+3.2% / −15%** | +1.7% / −49% |
+
+On $500 the combined plan's average month is about $22, with a worst month
+of about −$48. Doubling every position roughly doubles both: 2× averaged
++8.7% a month with a largest fall of about 37%. The Research tab's 3.1 page
+simulates 5,000 random years at each size.
 
 ## Running a study
 

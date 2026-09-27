@@ -121,6 +121,7 @@ backtest.
 |---|---|
 | `GET /api/research` | How the studies are grouped and numbered (1.0, 1.1, ... 2.0, ...), what each found, and the plan's picks |
 | `GET /api/carry/{id}` | A recorded funding-rate carry run: per-coin and portfolio results month by month |
+| `GET /api/quant/{id}` | A recorded portfolio study (rotation, sentiment, seasonality, pairs): every variant's statistics before and after the split and its monthly results |
 | `GET /api/studies` | The recorded studies: id, name, description, counts of variants, selected and survived |
 | `GET /api/studies/{id}` | A study's digest: its definition, data window, and one row per variant |
 | `POST /api/studies/{id}/strategy` | `{ family, variant, interval, cost }` → the exact strategy file that variant tested |
