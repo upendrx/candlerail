@@ -1,0 +1,991 @@
+{
+  "name": "Daily candle patterns, entered on the hourly chart",
+  "description": "Four daily candle setups on ten major coins, traded on hourly candles (entry at the next hour, on a break of the pattern day, or on an hourly reversal after a dip) and, for comparison, on daily candles. Stops beyond the pattern day, beyond the entry candle, or at 1.5 ATR. Chosen on September 2020 to December 2024, judged on the rest, under normal and doubled costs, with and without a BTC trend filter.",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "XRPUSDT",
+    "BNBUSDT",
+    "DOGEUSDT",
+    "ADAUSDT",
+    "AVAXUSDT",
+    "LINKUSDT",
+    "LTCUSDT"
+  ],
+  "intervals": [
+    "1h",
+    "1d"
+  ],
+  "days": 2190,
+  "split": 0.6667,
+  "capital": 10000,
+  "costs": [
+    {
+      "label": "spot taker",
+      "fee_bps": 10,
+      "slippage_bps": 2
+    },
+    {
+      "label": "double costs",
+      "fee_bps": 20,
+      "slippage_bps": 4
+    }
+  ],
+  "selection": {
+    "portfolio": true,
+    "min_trades_per_day": 0.2,
+    "max_trades_per_day": 40,
+    "min_avg_r": 0.05,
+    "min_markets": 6
+  },
+  "families": [
+    {
+      "id": "d-engulf",
+      "name": "Daily engulfing",
+      "idea": "A day whose body engulfs the day before.",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern day",
+            "v": {
+              "below": "1.1 * pd.bar_low - 0.1 * pd.bar_high",
+              "above": "1.1 * pd.bar_high - 0.1 * pd.bar_low"
+            }
+          },
+          {
+            "label": "beyond the entry candle",
+            "v": {
+              "below": "low - 0.1 * range",
+              "above": "high + 0.1 * range"
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 3 days",
+            "v": null
+          }
+        ],
+        "entry": [
+          {
+            "label": "at the next open",
+            "long": {
+              "all": [
+                {
+                  "left": "pd.bullish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "pd.bullish_engulfing[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "pd.bearish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "pd.bearish_engulfing[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            }
+          },
+          {
+            "label": "close above the pattern day's high",
+            "long": {
+              "all": [
+                {
+                  "left": "pd.bullish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "crosses_above",
+                  "right": "pd.bar_high"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "pd.bearish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "crosses_below",
+                  "right": "pd.bar_low"
+                }
+              ]
+            }
+          },
+          {
+            "label": "dip to mid-range, then a reversal candle",
+            "long": {
+              "all": [
+                {
+                  "left": "pd.bullish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "low",
+                  "op": "<=",
+                  "right": "0.5 * pd.bar_high + 0.5 * pd.bar_low"
+                },
+                {
+                  "any": [
+                    {
+                      "left": "pa1.bullish_engulfing",
+                      "op": "==",
+                      "right": 1
+                    },
+                    {
+                      "left": "pa1.hammer",
+                      "op": "==",
+                      "right": 1
+                    }
+                  ]
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "pd.bearish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "high",
+                  "op": ">=",
+                  "right": "0.5 * pd.bar_high + 0.5 * pd.bar_low"
+                },
+                {
+                  "any": [
+                    {
+                      "left": "pa1.bearish_engulfing",
+                      "op": "==",
+                      "right": 1
+                    },
+                    {
+                      "left": "pa1.shooting_star",
+                      "op": "==",
+                      "right": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                "{{entry.short}}",
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Daily engulfing",
+        "context": "BTCUSDT",
+        "indicators": {
+          "pd": {
+            "type": "patterns",
+            "minutes": 1440
+          },
+          "pa1": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": "{{hours:1200}}",
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              "{{entry.long}}",
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": "{{hours:72}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "d-hammer",
+      "name": "Daily hammer or shooting star",
+      "idea": "A day with a long lower wick for longs, or a long upper wick for shorts.",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern day",
+            "v": {
+              "below": "1.1 * pd.bar_low - 0.1 * pd.bar_high",
+              "above": "1.1 * pd.bar_high - 0.1 * pd.bar_low"
+            }
+          },
+          {
+            "label": "beyond the entry candle",
+            "v": {
+              "below": "low - 0.1 * range",
+              "above": "high + 0.1 * range"
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 3 days",
+            "v": null
+          }
+        ],
+        "entry": [
+          {
+            "label": "at the next open",
+            "long": {
+              "all": [
+                {
+                  "left": "pd.hammer",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "pd.hammer[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "pd.shooting_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "pd.shooting_star[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            }
+          },
+          {
+            "label": "close above the pattern day's high",
+            "long": {
+              "all": [
+                {
+                  "left": "pd.hammer",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "crosses_above",
+                  "right": "pd.bar_high"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "pd.shooting_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "crosses_below",
+                  "right": "pd.bar_low"
+                }
+              ]
+            }
+          },
+          {
+            "label": "dip to mid-range, then a reversal candle",
+            "long": {
+              "all": [
+                {
+                  "left": "pd.hammer",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "low",
+                  "op": "<=",
+                  "right": "0.5 * pd.bar_high + 0.5 * pd.bar_low"
+                },
+                {
+                  "any": [
+                    {
+                      "left": "pa1.bullish_engulfing",
+                      "op": "==",
+                      "right": 1
+                    },
+                    {
+                      "left": "pa1.hammer",
+                      "op": "==",
+                      "right": 1
+                    }
+                  ]
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "pd.shooting_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "high",
+                  "op": ">=",
+                  "right": "0.5 * pd.bar_high + 0.5 * pd.bar_low"
+                },
+                {
+                  "any": [
+                    {
+                      "left": "pa1.bearish_engulfing",
+                      "op": "==",
+                      "right": 1
+                    },
+                    {
+                      "left": "pa1.shooting_star",
+                      "op": "==",
+                      "right": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                "{{entry.short}}",
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Daily hammer or shooting star",
+        "context": "BTCUSDT",
+        "indicators": {
+          "pd": {
+            "type": "patterns",
+            "minutes": 1440
+          },
+          "pa1": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": "{{hours:1200}}",
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              "{{entry.long}}",
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": "{{hours:72}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "d-star",
+      "name": "Daily morning or evening star",
+      "idea": "A three-day turn: a big day, a small one, then a strong day the other way.",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern day",
+            "v": {
+              "below": "1.1 * pd.bar_low - 0.1 * pd.bar_high",
+              "above": "1.1 * pd.bar_high - 0.1 * pd.bar_low"
+            }
+          },
+          {
+            "label": "beyond the entry candle",
+            "v": {
+              "below": "low - 0.1 * range",
+              "above": "high + 0.1 * range"
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 3 days",
+            "v": null
+          }
+        ],
+        "entry": [
+          {
+            "label": "at the next open",
+            "long": {
+              "all": [
+                {
+                  "left": "pd.morning_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "pd.morning_star[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "pd.evening_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "pd.evening_star[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            }
+          },
+          {
+            "label": "close above the pattern day's high",
+            "long": {
+              "all": [
+                {
+                  "left": "pd.morning_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "crosses_above",
+                  "right": "pd.bar_high"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "pd.evening_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "crosses_below",
+                  "right": "pd.bar_low"
+                }
+              ]
+            }
+          },
+          {
+            "label": "dip to mid-range, then a reversal candle",
+            "long": {
+              "all": [
+                {
+                  "left": "pd.morning_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "low",
+                  "op": "<=",
+                  "right": "0.5 * pd.bar_high + 0.5 * pd.bar_low"
+                },
+                {
+                  "any": [
+                    {
+                      "left": "pa1.bullish_engulfing",
+                      "op": "==",
+                      "right": 1
+                    },
+                    {
+                      "left": "pa1.hammer",
+                      "op": "==",
+                      "right": 1
+                    }
+                  ]
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "pd.evening_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "high",
+                  "op": ">=",
+                  "right": "0.5 * pd.bar_high + 0.5 * pd.bar_low"
+                },
+                {
+                  "any": [
+                    {
+                      "left": "pa1.bearish_engulfing",
+                      "op": "==",
+                      "right": 1
+                    },
+                    {
+                      "left": "pa1.shooting_star",
+                      "op": "==",
+                      "right": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                "{{entry.short}}",
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Daily morning or evening star",
+        "context": "BTCUSDT",
+        "indicators": {
+          "pd": {
+            "type": "patterns",
+            "minutes": 1440
+          },
+          "pa1": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": "{{hours:1200}}",
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              "{{entry.long}}",
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": "{{hours:72}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "d-inside",
+      "name": "Inside-day breakout",
+      "idea": "Yesterday stayed inside the day before; trade a close through yesterday's high or low.",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern day",
+            "v": {
+              "below": "1.1 * pd.bar_low - 0.1 * pd.bar_high",
+              "above": "1.1 * pd.bar_high - 0.1 * pd.bar_low"
+            }
+          },
+          {
+            "label": "beyond the entry candle",
+            "v": {
+              "below": "low - 0.1 * range",
+              "above": "high + 0.1 * range"
+            }
+          },
+          {
+            "label": "1.5 ATR",
+            "v": {
+              "atr": 1.5,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 3 days",
+            "v": null
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                {
+                  "all": [
+                    {
+                      "left": "pd.inside_bar",
+                      "op": "==",
+                      "right": 1
+                    },
+                    {
+                      "left": "close",
+                      "op": "crosses_below",
+                      "right": "pd.bar_low"
+                    }
+                  ]
+                },
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Inside-day breakout",
+        "context": "BTCUSDT",
+        "indicators": {
+          "pd": {
+            "type": "patterns",
+            "minutes": 1440
+          },
+          "pa1": {
+            "type": "patterns"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": "{{hours:1200}}",
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "left": "pd.inside_bar",
+                    "op": "==",
+                    "right": 1
+                  },
+                  {
+                    "left": "close",
+                    "op": "crosses_above",
+                    "right": "pd.bar_high"
+                  }
+                ]
+              },
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": "{{hours:72}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    }
+  ]
+}
