@@ -1,0 +1,1242 @@
+{
+  "name": "Swing and trend strategies for monthly profit",
+  "description": "Eleven well-known swing and trend-following strategies, long-only (spot) or long and short (futures), on ten major Binance coins at 1 hour, 4 hours and 1 day. Each variant is chosen on the first two years and judged on the last year, risking 2% of the account per trade without leverage, and compared month by month with buying and holding the same coins.",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "XRPUSDT",
+    "BNBUSDT",
+    "DOGEUSDT",
+    "ADAUSDT",
+    "AVAXUSDT",
+    "LINKUSDT",
+    "LTCUSDT"
+  ],
+  "intervals": [
+    "1h",
+    "4h",
+    "1d"
+  ],
+  "days": 1095,
+  "split": 0.6667,
+  "capital": 10000,
+  "costs": [
+    {
+      "label": "spot taker",
+      "fee_bps": 10,
+      "slippage_bps": 2
+    },
+    {
+      "label": "futures taker",
+      "fee_bps": 5,
+      "slippage_bps": 1
+    }
+  ],
+  "selection": {
+    "portfolio": true,
+    "min_trades_per_day": 0.3,
+    "max_trades_per_day": 40,
+    "min_avg_r": 0.05,
+    "min_markets": 6
+  },
+  "families": [
+    {
+      "id": "donchian",
+      "name": "Donchian channel breakout",
+      "idea": "The Turtle rules: buy a close above the highest high of the last N candles, sell when price closes below the low of a shorter channel. Mirrored for shorts.",
+      "kind": "trend",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "left": "close",
+              "op": "<",
+              "right": "dc_in.lower[1]"
+            },
+            "exit": {
+              "left": "close",
+              "op": ">",
+              "right": "dc_out.upper[1]"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "trail": [
+          {
+            "label": "none",
+            "v": null
+          },
+          {
+            "label": "3 ATR trailing",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "ch": [
+          {
+            "label": "20/10",
+            "in": 20,
+            "out": 10
+          },
+          {
+            "label": "55/20",
+            "in": 55,
+            "out": 20
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Donchian channel breakout",
+        "indicators": {
+          "dc_in": {
+            "type": "donchian",
+            "period": "{{ch.in}}"
+          },
+          "dc_out": {
+            "type": "donchian",
+            "period": "{{ch.out}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "left": "close",
+            "op": ">",
+            "right": "dc_in.upper[1]"
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "left": "close",
+            "op": "<",
+            "right": "dc_out.lower[1]"
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}",
+          "trailing_stop": "{{trail.v}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "ema-cross",
+      "name": "Moving average crossover",
+      "idea": "Buy when the fast EMA crosses above the slow one, get out when it crosses back.",
+      "kind": "trend",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "left": "fast",
+              "op": "crosses_below",
+              "right": "slow"
+            },
+            "exit": {
+              "left": "fast",
+              "op": "crosses_above",
+              "right": "slow"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "trail": [
+          {
+            "label": "none",
+            "v": null
+          },
+          {
+            "label": "3 ATR trailing",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "ma": [
+          {
+            "label": "10/30",
+            "f": 10,
+            "s": 30
+          },
+          {
+            "label": "20/50",
+            "f": 20,
+            "s": 50
+          },
+          {
+            "label": "50/200",
+            "f": 50,
+            "s": 200
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Moving average crossover",
+        "indicators": {
+          "fast": {
+            "type": "ema",
+            "period": "{{ma.f}}"
+          },
+          "slow": {
+            "type": "ema",
+            "period": "{{ma.s}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "left": "fast",
+            "op": "crosses_above",
+            "right": "slow"
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "left": "fast",
+            "op": "crosses_below",
+            "right": "slow"
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}",
+          "trailing_stop": "{{trail.v}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "supertrend",
+      "name": "SuperTrend flip",
+      "idea": "Buy when SuperTrend flips up, get out when it flips down.",
+      "kind": "trend",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                {
+                  "left": "st.direction",
+                  "op": "==",
+                  "right": -1
+                },
+                {
+                  "left": "st.direction[1]",
+                  "op": "==",
+                  "right": 1
+                }
+              ]
+            },
+            "exit": {
+              "left": "st.direction",
+              "op": "==",
+              "right": 1
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "trail": [
+          {
+            "label": "none",
+            "v": null
+          },
+          {
+            "label": "3 ATR trailing",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "mult": [
+          2,
+          3
+        ]
+      },
+      "strategy": {
+        "name": "SuperTrend flip",
+        "indicators": {
+          "st": {
+            "type": "supertrend",
+            "period": 10,
+            "multiplier": "{{mult}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "st.direction",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "st.direction[1]",
+                "op": "==",
+                "right": -1
+              }
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "left": "st.direction",
+            "op": "==",
+            "right": -1
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}",
+          "trailing_stop": "{{trail.v}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "price-ma",
+      "name": "Price crosses its moving average",
+      "idea": "Time-series momentum: hold while price is above its N-candle average.",
+      "kind": "trend",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "left": "close",
+              "op": "crosses_below",
+              "right": "ma"
+            },
+            "exit": {
+              "left": "close",
+              "op": "crosses_above",
+              "right": "ma"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "trail": [
+          {
+            "label": "none",
+            "v": null
+          },
+          {
+            "label": "3 ATR trailing",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "len": [
+          50,
+          100,
+          200
+        ]
+      },
+      "strategy": {
+        "name": "Price crosses its moving average",
+        "indicators": {
+          "ma": {
+            "type": "sma",
+            "period": "{{len}}"
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "left": "close",
+            "op": "crosses_above",
+            "right": "ma"
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "left": "close",
+            "op": "crosses_below",
+            "right": "ma"
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}",
+          "trailing_stop": "{{trail.v}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "weekly-break",
+      "name": "Weekly high breakout",
+      "idea": "Buy a close through last week's high; get out below last week's low.",
+      "kind": "trend",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "left": "close",
+              "op": "crosses_below",
+              "right": "wk.prev_low"
+            },
+            "exit": {
+              "left": "close",
+              "op": ">",
+              "right": "wk.prev_high"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "trail": [
+          {
+            "label": "none",
+            "v": null
+          },
+          {
+            "label": "3 ATR trailing",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Weekly high breakout",
+        "indicators": {
+          "wk": {
+            "type": "period",
+            "minutes": 10080
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "left": "close",
+            "op": "crosses_above",
+            "right": "wk.prev_high"
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "left": "close",
+            "op": "<",
+            "right": "wk.prev_low"
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}",
+          "trailing_stop": "{{trail.v}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "keltner-break",
+      "name": "Keltner channel breakout",
+      "idea": "Buy a close above the upper Keltner band, get out below the middle.",
+      "kind": "trend",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "left": "close",
+              "op": "crosses_below",
+              "right": "kc.lower"
+            },
+            "exit": {
+              "left": "close",
+              "op": ">",
+              "right": "kc.middle"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "trail": [
+          {
+            "label": "none",
+            "v": null
+          },
+          {
+            "label": "3 ATR trailing",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Keltner channel breakout",
+        "indicators": {
+          "kc": {
+            "type": "keltner",
+            "period": 20,
+            "multiplier": 2,
+            "atr_period": 10
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "left": "close",
+            "op": "crosses_above",
+            "right": "kc.upper"
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "left": "close",
+            "op": "<",
+            "right": "kc.middle"
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}",
+          "trailing_stop": "{{trail.v}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "macd-trend",
+      "name": "MACD cross with the trend",
+      "idea": "MACD crosses its signal line in the direction of the 200 EMA.",
+      "kind": "trend",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                {
+                  "left": "macd.macd",
+                  "op": "crosses_below",
+                  "right": "macd.signal"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "e200"
+                }
+              ]
+            },
+            "exit": {
+              "left": "macd.macd",
+              "op": "crosses_above",
+              "right": "macd.signal"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "trail": [
+          {
+            "label": "none",
+            "v": null
+          },
+          {
+            "label": "3 ATR trailing",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "MACD cross with the trend",
+        "indicators": {
+          "macd": {
+            "type": "macd"
+          },
+          "e200": {
+            "type": "ema",
+            "period": 200
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "macd.macd",
+                "op": "crosses_above",
+                "right": "macd.signal"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "e200"
+              }
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "left": "macd.macd",
+            "op": "crosses_below",
+            "right": "macd.signal"
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}",
+          "trailing_stop": "{{trail.v}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "rsi2",
+      "name": "RSI(2) pullback in an uptrend",
+      "idea": "Larry Connors' rule: above the 200 average, buy when 2-period RSI is deeply oversold, sell on a close above the 5 average.",
+      "kind": "mean reversion",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "s200"
+                },
+                {
+                  "left": "r2",
+                  "op": ">",
+                  "right": "{{lvl.hi}}"
+                }
+              ]
+            },
+            "exit": {
+              "left": "close",
+              "op": "<",
+              "right": "s5"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "lvl": [
+          {
+            "label": "10/90",
+            "lo": 10,
+            "hi": 90
+          },
+          {
+            "label": "5/95",
+            "lo": 5,
+            "hi": 95
+          }
+        ]
+      },
+      "strategy": {
+        "name": "RSI(2) pullback in an uptrend",
+        "indicators": {
+          "s200": {
+            "type": "sma",
+            "period": 200
+          },
+          "s5": {
+            "type": "sma",
+            "period": 5
+          },
+          "r2": {
+            "type": "rsi",
+            "period": 2
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "close",
+                "op": ">",
+                "right": "s200"
+              },
+              {
+                "left": "r2",
+                "op": "<",
+                "right": "{{lvl.lo}}"
+              }
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "left": "close",
+            "op": ">",
+            "right": "s5"
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}",
+          "max_bars": 10
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "band-revert",
+      "name": "Bollinger reversion in quiet markets",
+      "idea": "When ADX says there's no trend, buy a close below the lower band and sell at the middle.",
+      "kind": "mean reversion",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                {
+                  "left": "adx.adx",
+                  "op": "<",
+                  "right": 20
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "bb.upper"
+                }
+              ]
+            },
+            "exit": {
+              "left": "close",
+              "op": "<",
+              "right": "bb.middle"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Bollinger reversion in quiet markets",
+        "indicators": {
+          "bb": {
+            "type": "bbands",
+            "period": 20,
+            "stddev": 2
+          },
+          "adx": {
+            "type": "adx",
+            "period": 14
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "adx.adx",
+                "op": "<",
+                "right": 20
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "bb.lower"
+              }
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "left": "close",
+            "op": ">",
+            "right": "bb.middle"
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "rsi-pullback",
+      "name": "RSI pullback in a trend",
+      "idea": "Above the 200 EMA, buy when RSI(14) turns back up through 40; sell above 70 or if the trend breaks.",
+      "kind": "mean reversion",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "e200"
+                },
+                {
+                  "left": "rsi",
+                  "op": "crosses_below",
+                  "right": 60
+                }
+              ]
+            },
+            "exit": {
+              "any": [
+                {
+                  "left": "rsi",
+                  "op": "<",
+                  "right": 30
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "e200"
+                }
+              ]
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "RSI pullback in a trend",
+        "indicators": {
+          "e200": {
+            "type": "ema",
+            "period": 200
+          },
+          "rsi": {
+            "type": "rsi",
+            "period": 14
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "close",
+                "op": ">",
+                "right": "e200"
+              },
+              {
+                "left": "rsi",
+                "op": "crosses_above",
+                "right": 40
+              }
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "long": {
+            "any": [
+              {
+                "left": "rsi",
+                "op": ">",
+                "right": 70
+              },
+              {
+                "left": "close",
+                "op": "<",
+                "right": "e200"
+              }
+            ]
+          },
+          "short": "{{side.exit}}",
+          "stop_loss": "{{stop.v}}"
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "pin-swing",
+      "name": "Pin bar at swing level with the trend",
+      "idea": "Study 1's pin bar at a swing low or high, only in the direction of the 200 EMA, with a 2R target.",
+      "kind": "reversal",
+      "grid": {
+        "side": [
+          {
+            "label": "long only",
+            "entry": null,
+            "exit": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                {
+                  "left": "pa.shooting_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "high",
+                  "op": ">=",
+                  "right": "sw.resistance - 0.3 * atr"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "sw.resistance"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "e200"
+                }
+              ]
+            },
+            "exit": null
+          }
+        ],
+        "stop": [
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          },
+          {
+            "label": "3 ATR",
+            "v": {
+              "atr": 3,
+              "indicator": "atr"
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Pin bar at swing level with the trend",
+        "indicators": {
+          "sw": {
+            "type": "swings",
+            "left": 5,
+            "right": 2
+          },
+          "pa": {
+            "type": "patterns"
+          },
+          "e200": {
+            "type": "ema",
+            "period": 200
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "left": "pa.hammer",
+                "op": "==",
+                "right": 1
+              },
+              {
+                "left": "low",
+                "op": "<=",
+                "right": "sw.support + 0.3 * atr"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "sw.support"
+              },
+              {
+                "left": "close",
+                "op": ">",
+                "right": "e200"
+              }
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": {
+            "risk_multiple": 2
+          },
+          "max_bars": 60
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 2
+        },
+        "leverage": 1
+      }
+    }
+  ]
+}
