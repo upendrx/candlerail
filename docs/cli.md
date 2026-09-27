@@ -100,6 +100,20 @@ It prints the selected variants, best in sample first, with their held-out
 results. `-o` writes every variant's full per-market result; `--digest`
 writes the compact form the app's Research tab reads.
 
+## carry
+
+Tests the funding-rate carry trade: long spot and short the same amount of
+the perpetual future on each coin, collecting funding every eight hours,
+with fees and slippage on both legs. Funding history comes from Binance's
+public futures API and is cached.
+
+```text
+candlerail carry [--symbols BTCUSDT,ETHUSDT,...] [--days 1095] [--offset-days N] [-o FILE]
+```
+
+It prints each coin's yearly result held all the time and held only while
+the last seven days' funding was positive, and the equal-weight portfolio.
+
 ## Exit codes
 
 `0` on success, `1` on any error (invalid strategy, bad arguments, network
