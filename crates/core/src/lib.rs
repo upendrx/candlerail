@@ -15,6 +15,7 @@ pub mod metrics;
 pub mod scan;
 pub mod share;
 pub mod spec;
+pub mod study;
 pub mod time;
 
 pub use backtest::{BacktestConfig, Report, run};
