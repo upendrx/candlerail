@@ -22,11 +22,14 @@ pub struct BacktestConfig {
     pub interval: Interval,
     /// Fraction of bars treated as "in sample"; the rest checks for overfitting.
     pub split: f64,
+    /// Keep every indicator value for charting. Studies that run thousands of
+    /// backtests turn this off.
+    pub record_indicators: bool,
 }
 
 impl Default for BacktestConfig {
     fn default() -> Self {
-        BacktestConfig { capital: 10_000.0, interval: Interval::H1, split: 0.7 }
+        BacktestConfig { capital: 10_000.0, interval: Interval::H1, split: 0.7, record_indicators: true }
     }
 }
 
@@ -271,7 +274,7 @@ pub fn run(strategy: &Strategy, candles: &[Candle], cfg: &BacktestConfig) -> Res
         // 3. Close: update indicators and evaluate rules.
         c.push(bar, &mut history);
         let mut k = 0;
-        for slot in c.slots.iter().filter(|slot| charted(slot.info.kind)) {
+        for slot in c.slots.iter().filter(|slot| cfg.record_indicators && charted(slot.info.kind)) {
             for o in 0..slot.info.outputs.len() {
                 series[k].values.push(slot.ind.get(o).filter(|v| v.is_finite()));
                 k += 1;
@@ -365,7 +368,7 @@ pub fn run(strategy: &Strategy, candles: &[Candle], cfg: &BacktestConfig) -> Res
         out_of_sample,
         trades: broker.trades,
         equity,
-        indicators: series,
+        indicators: if cfg.record_indicators { series } else { Vec::new() },
         risk,
         warnings,
     })
