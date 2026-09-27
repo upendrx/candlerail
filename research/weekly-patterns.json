@@ -1,0 +1,1603 @@
+{
+  "name": "Weekly candle patterns, entered on the daily chart",
+  "description": "Six weekly candle setups on 43 Binance coins (including ones that collapsed or were delisted), entered on daily candles at the next week's open, on a daily breakout, or on a pullback, with or without a BTC trend filter. Chosen on May 2020 to August 2024, judged on the two years after, under normal and doubled costs, risking 1% of each coin's share per trade without leverage.",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "BNBUSDT",
+    "XRPUSDT",
+    "ADAUSDT",
+    "DOGEUSDT",
+    "SOLUSDT",
+    "DOTUSDT",
+    "LINKUSDT",
+    "LTCUSDT",
+    "BCHUSDT",
+    "AVAXUSDT",
+    "TRXUSDT",
+    "ATOMUSDT",
+    "XLMUSDT",
+    "ETCUSDT",
+    "FILUSDT",
+    "UNIUSDT",
+    "AAVEUSDT",
+    "NEARUSDT",
+    "ALGOUSDT",
+    "VETUSDT",
+    "SANDUSDT",
+    "MANAUSDT",
+    "AXSUSDT",
+    "EGLDUSDT",
+    "THETAUSDT",
+    "XTZUSDT",
+    "EOSUSDT",
+    "ICPUSDT",
+    "FTMUSDT",
+    "MATICUSDT",
+    "CHZUSDT",
+    "GRTUSDT",
+    "ENJUSDT",
+    "KSMUSDT",
+    "SUSHIUSDT",
+    "COMPUSDT",
+    "FTTUSDT",
+    "LUNAUSDT",
+    "SRMUSDT",
+    "ZECUSDT",
+    "DASHUSDT"
+  ],
+  "intervals": [
+    "1d"
+  ],
+  "days": 2320,
+  "split": 0.6667,
+  "capital": 10000,
+  "costs": [
+    {
+      "label": "spot taker",
+      "fee_bps": 10,
+      "slippage_bps": 2
+    },
+    {
+      "label": "double costs",
+      "fee_bps": 20,
+      "slippage_bps": 4
+    }
+  ],
+  "selection": {
+    "portfolio": true,
+    "min_trades_per_day": 0.2,
+    "max_trades_per_day": 40,
+    "min_avg_r": 0.1,
+    "min_markets": 20
+  },
+  "families": [
+    {
+      "id": "w-engulf",
+      "name": "Weekly engulfing",
+      "idea": "A week whose body engulfs the week before: bullish for longs, bearish for shorts.",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          },
+          {
+            "label": "BTC above its 20-week average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc140"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc140"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern week",
+            "v": {
+              "below": "wk.bar_low - 0.1 * atr",
+              "above": "wk.bar_high + 0.1 * atr"
+            }
+          },
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 4 weeks",
+            "v": null
+          }
+        ],
+        "entry": [
+          {
+            "label": "at the week's open",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.bullish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.bullish_engulfing[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.bearish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.bearish_engulfing[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            }
+          },
+          {
+            "label": "daily close above the previous day's high",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.bullish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.bearish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                }
+              ]
+            }
+          },
+          {
+            "label": "pullback to mid-week, then a green day",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.bullish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "low",
+                  "op": "<=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.bearish_engulfing",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "high",
+                  "op": ">=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                }
+              ]
+            }
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                "{{entry.short}}",
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Weekly engulfing",
+        "context": "BTCUSDT",
+        "indicators": {
+          "wk": {
+            "type": "patterns",
+            "minutes": 10080
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": 50,
+            "on": "context"
+          },
+          "btc140": {
+            "type": "sma",
+            "period": 140,
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              "{{entry.long}}",
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": 28
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "w-hammer",
+      "name": "Weekly hammer or shooting star",
+      "idea": "A week with a long lower wick (hammer) for longs, or a long upper wick (shooting star) for shorts.",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          },
+          {
+            "label": "BTC above its 20-week average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc140"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc140"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern week",
+            "v": {
+              "below": "wk.bar_low - 0.1 * atr",
+              "above": "wk.bar_high + 0.1 * atr"
+            }
+          },
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 4 weeks",
+            "v": null
+          }
+        ],
+        "entry": [
+          {
+            "label": "at the week's open",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.hammer",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.hammer[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.shooting_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.shooting_star[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            }
+          },
+          {
+            "label": "daily close above the previous day's high",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.hammer",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.shooting_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                }
+              ]
+            }
+          },
+          {
+            "label": "pullback to mid-week, then a green day",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.hammer",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "low",
+                  "op": "<=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.shooting_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "high",
+                  "op": ">=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                }
+              ]
+            }
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                "{{entry.short}}",
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Weekly hammer or shooting star",
+        "context": "BTCUSDT",
+        "indicators": {
+          "wk": {
+            "type": "patterns",
+            "minutes": 10080
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": 50,
+            "on": "context"
+          },
+          "btc140": {
+            "type": "sma",
+            "period": 140,
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              "{{entry.long}}",
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": 28
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "w-star",
+      "name": "Weekly morning or evening star",
+      "idea": "A three-week turn: a big week, a small one, then a strong week the other way.",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          },
+          {
+            "label": "BTC above its 20-week average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc140"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc140"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern week",
+            "v": {
+              "below": "wk.bar_low - 0.1 * atr",
+              "above": "wk.bar_high + 0.1 * atr"
+            }
+          },
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 4 weeks",
+            "v": null
+          }
+        ],
+        "entry": [
+          {
+            "label": "at the week's open",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.morning_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.morning_star[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.evening_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.evening_star[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            }
+          },
+          {
+            "label": "daily close above the previous day's high",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.morning_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.evening_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                }
+              ]
+            }
+          },
+          {
+            "label": "pullback to mid-week, then a green day",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.morning_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "low",
+                  "op": "<=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.evening_star",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "high",
+                  "op": ">=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                }
+              ]
+            }
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                "{{entry.short}}",
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Weekly morning or evening star",
+        "context": "BTCUSDT",
+        "indicators": {
+          "wk": {
+            "type": "patterns",
+            "minutes": 10080
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": 50,
+            "on": "context"
+          },
+          "btc140": {
+            "type": "sma",
+            "period": 140,
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              "{{entry.long}}",
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": 28
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "w-soldiers",
+      "name": "Three weekly soldiers or crows",
+      "idea": "Three strong weeks in a row in the same direction.",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          },
+          {
+            "label": "BTC above its 20-week average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc140"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc140"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern week",
+            "v": {
+              "below": "wk.bar_low - 0.1 * atr",
+              "above": "wk.bar_high + 0.1 * atr"
+            }
+          },
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 4 weeks",
+            "v": null
+          }
+        ],
+        "entry": [
+          {
+            "label": "at the week's open",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.three_white_soldiers",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.three_white_soldiers[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.three_black_crows",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.three_black_crows[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            }
+          },
+          {
+            "label": "daily close above the previous day's high",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.three_white_soldiers",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.three_black_crows",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                }
+              ]
+            }
+          },
+          {
+            "label": "pullback to mid-week, then a green day",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.three_white_soldiers",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "low",
+                  "op": "<=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.three_black_crows",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "high",
+                  "op": ">=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                }
+              ]
+            }
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                "{{entry.short}}",
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Three weekly soldiers or crows",
+        "context": "BTCUSDT",
+        "indicators": {
+          "wk": {
+            "type": "patterns",
+            "minutes": 10080
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": 50,
+            "on": "context"
+          },
+          "btc140": {
+            "type": "sma",
+            "period": 140,
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              "{{entry.long}}",
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": 28
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "w-marubozu",
+      "name": "Weekly marubozu",
+      "idea": "A week that closed at its high (or low) with almost no wicks: strong momentum.",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          },
+          {
+            "label": "BTC above its 20-week average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc140"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc140"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern week",
+            "v": {
+              "below": "wk.bar_low - 0.1 * atr",
+              "above": "wk.bar_high + 0.1 * atr"
+            }
+          },
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 4 weeks",
+            "v": null
+          }
+        ],
+        "entry": [
+          {
+            "label": "at the week's open",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.bullish_marubozu",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.bullish_marubozu[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.bearish_marubozu",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "wk.bearish_marubozu[1]",
+                  "op": "==",
+                  "right": 0
+                }
+              ]
+            }
+          },
+          {
+            "label": "daily close above the previous day's high",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.bullish_marubozu",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.bearish_marubozu",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                }
+              ]
+            }
+          },
+          {
+            "label": "pullback to mid-week, then a green day",
+            "long": {
+              "all": [
+                {
+                  "left": "wk.bullish_marubozu",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "low",
+                  "op": "<=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": ">",
+                  "right": "high[1]"
+                }
+              ]
+            },
+            "short": {
+              "all": [
+                {
+                  "left": "wk.bearish_marubozu",
+                  "op": "==",
+                  "right": 1
+                },
+                {
+                  "left": "high",
+                  "op": ">=",
+                  "right": "0.5 * wk.bar_high + 0.5 * wk.bar_low"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "open"
+                },
+                {
+                  "left": "close",
+                  "op": "<",
+                  "right": "low[1]"
+                }
+              ]
+            }
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                "{{entry.short}}",
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Weekly marubozu",
+        "context": "BTCUSDT",
+        "indicators": {
+          "wk": {
+            "type": "patterns",
+            "minutes": 10080
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": 50,
+            "on": "context"
+          },
+          "btc140": {
+            "type": "sma",
+            "period": 140,
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              "{{entry.long}}",
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": 28
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    },
+    {
+      "id": "w-inside-break",
+      "name": "Inside-week breakout",
+      "idea": "Last week stayed inside the week before; buy a daily close above last week's high (sell below its low).",
+      "kind": "swing",
+      "grid": {
+        "btc": [
+          {
+            "label": "none",
+            "long": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            },
+            "short": {
+              "left": "close",
+              "op": ">",
+              "right": 0
+            }
+          },
+          {
+            "label": "BTC above its 50-day average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc50"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc50"
+            }
+          },
+          {
+            "label": "BTC above its 20-week average",
+            "long": {
+              "left": "btc",
+              "op": ">",
+              "right": "btc140"
+            },
+            "short": {
+              "left": "btc",
+              "op": "<",
+              "right": "btc140"
+            }
+          }
+        ],
+        "stop": [
+          {
+            "label": "beyond the pattern week",
+            "v": {
+              "below": "wk.bar_low - 0.1 * atr",
+              "above": "wk.bar_high + 0.1 * atr"
+            }
+          },
+          {
+            "label": "2 ATR",
+            "v": {
+              "atr": 2,
+              "indicator": "atr"
+            }
+          }
+        ],
+        "target": [
+          {
+            "label": "2R",
+            "v": {
+              "risk_multiple": 2
+            }
+          },
+          {
+            "label": "3R",
+            "v": {
+              "risk_multiple": 3
+            }
+          },
+          {
+            "label": "hold up to 4 weeks",
+            "v": null
+          }
+        ],
+        "side": [
+          {
+            "label": "long only",
+            "entry": null
+          },
+          {
+            "label": "long and short",
+            "entry": {
+              "all": [
+                {
+                  "all": [
+                    {
+                      "left": "wk.inside_bar",
+                      "op": "==",
+                      "right": 1
+                    },
+                    {
+                      "left": "close",
+                      "op": "crosses_below",
+                      "right": "wk.bar_low"
+                    }
+                  ]
+                },
+                "{{btc.short}}"
+              ]
+            }
+          }
+        ]
+      },
+      "strategy": {
+        "name": "Inside-week breakout",
+        "context": "BTCUSDT",
+        "indicators": {
+          "wk": {
+            "type": "patterns",
+            "minutes": 10080
+          },
+          "atr": {
+            "type": "atr",
+            "period": 14
+          },
+          "btc": {
+            "type": "sma",
+            "period": 1,
+            "on": "context"
+          },
+          "btc50": {
+            "type": "sma",
+            "period": 50,
+            "on": "context"
+          },
+          "btc140": {
+            "type": "sma",
+            "period": 140,
+            "on": "context"
+          }
+        },
+        "entry": {
+          "long": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "left": "wk.inside_bar",
+                    "op": "==",
+                    "right": 1
+                  },
+                  {
+                    "left": "close",
+                    "op": "crosses_above",
+                    "right": "wk.bar_high"
+                  }
+                ]
+              },
+              "{{btc.long}}"
+            ]
+          },
+          "short": "{{side.entry}}"
+        },
+        "exit": {
+          "stop_loss": "{{stop.v}}",
+          "take_profit": "{{target.v}}",
+          "max_bars": 28
+        },
+        "sizing": {
+          "type": "risk_percent",
+          "value": 1
+        },
+        "leverage": 1
+      }
+    }
+  ]
+}
