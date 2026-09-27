@@ -86,6 +86,20 @@ The output defaults to `<strategy name>.share.json`. Share files can be
 passed anywhere a strategy file is accepted, including `backtest` and
 `explain`.
 
+## study
+
+Runs a [study](research.md): every variant of a set of strategy templates on
+several markets and timeframes, selected on the first part of the period and
+judged on the rest.
+
+```text
+candlerail study <file> [-o FULL.json] [--digest DIGEST.json] [--cache-dir DIR] [--binance-api URL]
+```
+
+It prints the selected variants, best in sample first, with their held-out
+results. `-o` writes every variant's full per-market result; `--digest`
+writes the compact form the app's Research tab reads.
+
 ## Exit codes
 
 `0` on success, `1` on any error (invalid strategy, bad arguments, network

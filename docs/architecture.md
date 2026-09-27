@@ -8,6 +8,7 @@ ui/                 the web app: index.html and the Chart Lab's lab.js (plain HT
 templates/          built-in strategies (compiled into the binary)
 schema/             JSON Schema for strategy files
 community/          shared strategies with recorded results (the Community gallery)
+research/           study definitions and their recorded results (the Research tab)
 site/               the quick-start web page, published to GitHub Pages
 scripts/            one-line installers for macOS, Linux and Windows
 ```

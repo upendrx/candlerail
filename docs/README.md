@@ -6,6 +6,7 @@
 |---|---|
 | [Getting started](getting-started.md) | Installing, the web app, the terminal, your own data |
 | [A guide to strategy types](strategy-guide.md) | Trend, mean reversion, breakout, momentum, intraday, and common mistakes |
+| [Research](research.md) | A day-trading study of 15 intraday setups on major coins, and how to run your own |
 | [Chart Lab](chart-lab.md) | Building price-action setups by selecting candles on a chart |
 | [Price action](price-action.md) | Candles, patterns, support and resistance, multi-timeframe levels, building your own setups |
 | [Money management](money-management.md) | Position sizing in any market, well-known risk rules, account loss limits |

@@ -115,6 +115,21 @@ satisfies the strategy's entry rules, without trading:
 Chart Lab uses it to mark matches, with the same rule evaluation as a
 backtest.
 
+## Studies
+
+| Route | |
+|---|---|
+| `GET /api/studies` | The recorded studies: id, name, description, counts of variants, selected and survived |
+| `GET /api/studies/{id}` | A study's digest: its definition, data window, and one row per variant |
+| `POST /api/studies/{id}/strategy` | `{ family, variant, interval, cost }` → the exact strategy file that variant tested |
+| `POST /api/studies/{id}/detail` | The same body → per-market and per-trend results, recomputed on the recorded data window if not stored |
+| `POST /api/studies/{id}/run` | Runs the study again on the latest data and returns a new digest. Can take minutes |
+
+Digest rows are arrays: `[family, variant, interval, cost, trades_per_day,
+portfolio_trades_per_day, in_sample, out_of_sample, markets_up_in_sample,
+markets_up_out_of_sample, markets, fees_r, selected, survived]`, where each
+part is `[trades, wins, sum_r, r_trades, gross_win, gross_loss, return_pct]`.
+
 ## GET /api/prompt, GET /schema.json
 
 The AI instructions as plain text, and the JSON Schema for strategy files.
