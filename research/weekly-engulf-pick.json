@@ -1,0 +1,79 @@
+{
+  "name": "Weekly engulfing (btc BTC above its 50-day average, entry daily close above the previous day's high, side long only, stop 2 ATR, target hold up to 4 weeks)",
+  "market": {
+    "interval": "1d"
+  },
+  "context": "BTCUSDT",
+  "indicators": {
+    "atr": {
+      "period": 14,
+      "type": "atr"
+    },
+    "btc": {
+      "on": "context",
+      "period": 1,
+      "type": "sma"
+    },
+    "btc140": {
+      "on": "context",
+      "period": 140,
+      "type": "sma"
+    },
+    "btc50": {
+      "on": "context",
+      "period": 50,
+      "type": "sma"
+    },
+    "wk": {
+      "minutes": 10080,
+      "type": "patterns"
+    }
+  },
+  "entry": {
+    "long": {
+      "all": [
+        {
+          "all": [
+            {
+              "left": "wk.bullish_engulfing",
+              "op": "==",
+              "right": 1.0
+            },
+            {
+              "left": "close",
+              "op": ">",
+              "right": "high[1]"
+            },
+            {
+              "left": "close",
+              "op": ">",
+              "right": "open"
+            }
+          ]
+        },
+        {
+          "left": "btc",
+          "op": ">",
+          "right": "btc50"
+        }
+      ]
+    }
+  },
+  "exit": {
+    "stop_loss": {
+      "atr": 2.0,
+      "indicator": "atr"
+    },
+    "max_bars": 28
+  },
+  "sizing": {
+    "type": "risk_percent",
+    "value": 1.0
+  },
+  "leverage": 1.0,
+  "costs": {
+    "fee_bps": 10.0,
+    "slippage_bps": 2.0,
+    "maintenance_margin_percent": 0.5
+  }
+}
