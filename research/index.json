@@ -1,0 +1,126 @@
+{
+  "groups": [
+    {
+      "number": "1",
+      "title": "Day trading on 1- to 15-minute candles",
+      "question": "Can intraday candle setups at support and resistance make a daily profit on BTC, ETH and other major coins, after fees?",
+      "answer": "No. About 26,000 backtests of fifteen well-known setups found one variant that passed selection and a held-out month, and it lost money on five other coins and on the three months before. On 1- to 15-minute stops, fees alone cost 0.3R to 1.4R a trade, more than any candle pattern earned.",
+      "verdict": "no",
+      "pages": [
+        {
+          "number": "1.0",
+          "kind": "overview1",
+          "title": "Summary",
+          "result": "No setup gave a repeatable daily profit"
+        },
+        {
+          "number": "1.1",
+          "kind": "study",
+          "study": "intraday-reversals",
+          "title": "Round 1: 1m to 15m",
+          "result": "0 of 1,395 variants selected; fees 0.3R to 1.4R a trade"
+        },
+        {
+          "number": "1.2",
+          "kind": "study",
+          "study": "intraday-reversals-2",
+          "title": "Round 2: wider stops",
+          "result": "10 selected, 1 survived the held-out month"
+        },
+        {
+          "number": "1.3",
+          "kind": "study",
+          "study": "confirm-other-coins",
+          "title": "Confirm: five other coins",
+          "result": "−0.06R a trade, profitable on 1 of 5 coins"
+        },
+        {
+          "number": "1.4",
+          "kind": "study",
+          "study": "confirm-earlier-period",
+          "title": "Confirm: the 90 days before",
+          "result": "−0.14R a trade, profitable on 1 of 4 coins"
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Monthly profit from swing and trend trading",
+      "question": "With $500 to $1,000, trading most days but judged by the month, which strategies on Binance coins actually made money, and how much?",
+      "answer": "Trend following on 4-hour candles did. Chosen on 2023 to 2025, the survivors made money in the year to September 2026 while buying and holding the same coins lost 41%, and every one of them also made money, unchanged, on 2020 to 2023. The best rule for a futures account averaged about +2.5% of the account a month, with 40 of 73 months profitable and a largest fall of about 18%. Long-only rules on spot earned less and waited longer to recover. Losing months are common, buying and holding beat every rule in the bull years, and the funding-rate carry trade earned a steadier 3% a year recently.",
+      "verdict": "yes",
+      "pages": [
+        {
+          "number": "2.0",
+          "kind": "plan",
+          "title": "Summary and a plan for $500",
+          "result": "SuperTrend on 4h, long and short: about +2.5% a month"
+        },
+        {
+          "number": "2.1",
+          "kind": "study",
+          "study": "swing-trend",
+          "title": "Swing and trend on 10 coins",
+          "result": "230 selected, 44 survived a year when holding lost 41%"
+        },
+        {
+          "number": "2.2",
+          "kind": "study",
+          "study": "swing-trend-confirm",
+          "title": "Survivors on 2020 to 2023",
+          "result": "All 44 made money on data they never saw"
+        },
+        {
+          "number": "2.3",
+          "kind": "carry",
+          "carry": [
+            "carry-recent",
+            "carry-earlier"
+          ],
+          "title": "Funding-rate carry",
+          "result": "About 3% a year recently, 6% to 7% in 2020 to 2023"
+        },
+        {
+          "number": "2.4",
+          "kind": "ai",
+          "title": "How traders use AI, for free",
+          "result": "Search and honest testing, not predictions"
+        }
+      ]
+    }
+  ],
+  "picks": [
+    {
+      "title": "For a futures account: long and short",
+      "why": "Also earns in falling markets by going short, which is why it held up in the year the market fell. Needs a futures account; use 1x, no leverage.",
+      "study": "swing-trend",
+      "confirm": "swing-trend-confirm",
+      "family": "supertrend",
+      "interval": "4h",
+      "cost": 1,
+      "params": {
+        "mult": "3",
+        "side": "long and short",
+        "stop": "2 ATR",
+        "trail": "none"
+      },
+      "rule": "On the 4-hour chart of each coin, go long when SuperTrend (10 candles, multiplier 3) flips up and short when it flips down. Close on the opposite flip, or if price moves 2 ATR against you."
+    },
+    {
+      "title": "For a spot account: long only",
+      "why": "Needs no futures account and no borrowing, so it works on Binance spot with any amount above the $5 minimum order. Weaker than the futures pick: it can't earn in falling markets.",
+      "study": "swing-trend",
+      "confirm": "swing-trend-confirm",
+      "family": "keltner-break",
+      "interval": "4h",
+      "cost": 0,
+      "params": {
+        "side": "long only",
+        "stop": "3 ATR",
+        "trail": "none"
+      },
+      "rule": "On the 4-hour chart of each coin, buy when a candle closes above the upper Keltner channel (the 20-candle EMA plus 2 times the 10-candle ATR). Sell when a candle closes below the middle line, or if price falls 3 ATR below your entry."
+    }
+  ],
+  "pick_rule": "Among the variants that survived 2.1 and 2.2, keep those that made money in all three periods and spent at most 18 months below their previous peak, then take the best ratio of average month to largest fall from a peak."
+}

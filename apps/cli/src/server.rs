@@ -12,6 +12,8 @@
 //! | `GET /api/community` | strategies shared by the community, with their results |
 //! | `POST /api/candles` | candles for a market and period, for the chart lab |
 //! | `POST /api/scan` | every candle where a strategy's entry rules hold |
+//! | `GET /api/research` | how the studies are grouped and numbered, and what each found |
+//! | `GET /api/carry/{id}` | a recorded funding-rate carry run |
 //! | `GET /api/studies` | recorded research studies |
 //! | `GET /api/studies/{id}` | one study's full result |
 //! | `POST /api/studies/{id}/strategy` | the strategy file for one variant of a study |
@@ -48,6 +50,15 @@ const STUDIES: &[(&str, &str)] = &[
     ("intraday-reversals-2", include_str!("../../../research/results/intraday-reversals-2.json")),
     ("confirm-other-coins", include_str!("../../../research/results/confirm-other-coins.json")),
     ("confirm-earlier-period", include_str!("../../../research/results/confirm-earlier-period.json")),
+    ("swing-trend", include_str!("../../../research/results/swing-trend.json")),
+    ("swing-trend-confirm", include_str!("../../../research/results/swing-trend-confirm.json")),
+];
+/// How the studies are grouped and numbered, with what each one found.
+const RESEARCH_INDEX: &str = include_str!("../../../research/index.json");
+/// Recorded funding-rate carry runs.
+const CARRY: &[(&str, &str)] = &[
+    ("carry-recent", include_str!("../../../research/results/carry-recent.json")),
+    ("carry-earlier", include_str!("../../../research/results/carry-earlier.json")),
 ];
 
 fn studies() -> &'static Vec<(String, Digest)> {
@@ -83,6 +94,8 @@ pub fn serve(listen: &str, ui_dir: Option<PathBuf>, cache: PathBuf, api: String)
         .route("/api/community", get(community))
         .route("/api/candles", post(candles))
         .route("/api/scan", post(scan))
+        .route("/api/research", get(|| async { ([(header::CONTENT_TYPE, "application/json")], RESEARCH_INDEX) }))
+        .route("/api/carry/{id}", get(get_carry))
         .route("/api/studies", get(list_studies))
         .route("/api/studies/{id}", get(get_study))
         .route("/api/studies/{id}/strategy", post(study_strategy))
@@ -452,5 +465,12 @@ async fn run_study(State(app): State<Arc<App>>, UrlPath(id): UrlPath<String>) ->
         Ok(Ok(text)) => ([(header::CONTENT_TYPE, "application/json")], text).into_response(),
         Ok(Err(e)) => err(StatusCode::BAD_GATEWAY, vec![format!("{e:#}")]).into_response(),
         Err(e) => err(StatusCode::INTERNAL_SERVER_ERROR, vec![e.to_string()]).into_response(),
+    }
+}
+
+async fn get_carry(UrlPath(id): UrlPath<String>) -> Response {
+    match CARRY.iter().find(|(i, _)| *i == id) {
+        Some((_, text)) => ([(header::CONTENT_TYPE, "application/json")], *text).into_response(),
+        None => err(StatusCode::NOT_FOUND, vec![format!("no carry run `{id}`")]).into_response(),
     }
 }
