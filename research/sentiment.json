@@ -1,0 +1,1133 @@
+{
+  "interval": "1d",
+  "from": "2020-01-01",
+  "split": "2024-07-01",
+  "cost_bps": 12,
+  "id": "sentiment",
+  "name": "Fear & Greed sentiment",
+  "kind": "sentiment",
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT"
+  ],
+  "description": "The Crypto Fear & Greed index, a free daily reading of crowd mood from volatility, momentum, social media and search trends, used to time BTC and ETH: buy extreme fear, avoid buying euphoria, buy fear only in an uptrend, or short greed in a downtrend.",
+  "grid": {},
+  "combos": [
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 10,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 10,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 10,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 10,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 15,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 15,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 15,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 15,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 20,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 20,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 20,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 20,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 25,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 25,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 25,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 25,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 30,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 30,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 30,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "BTCUSDT",
+      "fear": 30,
+      "exit": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "fear": 50
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "fear": 50
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 100,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 100,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 100,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 100,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 100,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 100,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 100,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 100,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 100,
+      "fear": 50
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 200,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 200,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 200,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 200,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "BTCUSDT",
+      "ma": 200,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 200,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 200,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 200,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "BTCUSDT",
+      "ma": 200,
+      "fear": 50
+    },
+    {
+      "rule": "short_greed",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "greed": 60
+    },
+    {
+      "rule": "short_greed",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "greed": 70
+    },
+    {
+      "rule": "short_greed",
+      "asset": "BTCUSDT",
+      "ma": 20,
+      "greed": 80
+    },
+    {
+      "rule": "short_greed",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "greed": 60
+    },
+    {
+      "rule": "short_greed",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "greed": 70
+    },
+    {
+      "rule": "short_greed",
+      "asset": "BTCUSDT",
+      "ma": 50,
+      "greed": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 10,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 10,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 10,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 10,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 15,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 15,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 15,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 15,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 20,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 20,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 20,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 20,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 25,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 25,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 25,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 25,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 30,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 30,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 30,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "ETHUSDT",
+      "fear": 30,
+      "exit": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "fear": 50
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "fear": 50
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 100,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 100,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 100,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 100,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 100,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 100,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 100,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 100,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 100,
+      "fear": 50
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 200,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 200,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 200,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 200,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "ETHUSDT",
+      "ma": 200,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 200,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 200,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 200,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "ETHUSDT",
+      "ma": 200,
+      "fear": 50
+    },
+    {
+      "rule": "short_greed",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "greed": 60
+    },
+    {
+      "rule": "short_greed",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "greed": 70
+    },
+    {
+      "rule": "short_greed",
+      "asset": "ETHUSDT",
+      "ma": 20,
+      "greed": 80
+    },
+    {
+      "rule": "short_greed",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "greed": 60
+    },
+    {
+      "rule": "short_greed",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "greed": 70
+    },
+    {
+      "rule": "short_greed",
+      "asset": "ETHUSDT",
+      "ma": 50,
+      "greed": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 10,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 10,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 10,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 10,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 15,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 15,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 15,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 15,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 20,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 20,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 20,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 20,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 25,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 25,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 25,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 25,
+      "exit": 80
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 30,
+      "exit": 50
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 30,
+      "exit": 60
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 30,
+      "exit": 70
+    },
+    {
+      "rule": "buy_fear",
+      "asset": "both",
+      "fear": 30,
+      "exit": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 20,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 20,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 20,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 20,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 20,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 20,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 20,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 20,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 20,
+      "fear": 50
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 50,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 50,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 50,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 50,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 50,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 50,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 50,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 50,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 50,
+      "fear": 50
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 100,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 100,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 100,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 100,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 100,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 100,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 100,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 100,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 100,
+      "fear": 50
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 200,
+      "greed_cap": 60
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 200,
+      "greed_cap": 70
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 200,
+      "greed_cap": 80
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 200,
+      "greed_cap": 90
+    },
+    {
+      "rule": "trend_no_euphoria",
+      "asset": "both",
+      "ma": 200,
+      "greed_cap": 101
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 200,
+      "fear": 20
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 200,
+      "fear": 30
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 200,
+      "fear": 40
+    },
+    {
+      "rule": "trend_buy_fear",
+      "asset": "both",
+      "ma": 200,
+      "fear": 50
+    },
+    {
+      "rule": "short_greed",
+      "asset": "both",
+      "ma": 20,
+      "greed": 60
+    },
+    {
+      "rule": "short_greed",
+      "asset": "both",
+      "ma": 20,
+      "greed": 70
+    },
+    {
+      "rule": "short_greed",
+      "asset": "both",
+      "ma": 20,
+      "greed": 80
+    },
+    {
+      "rule": "short_greed",
+      "asset": "both",
+      "ma": 50,
+      "greed": 60
+    },
+    {
+      "rule": "short_greed",
+      "asset": "both",
+      "ma": 50,
+      "greed": 70
+    },
+    {
+      "rule": "short_greed",
+      "asset": "both",
+      "ma": 50,
+      "greed": 80
+    }
+  ]
+}
