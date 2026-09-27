@@ -8,12 +8,14 @@
 //! candlerail indicators                             what you can use in rules
 //! candlerail prompt                                 instructions for an AI assistant
 //! candlerail fetch --symbol BTCUSDT --interval 1h   download candles into the cache
+//! candlerail study research/intraday-reversals.json test a grid of variants on several markets
 //! ```
 
 mod community;
 mod prompt;
 mod report;
 mod server;
+mod study;
 mod templates;
 
 use anyhow::{Context, Result, bail};
@@ -77,6 +79,20 @@ enum Cmd {
     Indicators,
     /// Print instructions to paste into an AI assistant so it writes valid strategies.
     Prompt,
+    /// Run a study: every variant of a set of strategy templates on several markets and
+    /// timeframes, selected on the first part of the period and judged on the rest.
+    Study {
+        /// Path to a study file.
+        file: PathBuf,
+        /// Write the full result as JSON.
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+        /// Write the compact digest the app's Research tab reads.
+        #[arg(long)]
+        digest: Option<PathBuf>,
+        #[command(flatten)]
+        data: DataArgs,
+    },
     /// Backtest a strategy and write a share file with the result, for others to load and verify.
     Share {
         strategy: String,
@@ -298,6 +314,30 @@ fn main() -> Result<()> {
         }
         Cmd::Prompt => {
             print!("{}", prompt::build());
+            Ok(())
+        }
+        Cmd::Study { file, output, digest, data } => {
+            let spec =
+                study::parse(&std::fs::read_to_string(&file).with_context(|| format!("reading {}", file.display()))?)?;
+            let started = std::time::Instant::now();
+            let r = study::run(&spec, &data.binance_api, &data.cache(), &|p| match p {
+                study::Progress::Loading { symbol, interval } => {
+                    eprint!("\rloading {symbol} {interval} ...                    ")
+                }
+                study::Progress::Testing { done, total } => {
+                    eprint!("\rbacktesting {done}/{total} ...                    ")
+                }
+            })?;
+            eprintln!("\rdone in {:.0}s                                  ", started.elapsed().as_secs_f64());
+            study::print(&r);
+            if let Some(out) = output {
+                std::fs::write(&out, study::to_json(&r)?)?;
+                println!("\nfull result written to {}", out.display());
+            }
+            if let Some(out) = digest {
+                std::fs::write(&out, study::to_json(&candlerail_core::study::Digest::new(&r))?)?;
+                println!("digest written to {}", out.display());
+            }
             Ok(())
         }
         Cmd::Share { strategy, market, data, output, author, notes } => {
