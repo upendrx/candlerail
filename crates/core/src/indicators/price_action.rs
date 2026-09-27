@@ -24,8 +24,10 @@ fn bear(c: &Candle) -> bool {
     c.close < c.open
 }
 
-/// Output order for [`Patterns`]; must match the catalog.
-pub const PATTERN_NAMES: [&str; 13] = [
+/// Output order for [`Patterns`]; must match the catalog. The last four are
+/// the high and low of the latest candle and the one before it (on the higher
+/// timeframe when `minutes` is set), for stops placed beyond a pattern.
+pub const PATTERN_NAMES: [&str; 17] = [
     "bullish_engulfing",
     "bearish_engulfing",
     "hammer",
@@ -39,27 +41,56 @@ pub const PATTERN_NAMES: [&str; 13] = [
     "three_black_crows",
     "bullish_marubozu",
     "bearish_marubozu",
+    "bar_high",
+    "bar_low",
+    "bar2_high",
+    "bar2_low",
 ];
 
 /// Classic candlestick patterns. Every output is 1 on the candle that completes
 /// the pattern and 0 otherwise.
+///
+/// With `minutes` set, patterns are read on higher-timeframe candles built from
+/// the chart's own (1440 daily, 10080 weekly), and a flag stays on for the
+/// whole of the following period, so a weekly pattern can be traded on any day
+/// of the next week. A higher candle counts as complete at the close of its
+/// last chart candle, inferred from the spacing of the chart's candles.
 pub struct Patterns {
     bars: VecDeque<Candle>,
     wick_ratio: f64,
     doji_ratio: f64,
     out: [f64; 13],
     ready: bool,
+    minutes: u64,
+    key: Option<i64>,
+    building: Option<Candle>,
+    last_ts: Option<i64>,
+    step: i64,
 }
 
 impl Patterns {
-    pub fn new(wick_ratio: f64, doji_percent: f64) -> Self {
+    pub fn new(wick_ratio: f64, doji_percent: f64, minutes: u64) -> Self {
         Patterns {
             bars: VecDeque::with_capacity(4),
             wick_ratio,
             doji_ratio: doji_percent / 100.0,
             out: [0.0; 13],
             ready: false,
+            minutes,
+            key: None,
+            building: None,
+            last_ts: None,
+            step: i64::MAX,
         }
+    }
+
+    fn push_bar(&mut self, c: Candle) {
+        self.bars.push_back(c);
+        if self.bars.len() > 3 {
+            self.bars.pop_front();
+        }
+        self.out = self.detect();
+        self.ready = true;
     }
 
     fn detect(&self) -> [f64; 13] {
@@ -127,16 +158,49 @@ impl Patterns {
 
 impl Indicator for Patterns {
     fn update(&mut self, c: &Candle) {
-        self.bars.push_back(*c);
-        if self.bars.len() > 3 {
-            self.bars.pop_front();
+        if self.minutes == 0 {
+            self.push_bar(*c);
+            return;
         }
-        self.out = self.detect();
-        self.ready = true;
+        if let Some(t) = self.last_ts {
+            self.step = self.step.min((c.ts - t).max(1));
+        }
+        self.last_ts = Some(c.ts);
+        let k = time::period_key(self.minutes, c.ts);
+        if self.key != Some(k) {
+            // The chart skipped the end of the previous period; close it now.
+            if let Some(done) = self.building.take() {
+                self.push_bar(done);
+            }
+            self.key = Some(k);
+            self.building = Some(*c);
+        } else if let Some(b) = &mut self.building {
+            b.high = b.high.max(c.high);
+            b.low = b.low.min(c.low);
+            b.close = c.close;
+            b.volume += c.volume;
+        }
+        // This chart candle ends the period: the higher candle is complete.
+        if self.step != i64::MAX
+            && c.ts + self.step >= time::period_start(self.minutes, k + 1)
+            && let Some(done) = self.building.take()
+        {
+            self.push_bar(done);
+        }
     }
 
     fn get(&self, i: usize) -> Option<f64> {
-        self.ready.then(|| self.out[i])
+        if !self.ready {
+            return None;
+        }
+        let n = self.bars.len();
+        match i {
+            13 => self.bars.back().map(|b| b.high),
+            14 => self.bars.back().map(|b| b.low),
+            15 => (n >= 2).then(|| self.bars[n - 2].high),
+            16 => (n >= 2).then(|| self.bars[n - 2].low),
+            _ => Some(self.out[i]),
+        }
     }
 }
 
@@ -227,12 +291,7 @@ impl Period {
     }
 
     fn key_of(&self, ts: i64) -> i64 {
-        match self.minutes {
-            43_200 => time::month_index(ts),
-            // 1970-01-05 was a Monday: shift so weeks start on Monday.
-            10_080 => (time::day(ts) - 4).div_euclid(7),
-            m => ts.div_euclid(m as i64 * 60_000),
-        }
+        time::period_key(self.minutes, ts)
     }
 }
 
@@ -264,41 +323,61 @@ impl Indicator for Period {
 }
 
 /// High and low of the first `minutes` of each session. `session_start` is the
-/// session open in minutes after 00:00 UTC (0 for crypto; 810 is 13:30 UTC,
-/// the New York open in summer). `ready` turns 1 once the range is complete.
+/// session open in minutes after 00:00 UTC (0 for crypto); `market` instead
+/// follows a stock market's local open through daylight saving (1 New York
+/// 09:30, 2 London 08:00, 3 Tokyo 09:00). `ready` turns 1 once the range is
+/// complete, and `minutes` counts the minutes since the session opened.
 pub struct OpeningRange {
     window_ms: i64,
     start_ms: i64,
+    session: Option<time::Session>,
     day: Option<i64>,
+    open_ts: i64,
     high: Option<f64>,
     low: Option<f64>,
     ready: bool,
+    since_min: f64,
 }
 
 impl OpeningRange {
-    pub fn new(minutes: u64, session_start: u64) -> Self {
+    pub fn new(minutes: u64, session_start: u64, market: u64) -> Self {
         OpeningRange {
             window_ms: minutes as i64 * 60_000,
             start_ms: session_start as i64 * 60_000,
+            session: time::Session::from_code(market),
             day: None,
+            open_ts: 0,
             high: None,
             low: None,
             ready: false,
+            since_min: 0.0,
         }
+    }
+
+    fn open_on(&self, day: i64) -> i64 {
+        let start = match self.session {
+            Some(s) => s.open_minutes(day) * 60_000,
+            None => self.start_ms,
+        };
+        day * 86_400_000 + start
     }
 }
 
 impl Indicator for OpeningRange {
     fn update(&mut self, c: &Candle) {
-        let since = c.ts - self.start_ms;
-        let day = since.div_euclid(86_400_000);
+        // The session a candle belongs to: today's if it has opened, else yesterday's.
+        let today = time::day(c.ts);
+        let day = if c.ts >= self.open_on(today) { today } else { today - 1 };
         if self.day != Some(day) {
             self.day = Some(day);
+            self.open_ts = self.open_on(day);
             self.high = None;
             self.low = None;
             self.ready = false;
         }
-        if since.rem_euclid(86_400_000) < self.window_ms {
+        let since = c.ts - self.open_ts;
+        self.since_min = since as f64 / 60_000.0;
+        if since < self.window_ms {
             self.high = Some(self.high.map_or(c.high, |h| h.max(c.high)));
             self.low = Some(self.low.map_or(c.low, |l| l.min(c.low)));
         } else if self.high.is_some() {
@@ -310,7 +389,8 @@ impl Indicator for OpeningRange {
         match i {
             0 => self.high,
             1 => self.low,
-            _ => self.high.map(|_| if self.ready { 1.0 } else { 0.0 }),
+            2 => self.high.map(|_| if self.ready { 1.0 } else { 0.0 }),
+            _ => self.day.map(|_| self.since_min),
         }
     }
 }

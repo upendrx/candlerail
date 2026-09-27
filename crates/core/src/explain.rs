@@ -30,8 +30,28 @@ fn period_name(minutes: f64) -> String {
 fn price_action_name(kind: &str, out: &str, params: &[f64]) -> Option<String> {
     Some(match (kind, out) {
         ("patterns", o) => {
-            let n = o.replace('_', " ");
-            format!("{} {n}", article(&n))
+            let htf = params.get(2).copied().unwrap_or(0.0);
+            let bar = |which: &str| {
+                if htf > 0.0 {
+                    format!("the {which} {} candle", period_name(htf))
+                } else {
+                    format!("the {which} candle")
+                }
+            };
+            match o {
+                "bar_high" => format!("the high of {}", bar("last completed")),
+                "bar_low" => format!("the low of {}", bar("last completed")),
+                "bar2_high" => format!("the high of {}", bar("one before the last")),
+                "bar2_low" => format!("the low of {}", bar("one before the last")),
+                _ => {
+                    let n = o.replace('_', " ");
+                    if htf > 0.0 {
+                        format!("the last {} candle completed {} {n}", period_name(htf), article(&n))
+                    } else {
+                        format!("{} {n}", article(&n))
+                    }
+                }
+            }
         }
         ("swings", "resistance") => "the latest swing high (resistance)".into(),
         ("swings", "support") => "the latest swing low (support)".into(),
@@ -49,9 +69,16 @@ fn price_action_name(kind: &str, out: &str, params: &[f64]) -> Option<String> {
         }
         ("opening_range", o) => {
             let m = params.first().copied().unwrap_or(15.0);
+            let market = match params.get(2).copied().unwrap_or(0.0) as u64 {
+                1 => " of the New York open",
+                2 => " of the London open",
+                3 => " of the Tokyo open",
+                _ => "",
+            };
             match o {
-                "ready" => format!("the {m:.0}-minute opening range is complete"),
-                side => format!("the {m:.0}-minute opening-range {side}"),
+                "ready" => format!("the {m:.0}-minute opening range{market} is complete"),
+                "minutes" => format!("the minutes since the session{market} opened"),
+                side => format!("the {m:.0}-minute opening-range{market} {side}"),
             }
         }
         ("volume_avg", "relative") => {

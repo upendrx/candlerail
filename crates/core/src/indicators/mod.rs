@@ -203,10 +203,17 @@ pub const CATALOG: &[IndicatorInfo] = &[
         kind: "patterns",
         name: "Candlestick patterns",
         category: "price action",
-        description: "Classic candle patterns as flags: each output is 1 on the candle that completes the pattern, 0 otherwise. Use with == 1.",
+        description: "Classic candle patterns as flags: each output is 1 on the candle that completes the pattern, 0 otherwise. Use with == 1. With minutes set (1440 daily, 10080 weekly) patterns are read on higher-timeframe candles and stay on through the next period. bar_high, bar_low, bar2_high and bar2_low are the latest two candles' extremes, for stops.",
         params: &[
             p("wick_ratio", 2.0, 1.0, false, "Hammer / shooting star: wick at least this many times the body"),
             p("doji_percent", 10.0, 1.0, false, "Doji: body at most this % of the range"),
+            p(
+                "minutes",
+                0.0,
+                0.0,
+                true,
+                "Read patterns on a higher timeframe: 0 the chart's own candles, 1440 daily, 10080 weekly",
+            ),
         ],
         outputs: &price_action::PATTERN_NAMES,
         overlay: false,
@@ -236,12 +243,13 @@ pub const CATALOG: &[IndicatorInfo] = &[
         kind: "opening_range",
         name: "Opening range",
         category: "price action",
-        description: "High and low of the first minutes of each session. ready is 1 once the range is complete. session_start is minutes after 00:00 UTC.",
+        description: "High and low of the first minutes of each session. ready is 1 once the range is complete, and minutes counts the minutes since the session opened. session_start is minutes after 00:00 UTC; market follows a stock market's open through daylight saving: 1 New York 09:30, 2 London 08:00, 3 Tokyo 09:00.",
         params: &[
             p("minutes", 15.0, 1.0, true, "Length of the opening range"),
             p("session_start", 0.0, 0.0, true, "Session open, minutes after 00:00 UTC (810 = 13:30 UTC)"),
+            p("market", 0.0, 0.0, true, "0 use session_start; 1 New York, 2 London, 3 Tokyo, with daylight saving"),
         ],
-        outputs: &["high", "low", "ready"],
+        outputs: &["high", "low", "ready", "minutes"],
         overlay: true,
     },
     IndicatorInfo {
@@ -312,10 +320,12 @@ pub fn build(kind: &str, params: &[f64]) -> Result<Box<dyn Indicator>, String> {
         "donchian" => Box::new(volatility::Donchian::new(n(0))),
         "roc" => Box::new(momentum::Roc::new(n(0))),
         "keltner" => Box::new(volatility::Keltner::new(n(0), params[1], n(2))),
-        "patterns" => Box::new(price_action::Patterns::new(params[0], params[1])),
+        "patterns" => Box::new(price_action::Patterns::new(params[0], params[1], params[2] as u64)),
         "swings" => Box::new(price_action::Swings::new(n(0), n(1))),
         "period" => Box::new(price_action::Period::new(params[0] as u64)),
-        "opening_range" => Box::new(price_action::OpeningRange::new(params[0] as u64, params[1] as u64)),
+        "opening_range" => {
+            Box::new(price_action::OpeningRange::new(params[0] as u64, params[1] as u64, params[2] as u64))
+        }
         "volume_avg" => Box::new(price_action::VolumeAvg::new(n(0))),
         other => return Err(format!("unknown indicator `{other}`")),
     })

@@ -201,3 +201,58 @@ fn opening_range_and_relative_volume() {
     let va = run("volume_avg", serde_json::json!({"period": 20}), &v);
     assert!((va.get(1).unwrap() - 3.0).abs() < 1e-9, "a 300 bar after twenty 100 bars is 3x");
 }
+
+#[test]
+fn weekly_patterns_on_daily_candles() {
+    let day = 86_400_000;
+    // Monday 2026-09-14 to Sunday 2026-09-27: a red week, then a green week that engulfs it.
+    let start = crate::time::parse("2026-09-14").unwrap();
+    let mut bars = vec![];
+    for d in 0..14 {
+        let (o, c) = if d < 7 {
+            (100.0 - d as f64, 99.0 - d as f64)
+        } else {
+            (92.0 + 2.0 * (d - 7) as f64, 94.0 + 2.0 * (d - 7) as f64)
+        };
+        bars.push(Candle {
+            ts: start + d * day,
+            open: o,
+            high: o.max(c) + 0.5,
+            low: o.min(c) - 0.5,
+            close: c,
+            volume: 1.0,
+        });
+    }
+    let weekly = serde_json::json!({ "minutes": 10080 });
+    let before = run("patterns", weekly.clone(), &bars[..13]);
+    assert_eq!(before.get(0), Some(0.0), "the green week isn't complete on Saturday");
+    let done = run("patterns", weekly.clone(), &bars);
+    assert_eq!(done.get(0), Some(1.0), "bullish engulfing known at Sunday's close");
+    assert_eq!(done.get(14), Some(91.5), "bar_low is the engulfing week's low");
+    assert_eq!(done.get(16), Some(92.5), "bar2_low is the week before");
+    let mut next = bars.clone();
+    next.push(Candle { ts: start + 14 * day, open: 106.0, high: 107.0, low: 105.0, close: 106.5, volume: 1.0 });
+    assert_eq!(run("patterns", weekly, &next).get(0), Some(1.0), "and stays on through the next week");
+}
+
+#[test]
+fn opening_range_follows_the_new_york_open() {
+    let m = 60_000;
+    // 2026-07-01 is in US daylight saving: the open is 13:30 UTC.
+    let day = crate::time::parse("2026-07-01").unwrap();
+    let bars: Vec<Candle> = (0..48)
+        .map(|i| {
+            let ts = day + (12 * 60 + i * 5) * m;
+            Candle { ts, open: 10.0, high: 10.0 + (i % 3) as f64, low: 9.0, close: 10.0, volume: 1.0 }
+        })
+        .collect();
+    // 12:00 + 5 minutes × 18 = 13:30, the open; ×24 = 14:00, 30 minutes in.
+    let or = run("opening_range", serde_json::json!({ "minutes": 30, "market": 1 }), &bars[..25]);
+    assert_eq!(or.get(2), Some(1.0), "the 30-minute range is complete at 14:00");
+    assert_eq!(or.get(3), Some(30.0), "30 minutes since the open");
+    let before = run("opening_range", serde_json::json!({ "minutes": 30, "market": 1 }), &bars[..10]);
+    assert!(
+        before.get(3).unwrap() < 0.0 || before.get(3).unwrap() > 60.0 * 20.0,
+        "12:45 belongs to the previous day's session"
+    );
+}
