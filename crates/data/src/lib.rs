@@ -3,6 +3,7 @@
 //! * [`binance`]: public klines for any Binance spot pair, no account needed,
 //!   cached on disk so repeated backtests don't hit the network.
 //! * [`funding`]: funding-rate history for Binance perpetual futures.
+//! * [`sentiment`]: the Crypto Fear & Greed index.
 //! * [`csv`]: any file with time, open, high, low, close and volume columns,
 //!   which covers exports from most charting tools, brokers and data vendors.
 
@@ -10,6 +11,7 @@ pub mod binance;
 pub mod cache;
 pub mod csv;
 pub mod funding;
+pub mod sentiment;
 
 use candlerail_core::{Candle, Interval};
 
