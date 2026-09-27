@@ -7,7 +7,7 @@ use std::path::Path;
 
 pub const DEFAULT_API: &str = "https://data-api.binance.vision";
 
-fn get(url: &str) -> anyhow::Result<serde_json::Value> {
+pub(crate) fn get(url: &str) -> anyhow::Result<serde_json::Value> {
     let mut last = None;
     for attempt in 0..3u64 {
         if attempt > 0 {
