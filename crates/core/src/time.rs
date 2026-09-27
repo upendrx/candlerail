@@ -64,9 +64,125 @@ pub fn day(ms: i64) -> i64 {
     ms.div_euclid(86_400_000)
 }
 
+/// Weekday of a day number (see [`day`]), Monday = 0.
+pub fn weekday(day: i64) -> i64 {
+    (day + 3).rem_euclid(7)
+}
+
+/// The day number of the `n`th Sunday (1-based) of a month, or of the last
+/// Sunday when `n` is 0.
+fn sunday(y: i64, m: i64, n: i64) -> i64 {
+    if n == 0 {
+        let next = if m == 12 { days_from_civil(y + 1, 1, 1) } else { days_from_civil(y, m + 1, 1) };
+        let last = next - 1;
+        last - (weekday(last) + 1) % 7
+    } else {
+        let first = days_from_civil(y, m, 1);
+        first + (6 - weekday(first)).rem_euclid(7) + 7 * (n - 1)
+    }
+}
+
+/// Whether New York is on daylight saving time on a day: from the second
+/// Sunday of March to the first Sunday of November.
+pub fn us_dst(day: i64) -> bool {
+    let (y, _, _) = civil_from_days(day);
+    day >= sunday(y, 3, 2) && day < sunday(y, 11, 1)
+}
+
+/// Whether London is on summer time on a day: from the last Sunday of March
+/// to the last Sunday of October.
+pub fn uk_dst(day: i64) -> bool {
+    let (y, _, _) = civil_from_days(day);
+    day >= sunday(y, 3, 0) && day < sunday(y, 10, 0)
+}
+
+/// Stock-market sessions that crypto traders watch.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Session {
+    /// New York, 09:30 local.
+    NewYork,
+    /// London, 08:00 local.
+    London,
+    /// Tokyo, 09:00 local (00:00 UTC; Japan has no daylight saving).
+    Tokyo,
+}
+
+impl Session {
+    pub fn from_code(code: u64) -> Option<Session> {
+        match code {
+            1 => Some(Session::NewYork),
+            2 => Some(Session::London),
+            3 => Some(Session::Tokyo),
+            _ => None,
+        }
+    }
+
+    /// The session's open on a day, in minutes after 00:00 UTC.
+    pub fn open_minutes(self, day: i64) -> i64 {
+        match self {
+            Session::NewYork => {
+                if us_dst(day) {
+                    13 * 60 + 30
+                } else {
+                    14 * 60 + 30
+                }
+            }
+            Session::London => {
+                if uk_dst(day) {
+                    7 * 60
+                } else {
+                    8 * 60
+                }
+            }
+            Session::Tokyo => 0,
+        }
+    }
+}
+
+/// Key of the period containing `ts`: hours or days count from 1970, weeks
+/// start on Monday, and 43200 minutes means calendar months.
+pub fn period_key(minutes: u64, ts: i64) -> i64 {
+    match minutes {
+        43_200 => month_index(ts),
+        // 1970-01-05 was a Monday: shift so weeks start on Monday.
+        10_080 => (day(ts) - 4).div_euclid(7),
+        m => ts.div_euclid(m.max(1) as i64 * 60_000),
+    }
+}
+
+/// When the period with this key starts.
+pub fn period_start(minutes: u64, key: i64) -> i64 {
+    match minutes {
+        43_200 => days_from_civil(1970 + key.div_euclid(12), key.rem_euclid(12) + 1, 1) * 86_400_000,
+        10_080 => (key * 7 + 4) * 86_400_000,
+        m => key * m.max(1) as i64 * 60_000,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn daylight_saving_dates() {
+        let d = |t: &str| day(parse(t).unwrap());
+        // 2026: US from 8 March to 1 November; UK from 29 March to 25 October.
+        assert!(!us_dst(d("2026-03-07")) && us_dst(d("2026-03-08")));
+        assert!(us_dst(d("2026-10-31")) && !us_dst(d("2026-11-01")));
+        assert!(!uk_dst(d("2026-03-28")) && uk_dst(d("2026-03-29")));
+        assert!(uk_dst(d("2026-10-24")) && !uk_dst(d("2026-10-25")));
+        assert_eq!(Session::NewYork.open_minutes(d("2026-07-01")), 810);
+        assert_eq!(Session::NewYork.open_minutes(d("2026-01-15")), 870);
+        assert_eq!(Session::London.open_minutes(d("2026-01-15")), 480);
+    }
+
+    #[test]
+    fn period_boundaries() {
+        let t = parse("2026-09-23 10:00").unwrap(); // a Wednesday
+        assert_eq!(format(period_start(10_080, period_key(10_080, t))), "2026-09-21 00:00");
+        assert_eq!(format(period_start(43_200, period_key(43_200, t))), "2026-09-01 00:00");
+        assert_eq!(format(period_start(1440, period_key(1440, t) + 1)), "2026-09-24 00:00");
+    }
 
     #[test]
     fn roundtrip() {
