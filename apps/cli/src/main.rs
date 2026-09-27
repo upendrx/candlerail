@@ -10,11 +10,13 @@
 //! candlerail fetch --symbol BTCUSDT --interval 1h   download candles into the cache
 //! candlerail study research/intraday-reversals.json test a grid of variants on several markets
 //! candlerail carry                                  the funding-rate carry trade on major coins
+//! candlerail quant research/rotation.json           coin rotation, sentiment, seasonality, pairs
 //! ```
 
 mod carry;
 mod community;
 mod prompt;
+mod quant;
 mod report;
 mod server;
 mod study;
@@ -118,6 +120,18 @@ enum Cmd {
         output: Option<PathBuf>,
         #[arg(long, default_value = candlerail_data::funding::DEFAULT_API)]
         futures_api: String,
+        #[command(flatten)]
+        data: DataArgs,
+    },
+    /// Run a portfolio study (coin rotation, sentiment, seasonality or pairs) over a grid
+    /// of settings, chosen on one period and judged on the next.
+    Quant {
+        /// Path to a portfolio study file.
+        file: PathBuf,
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+        #[arg(long, default_value = candlerail_data::sentiment::DEFAULT_API)]
+        fear_greed_api: String,
         #[command(flatten)]
         data: DataArgs,
     },
@@ -375,6 +389,17 @@ fn main() -> Result<()> {
             carry::print(&c);
             if let Some(out) = output {
                 std::fs::write(&out, study::to_json(&c)?)?;
+                println!("\nresult written to {}", out.display());
+            }
+            Ok(())
+        }
+        Cmd::Quant { file, output, fear_greed_api, data } => {
+            let text = std::fs::read_to_string(&file).with_context(|| format!("reading {}", file.display()))?;
+            let spec: quant::Spec = serde_json::from_str(&text).context("not a valid portfolio study file")?;
+            let r = quant::run(&spec, &data.binance_api, &fear_greed_api, &data.cache())?;
+            quant::print(&r);
+            if let Some(out) = output {
+                std::fs::write(&out, study::to_json(&r)?)?;
                 println!("\nresult written to {}", out.display());
             }
             Ok(())
