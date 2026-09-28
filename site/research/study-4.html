@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study 4: Weekly Swings</title>
+<meta name="description" content="Weekly candle patterns on 43 coins entered on the daily chart with bitcoin's trend as a filter, intraday trades around the London and New York opens, hourly entries, and a replay through one account.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%235b5bd6'/%3E%3Cpath d='M10 8v16M16 6v20M22 10v12' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/research.css">
+<script src="vendor/lightweight-charts.js" defer></script>
+<script src="assets/research.js" defer></script>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="./">candlerail <small>Research</small></a>
+  <nav><a class="opt" href="./">Overview</a><a href="study-1.html">Study 1</a><a href="study-2.html">Study 2</a><a href="study-3.html">Study 3</a><a class="on" href="study-4.html">Study 4</a><a class="opt" href="https://github.com/upendrx/candlerail">GitHub</a></nav>
+</div></header>
+
+<div class="hero"><div class="in">
+  <div>
+    <div class="kicker">Study 4 · Weekly swings, market opens, early entries</div>
+    <h1>Weekly patterns, entered on the daily chart</h1>
+    <p class="lede">Do weekly candle patterns work across many coins, especially with bitcoin's trend as a filter? Are intraday trades better around the London and New York opens? Does entering early on the hourly chart help? And would any of it survive trading through one real account?</p>
+    <div class="chips"><span>78,016 backtests</span><span>43 coins, including dead ones</span><span>May 2020 to Sep 2026</span><span>24 unseen coins</span></div>
+  </div>
+  <div class="verdict">
+    <span class="tag yes">Verdict: yes for weekly, no for intraday</span>
+    <h2>Weekly engulfing with BTC's trend: about +1R a trade, on seen and unseen coins.</h2>
+    <p>The session filter and hourly entries didn't help. The weekly rule held up in a one-account replay, more weakly on new coins since 2024.</p>
+    <div class="kpis">
+      <div><b class="up">+1.25R</b><span>a trade after the split, profitable on 34 of 43 coins</span></div>
+      <div><b class="up">+1.00R</b><span>a trade on 24 coins it never saw</span></div>
+      <div><b class="up">+43%</b><span>a year at 0.5% risk, one account</span></div>
+      <div><b class="down">−21%</b><span>largest fall of that account</span></div>
+    </div>
+  </div>
+</div></div>
+
+<main class="page">
+  <nav class="toc" aria-label="On this page"></nav>
+  <article>
+
+  <section id="case">
+    <h2><span class="n">1</span>The case</h2>
+    <p class="big"><a href="study-2.html">Study 2</a> found that slower rules pay; <a href="study-1.html">Study 1</a> found that candle patterns on fast charts don't. A weekly candle summarises a whole week of trading. If candle patterns mean anything, they should mean more there.</p>
+    <p>Three ideas are tested together: weekly patterns entered on the daily chart, with bitcoin's trend as a filter for every coin; intraday setups only in the hours after the London and New York opens, when volume arrives; and daily patterns entered early on hourly candles, to get a tighter stop. The best rule is then replayed through one account, with every signal on every coin competing for the same money.</p>
+    <div class="callout key"><b class="t">Hypotheses</b><p>(1) Weekly patterns, filtered by BTC's trend, average at least +0.1R a trade on at least 20 of 43 coins, before and after the split. (2) Limiting intraday setups to the market opens improves them. (3) Hourly entries improve daily patterns.</p></div>
+  </section>
+
+  <section id="patterns">
+    <h2><span class="n">2</span>What was tested</h2>
+    <p>Six weekly setups, each traded long and, in some variants, short (the mirror image).</p>
+    <div class="grid3" style="margin-top:16px">
+      <div data-fig="pattern" data-pattern="bullish_engulfing" data-tag="the pick" data-tone="yes" data-note="A rising week whose body covers the previous falling week."></div>
+      <div data-fig="pattern" data-pattern="hammer" data-tag="weekly" data-note="A week with a long lower wick after a fall (shooting star for shorts)."></div>
+      <div data-fig="pattern" data-pattern="morning_star" data-tag="weekly" data-note="A big falling week, a small week, a strong rising week (evening star for shorts)."></div>
+      <div data-fig="pattern" data-pattern="three_white_soldiers" data-tag="weekly" data-note="Three strong rising weeks in a row (three crows for shorts)."></div>
+      <div data-fig="pattern" data-pattern="marubozu" data-tag="weekly" data-note="A week with almost no wicks, closing at its high."></div>
+      <div data-fig="pattern" data-pattern="inside_bar" data-tag="weekly" data-note="A week inside the previous one, then a break of its range."></div>
+    </div>
+    <figure>
+      <p class="ft">From a weekly pattern to a daily entry</p>
+      <p class="fs">The pick's entry: a bullish engulfing week, then the first day that closes green above the previous day's high, while BTC is above its 50-day average.</p>
+      <div data-fig="candles" data-spec='{"w":900,"h":250,"bars":[[60,62,44,46],[46,48,40,42],[42,50,41,49],[49,53,47,48],[48,55,47,54],[54,62,53,61],[61,63,58,59],[59,60,55,57],[57,58,53,55],[55,61,54,60],[60,66,59,65],[65,70,64,69]],"zones":[{"from":0,"to":1,"label":"falling week","color":"var(--down-soft)"},{"from":2,"to":6,"label":"engulfing week (Mon to Sun)","color":"var(--up-soft)"},{"from":7,"to":11,"label":"next week: wait for the trigger","color":"var(--accent-soft)"}],"lines":[{"y":58,"label":"previous day high","color":"var(--accent)"},{"y":45,"label":"stop: 2 ATR below","color":"var(--down)"}],"marks":[{"i":9,"y":54,"up":true,"label":"close above → buy next open"}]}'></div>
+      <figcaption>Daily candles drawn schematically. The position is held up to 28 days unless the stop is hit; variants also tried fixed 2R and 3R targets, entry at the week's open, and a pullback entry.</figcaption>
+    </figure>
+    <div class="grid3">
+      <div class="tile"><h4>Entry</h4><p>At the next week's open, on a daily close above the previous day's high, or on a pullback to mid-week then a green day.</p></div>
+      <div class="tile"><h4>BTC filter</h4><p>None, BTC above its 50-day average, or BTC above its 20-week average.</p></div>
+      <div class="tile"><h4>Stop and exit</h4><p>Beyond the pattern week or 2 ATR; a 2R or 3R target, or hold up to four weeks.</p></div>
+      <div class="tile"><h4>Markets</h4><p>43 Binance coins including LUNA, FTT, SRM and other coins that collapsed or were delisted.</p></div>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2><span class="n">3</span>How it was tested</h2>
+    <figure>
+      <p class="ft">Chosen on four years, judged on two, replayed on new coins</p>
+      <div data-fig="method" data-periods='[{"row":"Selection","from":"2020-05-21","to":"2024-08-15","kind":"sel","label":"choose variants, 43 coins"},{"row":"Held out","from":"2024-08-15","to":"2026-09-27","kind":"oos","label":"judge"},{"row":"24 unseen coins","from":"2020-05-21","to":"2026-09-27","kind":"unseen","label":"one account, from each listing date"}]'></div>
+      <figcaption><b>Selected:</b> at least +0.1R a trade before the split, profitable on at least 20 of 43 coins. <b>Survived:</b> above 0R after it, on at least 20 coins. Spot costs (0.1% fee, 0.02% slippage) and double costs. The unseen coins start trading at their Binance listing dates.</figcaption>
+    </figure>
+  </section>
+
+  <section id="weekly">
+    <h2><span class="n">4</span>Weekly patterns: 369 selected, 127 survived</h2>
+    <p>6 setups × 3 entries × 3 BTC filters × 2 stops × 3 exits × 2 sides × 2 costs, on 43 coins: <b>49,536 backtests</b>.</p>
+    <figure>
+      <p class="ft">Every variant, before and after the split</p>
+      <div data-fig="scatter" data-study="weekly-patterns" data-clip="1.5"></div>
+      <figcaption>Unlike the intraday studies, the cloud leans up and to the right: variants that did well before the split tended to do well after it.</figcaption>
+    </figure>
+    <div class="grid2">
+      <figure style="margin:0"><p class="ft">By BTC filter, long only</p><div data-fig="groups" data-study="weekly-patterns" data-by="btc" data-where='{"side":"long only"}' data-w="460"></div></figure>
+      <figure style="margin:0"><p class="ft">By entry, long only</p><div data-fig="groups" data-study="weekly-patterns" data-by="entry" data-where='{"side":"long only"}' data-w="460"></div></figure>
+      <figure style="margin:0"><p class="ft">By exit, long only</p><div data-fig="groups" data-study="weekly-patterns" data-by="target" data-where='{"side":"long only"}' data-w="460"></div></figure>
+      <figure style="margin:0"><p class="ft">By setup, long only</p><div data-fig="groups" data-study="weekly-patterns" data-by="family" data-where='{"side":"long only"}' data-w="460"></div></figure>
+    </div>
+    <p style="margin-top:20px">Long-only medians after the split, spot costs: with BTC above its 50-day average +0.21R, without a filter +0.09R, with BTC above its 20-week average +0.02R; a daily confirmation +0.28R, entering at the week's open +0.05R. Holding up to four weeks (+0.30R) beat 2R and 3R targets. Engulfing and marubozu (strong-bodied) weeks held up; hammers and three soldiers turned negative.</p>
+  </section>
+
+  <section id="pick">
+    <h2><span class="n">5</span>The pick</h2>
+    <div class="callout key"><b class="t">The rule</b><p>Every day after the 00:00 UTC close, for each coin: if last week (Monday to Sunday) was a bullish engulfing week, today's daily candle closed green and above yesterday's high, and BTC's daily close is above its 50-day average, buy at the next open. Stop 2 ATR (14-day) below the entry. Sell after 28 days if the stop hasn't been hit.</p></div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th class="n">Trades</th><th class="n">Average</th><th class="n">Coins profitable</th></tr></thead>
+      <tbody>
+        <tr><td>Before the split (May 2020 to Aug 2024)</td><td class="n">416</td><td class="n up">+1.00R</td><td class="n">39 of 43</td></tr>
+        <tr class="hl"><td>After the split (Aug 2024 to Sep 2026)</td><td class="n">224</td><td class="n up">+1.25R</td><td class="n">34 of 43</td></tr>
+        <tr><td>After the split, double costs</td><td class="n">224</td><td class="n up">+1.23R</td><td class="n">32 of 43</td></tr>
+      </tbody>
+    </table></div>
+    <figure>
+      <p class="ft">The weeks behind the trades: SOL, June 2023 to April 2024</p>
+      <p class="fs">Weekly candles; triangles mark bullish engulfing weeks.</p>
+      <div data-fig="weeks" data-example="weekly-engulf"></div>
+    </figure>
+    <figure>
+      <p class="ft">The same period on the daily chart, with the rule's trades</p>
+      <p class="fs">The engine's own backtest. Entries are the first daily breakout after an engulfing week while BTC was in an uptrend.</p>
+      <div data-fig="example" data-example="weekly-engulf"></div>
+      <figcaption>Most of the gain comes from a few long holds in a strong trend; losing trades are stopped out at about −1R.</figcaption>
+    </figure>
+  </section>
+
+  <section id="sessions">
+    <h2><span class="n">6</span>Intraday around the market opens</h2>
+    <p>Opening-range breakouts and false breaks after the first 30 minutes of the London and New York opens, and Study 1's reversal setups limited to 1, 2 or 4 hours after the open or allowed any time, on ten coins at 5 and 15 minutes over a year: <b>14,080 backtests</b>.</p>
+    <figure>
+      <p class="ft">The session windows, in UTC</p>
+      <div data-fig="sessions"></div>
+      <figcaption>Both opens follow their own daylight-saving rules, so the UTC times shift twice a year. The first 30 minutes set the range; trades are allowed in the window after it.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">By trading window, futures costs</p>
+      <div data-fig="groups" data-study="session-opens" data-by="window" data-gross="1"></div>
+      <figcaption><b>None selected.</b> Before costs every window averaged about 0R. The session filter cut trades from about 25 a day to 2 to 5 across the ten coins without improving them.</figcaption>
+    </figure>
+  </section>
+
+  <section id="hourly">
+    <h2><span class="n">7</span>Daily patterns, hourly entries</h2>
+    <p>Four daily setups (engulfing, hammer or shooting star, morning or evening star, inside-day breakout) traded on hourly candles or, for comparison, on daily candles, on ten coins over six years: <b>14,400 backtests</b>.</p>
+    <figure>
+      <p class="ft">By entry timeframe and stop</p>
+      <div data-fig="groups" data-study="daily-hourly" data-by="interval+stop"></div>
+      <figcaption>Hourly entries with a tight stop under the entry candle averaged −0.28R after the split, won 24% of trades and paid 0.25R in fees. With the stop beyond the pattern day they were about equal to entering on the daily chart (+0.01R against +0.04R).</figcaption>
+    </figure>
+  </section>
+
+  <section id="replay">
+    <h2><span class="n">8</span>One account, real costs</h2>
+    <p>The backtests above give each coin its own share of the account. A real account has one pool of money: signals on different coins arrive together, positions overlap, and some signals must be skipped. The replay trades every signal on all 43 coins through one account, in date order, with a limit on open positions.</p>
+    <figure>
+      <p class="ft">The pick through one account, 43 coins, May 2020 to September 2026</p>
+      <p class="fs">Every combination of risk per trade and position limit. Switch cost levels; click a row to see its months.</p>
+      <div data-fig="replay" data-replay="replay-weekly" data-risk="0.5" data-open="20"></div>
+      <figcaption>About 1.9 signals a week across 43 coins, and 11% of days have one. The median month is 0% (the BTC filter keeps the account in cash), and the best five months produced about 87% of the whole gain. With a stop about 10% away, 0.5% risk makes each position about 5% of the account, so 20 positions fit a spot account without leverage.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">On 24 coins it never saw</p>
+      <p class="fs">OP, ARB, APT, INJ, SUI, SEI, TIA, FET, RENDER, IMX, LDO, STX, GALA, HBAR, RUNE, PEPE, SHIB, WLD, ORDI, BONK, JUP, PYTH, ENA and TON, from their listing dates.</p>
+      <div data-fig="replay" data-replay="replay-weekly-new-coins" data-risk="0.5" data-open="20"></div>
+      <figcaption><b>+1.00R a trade on 243 trades, profitable on 21 of 24 coins.</b> The account made about +18% a year at 0.5% risk, but only about +8% a year since August 2024: fewer coins mean fewer signals, and the recent years were weaker.</figcaption>
+    </figure>
+  </section>
+
+  <section id="conclusions">
+    <h2><span class="n">9</span>Conclusions</h2>
+    <ul>
+      <li><b>Weekly engulfing candles, confirmed on the daily chart and filtered by BTC's trend, were the strongest pattern result</b> in these studies, and held on coins the rule never saw.</li>
+      <li><b>BTC's trend is the most useful filter</b> for other coins: most coins fall when BTC does.</li>
+      <li><b>The market opens didn't help intraday setups</b>, and entering early on the hourly chart made results worse.</li>
+      <li><b>Expect long flat stretches.</b> The account is in cash most of the time and earns in bursts.</li>
+    </ul>
+    <h3>Limitations</h3>
+    <p>The pick is one of 576 combinations tested under each cost level. The 24 unseen coins are young, and all trade in the same market as the original 43, so they are not independent of it. Returns depend on a few strong months, and recent results on new coins were weaker.</p>
+  </section>
+
+  <section id="reproduce">
+    <h2><span class="n">10</span>Reproduce</h2>
+<pre>candlerail study research/weekly-patterns.json --digest weekly-patterns.json
+candlerail study research/session-opens.json --digest session-opens.json
+candlerail study research/daily-hourly.json --digest daily-hourly.json
+candlerail replay research/weekly-engulf-pick.json --symbols BTCUSDT,ETHUSDT,... --interval 1d --from 2020-05-21 --split 2024-08-15</pre>
+    <div class="prevnext"><a href="study-3.html">← Study 3: How quants scale up</a><a href="./">Overview →</a></div>
+  </section>
+
+  </article>
+</main>
+<footer><a href="../">Candlerail</a> Research · Data from Binance's public API · Backtested results are not a guarantee of future returns. · <a href="https://github.com/upendrx/candlerail">Source on GitHub</a></footer>
+</body>
+</html>
