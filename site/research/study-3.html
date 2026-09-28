@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study 3: Portfolios and Signals</title>
+<meta name="description" content="How professional quants scale up, tested for a single account: coin rotation across 43 coins, sentiment, time of day, pairs trading, and combining and sizing strategies.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%235b5bd6'/%3E%3Cpath d='M10 8v16M16 6v20M22 10v12' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/research.css">
+<script src="assets/research.js" defer></script>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="./">candlerail <small>Research</small></a>
+  <nav><a class="opt" href="./">Overview</a><a href="study-1.html">Study 1</a><a href="study-2.html">Study 2</a><a class="on" href="study-3.html">Study 3</a><a href="study-4.html">Study 4</a><a class="opt" href="https://github.com/upendrx/candlerail">GitHub</a></nav>
+</div></header>
+
+<div class="hero"><div class="in">
+  <div>
+    <div class="kicker">Study 3 · Portfolios and signals</div>
+    <h1>How quants scale up, and what one account can use</h1>
+    <p class="lede">Where do the large algorithmic profits in crypto come from, which other signals and instruments help, and what can a single account running an automated strategy on Binance realistically achieve?</p>
+    <div class="chips"><span>918 portfolio variants</span><span>43 coins, including dead ones</span><span>Jan 2020 to Sep 2026</span><span>Split at July 2024</span></div>
+  </div>
+  <div class="verdict">
+    <span class="tag yes">Verdict: combine, don't chase</span>
+    <h2>Trend plus coin rotation: about +4% a month, largest fall about 20%.</h2>
+    <p>Two edges that don't move together fell far less as a pair than either did alone. Sentiment, time of day and pairs trading added nothing after costs.</p>
+    <div class="kpis">
+      <div><b class="up">138</b><span>rotation survivors out of 540</span></div>
+      <div><b>0.46</b><span>monthly correlation, trend vs rotation</span></div>
+      <div><b class="up">+4.4%</b><span>combined average month, 72 months</span></div>
+      <div><b class="down">0 of 72</b><span>pairs variants selected</span></div>
+    </div>
+  </div>
+</div></div>
+
+<main class="page">
+  <nav class="toc" aria-label="On this page"></nav>
+  <article>
+
+  <section id="case">
+    <h2><span class="n">1</span>The case</h2>
+    <p class="big">Headlines about trading firms making millions a day are true, but most of those profits come from businesses a single account can't copy.</p>
+    <div class="grid3" style="margin-top:16px">
+      <div class="tile"><span class="tg no">Not copyable</span><h4>Market making</h4><p>Quoting both sides all day for fee rebates. Needs the top fee tiers and co-located servers.</p></div>
+      <div class="tile"><span class="tg no">Not copyable</span><h4>Speed arbitrage</h4><p>Price gaps between exchanges that last milliseconds.</p></div>
+      <div class="tile"><span class="tg mixed">Partly</span><h4>Funding and basis</h4><p>Collecting what leveraged traders pay. Copyable, but the return is small at retail fees (<a href="study-2.html#carry">Study 2</a>).</p></div>
+      <div class="tile"><span class="tg yes">Copyable</span><h4>Systematic portfolios</h4><p>Several independent, slow edges sized together. Tested here.</p></div>
+    </div>
+    <div class="callout key"><b class="t">Hypothesis</b><p>Signals beyond one coin's own chart (the relative strength of coins, market sentiment, the clock, the spread between related coins) carry edges that survive costs. Combined with the Study 2 trend rule, they give a smoother account than any one rule alone.</p></div>
+  </section>
+
+  <section id="method">
+    <h2><span class="n">2</span>How it was tested</h2>
+    <figure>
+      <p class="ft">Chosen before July 2024, judged after it</p>
+      <div data-fig="method" data-periods='[{"row":"Selection","from":"2020-01-01","to":"2024-07-01","kind":"sel","label":"choose variants"},{"row":"After the split","from":"2024-07-01","to":"2026-09-27","kind":"oos","label":"judge"}]'></div>
+      <figcaption><b>Selected:</b> a Sharpe ratio of at least 1 and at least 15% a year before the split. <b>Survived:</b> a Sharpe ratio of at least 0.5 and a profit after it. Daily data from January 2020; hourly from September 2020 for time-of-day tests.</figcaption>
+    </figure>
+    <p>These are portfolio tests: each variant holds positions across coins at once and is scored on the account's monthly returns, with fees and slippage on every change. The 43-coin universe includes coins that collapsed or were delisted (FTT, LUNA, SRM, MATIC, FTM, EOS), so holding a dying coin counts.</p>
+  </section>
+
+  <section id="rotation">
+    <h2><span class="n">3</span>Coin rotation</h2>
+    <p>Every 1, 7 or 14 days, rank the coins by their return over the last 7 to 90 days and hold the strongest 3, 5 or 10, optionally only while BTC is above its 50- or 100-day average. Variants also tried buying the weakest (reversal) and shorting the bottom of the list (futures).</p>
+    <figure>
+      <p class="ft">How the rule works</p>
+      <p class="fs">An illustration of one weekly rebalance with the pick's settings: 30-day returns, top 5, BTC above its 100-day average.</p>
+      <svg viewBox="0 0 900 290" role="img" aria-label="Coins ranked by 30-day return, the top five are held">
+        <g font-size="12" fill="currentColor">
+          <text x="0" y="16" font-weight="700">30-day return, ranked</text>
+          <g transform="translate(0 34)">
+            <text x="60" y="14" text-anchor="end">SOL</text><rect x="70" y="2" width="300" height="16" rx="4" fill="var(--up)"/><text x="378" y="14">+42%</text>
+            <text x="60" y="38" text-anchor="end">DOGE</text><rect x="70" y="26" width="236" height="16" rx="4" fill="var(--up)"/><text x="314" y="38">+33%</text>
+            <text x="60" y="62" text-anchor="end">AVAX</text><rect x="70" y="50" width="186" height="16" rx="4" fill="var(--up)"/><text x="264" y="62">+26%</text>
+            <text x="60" y="86" text-anchor="end">LINK</text><rect x="70" y="74" width="136" height="16" rx="4" fill="var(--up)"/><text x="214" y="86">+19%</text>
+            <text x="60" y="110" text-anchor="end">ETH</text><rect x="70" y="98" width="86" height="16" rx="4" fill="var(--up)"/><text x="164" y="110">+12%</text>
+            <line x1="0" x2="440" y1="123" y2="123" stroke="var(--accent)" stroke-dasharray="4 3"/><text x="440" y="119" text-anchor="end" fill="var(--accent)" font-weight="700" font-size="11">hold the top 5 →</text>
+            <text x="60" y="142" text-anchor="end" opacity=".5">BTC</text><rect x="70" y="130" width="50" height="16" rx="4" fill="var(--faint)" opacity=".5"/><text x="128" y="142" opacity=".5">+7%</text>
+            <text x="60" y="166" text-anchor="end" opacity=".5">XRP</text><rect x="70" y="154" width="14" height="16" rx="4" fill="var(--faint)" opacity=".5"/><text x="92" y="166" opacity=".5">+2%</text>
+            <text x="60" y="190" text-anchor="end" opacity=".5">ADA</text><rect x="70" y="178" width="20" height="16" rx="4" fill="var(--down)" opacity=".5"/><text x="98" y="190" opacity=".5">−3%</text>
+            <text x="60" y="214" text-anchor="end" opacity=".5">…</text><text x="78" y="214" opacity=".5">35 more coins</text>
+          </g>
+          <g transform="translate(520 40)">
+            <rect x="0" y="0" width="370" height="96" rx="14" fill="var(--accent-soft)" stroke="var(--accent-line)"/>
+            <text x="18" y="28" font-weight="700" font-size="13">Filter: BTC above its 100-day average?</text>
+            <text x="18" y="54" fill="var(--up)" font-weight="700">Yes → hold the five, equal weight</text>
+            <text x="18" y="78" fill="var(--down)" font-weight="700">No → hold cash until it is</text>
+            <rect x="0" y="116" width="370" height="96" rx="14" fill="var(--surface2)" stroke="var(--line)"/>
+            <text x="18" y="144" font-weight="700" font-size="13">Every 7 days</text>
+            <text x="18" y="170">Re-rank, sell what fell out of the top 5,</text>
+            <text x="18" y="192">buy what came in. Costs on every change.</text>
+          </g>
+        </g>
+      </svg>
+      <figcaption>Coin names and returns are illustrative. The test runs the rule on all 43 coins with their real history.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">540 variants, before and after the split</p>
+      <p class="fs">Each dot is one variant's Sharpe ratio before July 2024 against after it.</p>
+      <div data-fig="qscatter" data-quant="rotation"></div>
+      <figcaption><b>204 selected, 138 survived.</b> Long-only with a BTC trend filter did best; buying the weakest coins and long-short versions did not.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">The weekly pick: 30-day returns, top 5, BTC above its 100-day average</p>
+      <div data-fig="qpick" data-quant="rotation" data-params='{"btc_filter":"100","every":"7","long_short":"no","lookback":"30","reverse":"no","top":"5"}'></div>
+      <figcaption>Large returns with large swings: a worst month of about −30% and a fall of about 50% after the split. On its own it is too volatile for most accounts, which is why <a href="#combo">section 7</a> combines it with the trend rule.</figcaption>
+    </figure>
+  </section>
+
+  <section id="sentiment">
+    <h2><span class="n">4</span>Fear &amp; Greed sentiment</h2>
+    <p>The free daily Crypto Fear &amp; Greed index (alternative.me) timing BTC and ETH: buy extreme fear, buy only while below a greed cap, buy fear in an uptrend, or short greed in a downtrend. 186 variants.</p>
+    <figure>
+      <p class="ft">186 variants, before and after the split</p>
+      <div data-fig="qscatter" data-quant="sentiment"></div>
+      <figcaption><b>31 selected, 17 survived</b>, but the best survivors are a plain trend filter with the greed cap switched off, or "buy when the index is under 50 in an uptrend". The index itself added little beyond the trend.</figcaption>
+    </figure>
+  </section>
+
+  <section id="seasonality">
+    <h2><span class="n">5</span>Time of day and day of week</h2>
+    <p>Learn the best hours or weekdays for BTC and ETH before the split and hold only then, optionally shorting the worst ones. Run twice: with futures costs, and with no costs at all to see whether any pattern exists.</p>
+    <div class="grid2">
+      <figure style="margin:0"><p class="ft">With futures costs</p><div data-fig="qscatter" data-quant="seasonality" data-w="460" data-h="400"></div></figure>
+      <figure style="margin:0"><p class="ft">With no costs at all</p><div data-fig="qscatter" data-quant="seasonality-gross" data-w="460" data-h="400"></div></figure>
+    </div>
+    <div class="callout warn" style="margin-top:20px"><b class="t">A pattern that reversed</b><p>With no costs, the best hour-based variants had a Sharpe ratio above 2.4 before the split and lost money after it (Sharpe −0.2 to −0.4). With costs, no hour-based variant made money even before the split. The weekday variants that survived are mostly just holding the market four or five days a week.</p></div>
+  </section>
+
+  <section id="pairs">
+    <h2><span class="n">6</span>Pairs trading</h2>
+    <p>For pairs whose daily returns were correlated above 0.75 before the split (BTC/ETH, BTC/LTC, ETH/LTC, XRP/XLM, LTC/BCH), short the one that ran ahead and buy the laggard when their price ratio is 1.5 to 2.5 standard deviations from normal.</p>
+    <figure>
+      <p class="ft">How the rule works</p>
+      <svg viewBox="0 0 900 220" role="img" aria-label="The price ratio of two coins moves outside two standard deviations and the trade bets on its return">
+        <g font-size="12" fill="currentColor">
+          <rect x="40" y="30" width="800" height="50" fill="var(--down-soft)"/><rect x="40" y="140" width="800" height="50" fill="var(--up-soft)"/>
+          <line x1="40" x2="840" y1="110" y2="110" stroke="currentColor" opacity=".35" stroke-dasharray="4 3"/>
+          <line x1="40" x2="840" y1="80" y2="80" stroke="var(--down)" stroke-dasharray="4 3"/><line x1="40" x2="840" y1="140" y2="140" stroke="var(--up)" stroke-dasharray="4 3"/>
+          <polyline fill="none" stroke="var(--accent)" stroke-width="2.4" points="40,112 90,104 140,116 190,98 240,88 280,70 320,62 360,78 400,96 440,110 480,118 520,132 560,150 600,158 640,138 680,120 720,108 760,112 800,104 840,110"/>
+          <circle cx="280" cy="70" r="6" fill="var(--down)"/><text x="280" y="22" text-anchor="middle" font-weight="700" fill="var(--down)">ratio +2σ: short A, buy B</text>
+          <circle cx="440" cy="110" r="6" fill="currentColor"/><text x="452" y="104" font-weight="700">back to normal: close</text>
+          <circle cx="560" cy="150" r="6" fill="var(--up)"/><text x="560" y="210" text-anchor="middle" font-weight="700" fill="var(--up)">ratio −2σ: buy A, short B</text>
+          <text x="846" y="84" font-size="11" fill="var(--down)">+2σ</text><text x="846" y="114" font-size="11" opacity=".6">mean</text><text x="846" y="144" font-size="11" fill="var(--up)">−2σ</text>
+          <text x="40" y="18" font-weight="700">Price of A ÷ price of B</text>
+        </g>
+      </svg>
+    </figure>
+    <figure>
+      <p class="ft">72 variants, before and after the split</p>
+      <div data-fig="qscatter" data-quant="pairs"></div>
+      <figcaption><b>None was selected.</b> Crypto pairs drift apart for long stretches, and two legs of fees on every trade take what reversion there is.</figcaption>
+    </figure>
+  </section>
+
+  <section id="combo">
+    <h2><span class="n">7</span>Combining strategies</h2>
+    <p>The Study 2 trend rule and the weekly rotation pick move together only loosely. Weighting each by 1 / its volatility measured before July 2024, then fixing those weights, gives a combined account:</p>
+    <figure>
+      <p class="ft">Trend, rotation and both together, October 2020 to September 2026</p>
+      <p class="fs">"After" columns cover July 2024 onwards, after the weights were fixed.</p>
+      <div data-fig="combo"></div>
+      <figcaption>Combined, the average month nearly doubles the trend rule's, while the worst month (−9.5%) and the largest fall (−20%) stay close to the trend rule's alone. Compounded monthly; bars show the combined account.</figcaption>
+    </figure>
+  </section>
+
+  <section id="risk">
+    <h2><span class="n">8</span>How much to risk</h2>
+    <p>Scaling every position scales returns and losses together. The table resamples the combined plan's real months into 5,000 random years at each size.</p>
+    <figure>
+      <p class="ft">The combined plan at different position sizes</p>
+      <div data-fig="risk"></div>
+      <figcaption><b>1× is the plan as tested.</b> Doubling it roughly doubles the average month and the largest fall. Random years assume months are independent, which understates long losing streaks.</figcaption>
+    </figure>
+    <div class="callout"><b class="t">In account terms</b><p>On a $500 account the combined plan's average month is about $22, with a worst month of about −$48.</p></div>
+  </section>
+
+  <section id="conclusions">
+    <h2><span class="n">9</span>Conclusions</h2>
+    <ul>
+      <li><b>Relative strength across many coins is a real, if volatile, edge</b>, and it worked best with a BTC trend filter and long only.</li>
+      <li><b>Sentiment and the clock added little.</b> What looked like an edge was the trend filter, or noise that reversed.</li>
+      <li><b>Pairs trading didn't survive retail costs</b> on these pairs.</li>
+      <li><b>Combining two loosely related edges is the largest improvement in this study:</b> the combined plan kept most of the return with a largest fall of about 20%, against 73% for holding BTC.</li>
+    </ul>
+    <h3>Limitations</h3>
+    <p>The rotation pick was chosen among 540 variants, and the combination was built from two picks, so both carry some selection bias even after the split. Rotation trades smaller coins, where slippage at larger size would be higher than modelled.</p>
+  </section>
+
+  <section id="reproduce">
+    <h2><span class="n">10</span>Reproduce</h2>
+<pre>candlerail quant research/rotation.json -o rotation.json
+candlerail quant research/sentiment.json -o sentiment.json
+candlerail quant research/seasonality.json -o seasonality.json
+candlerail quant research/pairs.json -o pairs.json</pre>
+    <div class="prevnext"><a href="study-2.html">← Study 2: Swing and trend trading</a><a href="study-4.html">Study 4: Weekly swings →</a></div>
+  </section>
+
+  </article>
+</main>
+<footer><a href="../">Candlerail</a> Research · Data from Binance's public API · Backtested results are not a guarantee of future returns. · <a href="https://github.com/upendrx/candlerail">Source on GitHub</a></footer>
+</body>
+</html>
