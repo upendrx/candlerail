@@ -1,0 +1,73 @@
+{
+  "name": "SuperTrend flip (mult 3, side long and short, stop 2 ATR, trail none)",
+  "market": {
+    "interval": "4h"
+  },
+  "indicators": {
+    "atr": {
+      "period": 14,
+      "type": "atr"
+    },
+    "st": {
+      "multiplier": 3,
+      "period": 10,
+      "type": "supertrend"
+    }
+  },
+  "entry": {
+    "long": {
+      "all": [
+        {
+          "left": "st.direction",
+          "op": "==",
+          "right": 1.0
+        },
+        {
+          "left": "st.direction[1]",
+          "op": "==",
+          "right": -1.0
+        }
+      ]
+    },
+    "short": {
+      "all": [
+        {
+          "left": "st.direction",
+          "op": "==",
+          "right": -1.0
+        },
+        {
+          "left": "st.direction[1]",
+          "op": "==",
+          "right": 1.0
+        }
+      ]
+    }
+  },
+  "exit": {
+    "long": {
+      "left": "st.direction",
+      "op": "==",
+      "right": -1.0
+    },
+    "short": {
+      "left": "st.direction",
+      "op": "==",
+      "right": 1.0
+    },
+    "stop_loss": {
+      "atr": 2.0,
+      "indicator": "atr"
+    }
+  },
+  "sizing": {
+    "type": "risk_percent",
+    "value": 2.0
+  },
+  "leverage": 1.0,
+  "costs": {
+    "fee_bps": 5.0,
+    "slippage_bps": 1.0,
+    "maintenance_margin_percent": 0.5
+  }
+}

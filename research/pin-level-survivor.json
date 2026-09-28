@@ -1,0 +1,98 @@
+{
+  "name": "Pin bar at swing level (rr 2, stop 1.2%, trend with the 8h trend)",
+  "market": {
+    "interval": "15m"
+  },
+  "indicators": {
+    "atr": {
+      "period": 14,
+      "type": "atr"
+    },
+    "pa": {
+      "type": "patterns"
+    },
+    "sw": {
+      "left": 5,
+      "right": 2,
+      "type": "swings"
+    },
+    "trend": {
+      "period": 32,
+      "type": "ema"
+    }
+  },
+  "entry": {
+    "long": {
+      "all": [
+        {
+          "left": "pa.hammer",
+          "op": "==",
+          "right": 1.0
+        },
+        {
+          "left": "low",
+          "op": "<=",
+          "right": "sw.support + 0.3 * atr"
+        },
+        {
+          "left": "close",
+          "op": ">",
+          "right": "sw.support"
+        },
+        {
+          "left": "close",
+          "op": ">",
+          "right": "trend"
+        }
+      ]
+    },
+    "short": {
+      "all": [
+        {
+          "left": "pa.shooting_star",
+          "op": "==",
+          "right": 1.0
+        },
+        {
+          "left": "high",
+          "op": ">=",
+          "right": "sw.resistance - 0.3 * atr"
+        },
+        {
+          "left": "close",
+          "op": "<",
+          "right": "sw.resistance"
+        },
+        {
+          "left": "close",
+          "op": "<",
+          "right": "trend"
+        }
+      ]
+    }
+  },
+  "exit": {
+    "stop_loss": {
+      "percent": 1.2
+    },
+    "take_profit": {
+      "risk_multiple": 2.0
+    },
+    "max_bars": 32
+  },
+  "sizing": {
+    "type": "risk_percent",
+    "value": 1.0
+  },
+  "leverage": 10.0,
+  "costs": {
+    "fee_bps": 5.0,
+    "slippage_bps": 1.0,
+    "maintenance_margin_percent": 0.5
+  },
+  "risk": {
+    "daily_loss_percent": 3.0,
+    "pause_after_losses": 4,
+    "pause_bars": 4
+  }
+}
