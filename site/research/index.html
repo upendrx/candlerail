@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Candlerail Research</title>
+<meta name="description" content="Four open studies of crypto trading strategies: more than 110,000 backtests on real Binance data with real costs, each judged on data it never saw.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%235b5bd6'/%3E%3Cpath d='M10 8v16M16 6v20M22 10v12' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/research.css">
+<script src="assets/research.js" defer></script>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="./">candlerail <small>Research</small></a>
+  <nav><a class="on opt" href="./">Overview</a><a href="study-1.html">Study 1</a><a href="study-2.html">Study 2</a><a href="study-3.html">Study 3</a><a href="study-4.html">Study 4</a><a class="opt" href="https://github.com/upendrx/candlerail">GitHub</a></nav>
+</div></header>
+
+<div class="hero"><div class="in">
+  <div>
+    <div class="kicker">Open research · crypto markets · 2020 to 2026</div>
+    <h1>Which crypto trading strategies survive an honest test?</h1>
+    <p class="lede">Four studies, more than 110,000 backtests on real Binance candles with real fees and slippage. Every study states its question and its selection rule before looking at results, chooses on one period, and is then judged on data it never saw.</p>
+    <div class="chips"><span>112,094 backtests</span><span>918 portfolio variants</span><span>67 coins, including dead ones</span><span>1-minute to weekly candles</span><span>Every result reproducible</span></div>
+  </div>
+  <div class="verdict">
+    <span class="tag mixed">The short answer</span>
+    <h2>Slow rules held up. Fast ones didn't.</h2>
+    <p>Day-trading patterns lost to fees. Trend following on 4-hour candles, a weekly coin rotation and weekly engulfing candles with bitcoin's trend as a filter all made money on data they were never chosen on.</p>
+    <div class="kpis">
+      <div><b class="down">0 of 3,255</b><span>day-trading variants that held up on unseen coins</span></div>
+      <div><b class="up">44 of 44</b><span>trend survivors profitable on three earlier years</span></div>
+      <div><b class="up">+1.25R</b><span>a trade, weekly engulfing after the split</span></div>
+      <div><b>−20%</b><span>largest fall of the combined trend and rotation plan</span></div>
+    </div>
+  </div>
+</div></div>
+
+<main class="page">
+  <nav class="toc" aria-label="On this page"></nav>
+  <article>
+
+  <section id="studies">
+    <h2><span class="n">★</span>The studies</h2>
+    <p>Each study is a self-contained case: a question, the strategies tested, the method, every result and what it means. Open one to see its charts, the real trades behind them, and how to run it yourself.</p>
+    <div class="studies" style="margin-top:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))">
+      <a class="study" href="study-1.html">
+        <span class="no">Study 1</span>
+        <div data-fig="candles" data-spec='{"w":260,"h":70,"bars":[[60,62,50,52],[52,54,44,46],[45,47,30,46],[46,56,45,55],[55,60,53,58]],"lines":[{"y":32,"label":"support","color":"var(--accent)"}]}'></div>
+        <h3>Day trading on 1- to 15-minute candles</h3>
+        <p>Fifteen reversal and breakout setups at support and resistance on BTC, ETH, SOL and XRP, from 1-minute to 1-hour candles.</p>
+        <span class="res down">No setup survived. Fees took 0.3R to 1.4R a trade.</span>
+      </a>
+      <a class="study" href="study-2.html">
+        <span class="no">Study 2</span>
+        <div data-fig="candles" data-spec='{"w":260,"h":70,"bars":[[30,34,28,33],[33,38,32,37],[37,40,34,35],[35,44,34,43],[43,50,42,49],[49,52,46,47],[47,58,46,57]]}'></div>
+        <h3>Monthly profit from swing and trend trading</h3>
+        <p>Eleven trend and mean-reversion strategies on ten coins, chosen on two years, judged on a year when holding lost 41%.</p>
+        <span class="res up">Trend following on 4h held up across three market regimes.</span>
+      </a>
+      <a class="study" href="study-3.html">
+        <span class="no">Study 3</span>
+        <div data-fig="candles" data-spec='{"w":260,"h":70,"bars":[[40,46,38,45],[45,47,40,42],[42,50,41,49],[49,51,44,46],[46,55,45,54],[54,56,50,53],[53,60,52,59]]}'></div>
+        <h3>How quants scale up: portfolios and signals</h3>
+        <p>Coin rotation, sentiment, time of day, pairs and funding carry, and how to combine and size strategies.</p>
+        <span class="res up">Trend plus rotation: about +4% a month, largest fall 20%.</span>
+      </a>
+      <a class="study" href="study-4.html">
+        <span class="no">Study 4</span>
+        <div data-fig="candles" data-spec='{"w":260,"h":70,"bars":[[50,52,40,42],[41,58,39,56],[56,64,55,63],[63,66,58,60],[60,70,59,69]]}'></div>
+        <h3>Weekly swings, market opens and early entries</h3>
+        <p>Weekly candle patterns on 43 coins, the London and New York opens, hourly entries, and a replay through one account.</p>
+        <span class="res up">Weekly engulfing with BTC's trend: about +1R a trade.</span>
+      </a>
+    </div>
+  </section>
+
+  <section id="held">
+    <h2><span class="n">↗</span>What held up</h2>
+    <p>The combined plan from Study 3: the Study 2 trend rule and a weekly coin rotation, weighted by their volatility before July 2024 and then fixed. Compared with holding bitcoin, it made a similar average month with far smaller falls.</p>
+    <figure>
+      <p class="ft">Growth of 1, October 2020 to September 2026</p>
+      <p class="fs">Monthly results after fees and slippage, compounded, on a log scale.</p>
+      <div data-fig="growth"></div>
+      <figcaption>Largest fall about −20% for the plan against −73% for holding BTC. Part of this period was used to choose the rules, so <a href="study-3.html#combo">Study 3</a> reports the months after July 2024 separately: +3.2% a month with a largest fall of −15%.</figcaption>
+    </figure>
+  </section>
+
+  <section id="method">
+    <h2><span class="n">M</span>How every study is run</h2>
+    <p class="big">Testing hundreds of variants will always turn up some that look brilliant by chance. The method exists to tell those apart from rules that keep working.</p>
+    <div class="grid2" style="margin-top:18px">
+      <div class="tile"><span class="tg mixed">1 · Ask</span><h4>A question and a rule, fixed in advance</h4><p>Each study writes down its strategies, settings, costs and the exact test a variant must pass before any result is seen.</p></div>
+      <div class="tile"><span class="tg mixed">2 · Search</span><h4>Every combination, on every market</h4><p>Setups are crossed with stops, targets, filters and timeframes, and every variant is backtested on every coin.</p></div>
+      <div class="tile"><span class="tg mixed">3 · Select</span><h4>Choose on the first part only</h4><p>A variant is selected if it clears the bar on the first two-thirds of the data (average result, trade count, most coins profitable).</p></div>
+      <div class="tile"><span class="tg yes">4 · Judge</span><h4>Judge on data it never saw</h4><p>Selected variants are then judged on the last third, and the best of them again on other coins or earlier years.</p></div>
+    </div>
+    <figure>
+      <p class="ft">One study's timeline</p>
+      <p class="fs">Study 2 as an example: chosen on two years, judged on the next, then re-tested unchanged on three earlier years.</p>
+      <div data-fig="method" data-periods='[{"row":"Selection","from":"2023-09-27","to":"2025-09-27","kind":"sel","label":"choose variants"},{"row":"Held out","from":"2025-09-27","to":"2026-09-27","kind":"oos","label":"judge"},{"row":"Never seen","from":"2020-09-27","to":"2023-09-27","kind":"unseen","label":"confirm, unchanged"}]'></div>
+      <figcaption><b>Why three periods:</b> the held-out year tests whether a variant was more than luck. The earlier years test whether surviving was itself luck, since many variants were judged on the same year.</figcaption>
+    </figure>
+    <h3>The same rules for every backtest</h3>
+    <ul>
+      <li><b>Real data.</b> Binance spot and futures candles, downloaded from Binance's public API and cached locally.</li>
+      <li><b>Real fills.</b> Signals are read at a candle's close and filled at the next candle's open. When a candle touches both the stop and the target, the stop is assumed to fill first.</li>
+      <li><b>Real costs.</b> Taker fees and slippage on every fill: 0.05% plus 0.01% on futures, 0.1% plus 0.02% on spot, and double costs as a stress test.</li>
+      <li><b>R multiples.</b> Results are measured in R, the amount risked on a trade. +1R means a trade won what it risked; −1R means the stop was hit.</li>
+      <li><b>Dead coins count.</b> Studies 3 and 4 include coins that collapsed or were delisted (LUNA, FTT, SRM and others), so holding a dying coin counts as a loss.</li>
+    </ul>
+  </section>
+
+  <section id="findings">
+    <h2><span class="n">F</span>Findings at a glance</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Study</th><th>Test</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><a href="study-1.html#round1">1.1</a></td><td>Reversal setups on 1m, 5m and 15m candles</td><td class="down">0 of 1,395 selected: fees were 0.3R to 1.4R a trade</td></tr>
+        <tr><td><a href="study-1.html#round2">1.2</a></td><td>Wider stops, 5m to 1h</td><td>10 selected, 1 survived the held-out month</td></tr>
+        <tr><td><a href="study-1.html#confirm">1.3–1.4</a></td><td>That survivor on five other coins and the 90 days before</td><td class="down">−0.06R and −0.14R a trade</td></tr>
+        <tr><td><a href="study-2.html#results">2.1</a></td><td>11 swing and trend strategies, 10 coins, 1h to 1d</td><td class="up">230 selected, 44 survived a year when holding lost 41%</td></tr>
+        <tr><td><a href="study-2.html#confirm">2.2</a></td><td>The 44 survivors on 2020 to 2023</td><td class="up">All 44 made money</td></tr>
+        <tr><td><a href="study-2.html#carry">2.3</a></td><td>Funding-rate carry</td><td>About 3% a year recently, 6% to 7% in 2020 to 2023</td></tr>
+        <tr><td><a href="study-3.html#rotation">3.2</a></td><td>Coin rotation across 43 coins</td><td class="up">204 of 540 selected, 138 survived</td></tr>
+        <tr><td><a href="study-3.html#sentiment">3.3</a></td><td>Fear &amp; Greed sentiment</td><td>Survivors were mostly the trend filter</td></tr>
+        <tr><td><a href="study-3.html#seasonality">3.4</a></td><td>Time of day and day of week</td><td class="down">Hour patterns reversed after the split, even before costs</td></tr>
+        <tr><td><a href="study-3.html#pairs">3.5</a></td><td>Pairs trading</td><td class="down">No pair survived costs</td></tr>
+        <tr><td><a href="study-3.html#combo">3.6</a></td><td>Trend plus rotation, combined</td><td class="up">+4.4% a month, largest fall −20%</td></tr>
+        <tr><td><a href="study-4.html#weekly">4.1</a></td><td>Weekly patterns on 43 coins, entered on the daily chart</td><td class="up">369 selected, 127 survived</td></tr>
+        <tr><td><a href="study-4.html#sessions">4.2</a></td><td>Intraday around the London and New York opens</td><td class="down">0 selected</td></tr>
+        <tr><td><a href="study-4.html#hourly">4.3</a></td><td>Daily patterns entered on hourly candles</td><td class="down">More trades, worse results</td></tr>
+        <tr><td><a href="study-4.html#replay">4.4</a></td><td>The weekly rule through one account</td><td class="up">About +43% a year at 0.5% risk, largest fall −21%</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="limits">
+    <h2><span class="n">!</span>What these results are not</h2>
+    <div class="callout warn"><b class="t">Backtests, not promises</b><p>Every number here is historical. Markets change, and several results were weaker in recent years than earlier ones. Nothing on these pages is financial advice.</p></div>
+    <ul>
+      <li><b>Multiple testing.</b> With thousands of variants some survive by luck; that is why survivors are re-tested on coins or years they never saw, and why a single survivor (Study 1) is treated as noise.</li>
+      <li><b>Survivorship.</b> Studies 1 and 2 use coins that still trade today, which flatters every strategy, buying and holding included. Studies 3 and 4 add coins that died.</li>
+      <li><b>Lumpy returns.</b> The slow rules make most of their money in a few strong months and sit flat or in cash for long stretches.</li>
+      <li><b>Execution.</b> Fills at the next open are realistic for liquid coins at small size; large orders, thin coins and exchange outages are not modelled. Futures funding is not included in the directional studies.</li>
+    </ul>
+  </section>
+
+  <section id="reproduce">
+    <h2><span class="n">R</span>Reproduce any result</h2>
+    <p>Every study is a JSON file in <a href="https://github.com/upendrx/candlerail/tree/main/research"><code>research/</code></a>, and every figure on these pages is drawn from the recorded results in <a href="https://github.com/upendrx/candlerail/tree/main/research/results"><code>research/results/</code></a>. Candlerail is a single open-source binary that downloads the data and runs the whole grid locally.</p>
+<pre>cargo build --release
+./target/release/candlerail study research/swing-trend.json --digest swing-trend.json
+./target/release/candlerail serve        # the app, with its Research tab and variant explorer</pre>
+  </section>
+
+  </article>
+</main>
+<footer><a href="../">Candlerail</a> Research · Data from Binance's public API · Backtested results are not a guarantee of future returns. · <a href="https://github.com/upendrx/candlerail">Source on GitHub</a></footer>
+</body>
+</html>
