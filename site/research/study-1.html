@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study 1: Intraday Reversals</title>
+<meta name="description" content="Can day-trading candle setups at support and resistance make a daily profit on major crypto coins after fees? 26,000 backtests on 1-minute to 1-hour candles.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%235b5bd6'/%3E%3Cpath d='M10 8v16M16 6v20M22 10v12' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/research.css">
+<script src="vendor/lightweight-charts.js" defer></script>
+<script src="assets/research.js" defer></script>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="./">candlerail <small>Research</small></a>
+  <nav><a class="opt" href="./">Overview</a><a class="on" href="study-1.html">Study 1</a><a href="study-2.html">Study 2</a><a href="study-3.html">Study 3</a><a href="study-4.html">Study 4</a><a class="opt" href="https://github.com/upendrx/candlerail">GitHub</a></nav>
+</div></header>
+
+<div class="hero"><div class="in">
+  <div>
+    <div class="kicker">Study 1 · Day trading</div>
+    <h1>Intraday reversals on major coins</h1>
+    <p class="lede">Can well-known day-trading setups, mostly candle reversals at support and resistance, make a daily profit on BTC, ETH, SOL and XRP once real trading costs are paid?</p>
+    <div class="chips"><span>26,040 backtests</span><span>15 setups, long and short</span><span>1m, 5m, 15m, 30m, 1h</span><span>90 days to 27 Sep 2026</span></div>
+  </div>
+  <div class="verdict">
+    <span class="tag no">Verdict: no</span>
+    <h2>No setup gave a repeatable daily profit.</h2>
+    <p>One variant out of 3,255 passed selection and a held-out month. It then lost money on five other coins and on the three months before.</p>
+    <div class="kpis">
+      <div><b class="down">0</b><span>selected on 1m to 15m candles</span></div>
+      <div><b class="down">1.38R</b><span>median fees a trade on 1-minute candles</span></div>
+      <div><b class="down">−0.06R</b><span>the survivor on five unseen coins</span></div>
+      <div><b class="down">−0.14R</b><span>the survivor on the 90 days before</span></div>
+    </div>
+  </div>
+</div></div>
+
+<main class="page">
+  <nav class="toc" aria-label="On this page"></nav>
+  <article>
+
+  <section id="case">
+    <h2><span class="n">1</span>The case</h2>
+    <p class="big">Short-timeframe reversal setups are the most widely taught form of trading: find a support or resistance level, wait for a candle that shows rejection, and trade the bounce with a tight stop.</p>
+    <p>If these setups carry a real edge, it should show on the most liquid coins, at the timeframes where they are taught, after paying the fees an exchange actually charges. This study sets out to measure that edge, with a stop before a target and a daily loss limit, exactly as a disciplined day trader would run it.</p>
+    <div class="callout key"><b class="t">Hypothesis</b><p>At least one intraday setup averages more than +0.05R a trade after costs, on most of the four coins, in both the period it was chosen on and the month after.</p></div>
+  </section>
+
+  <section id="setups">
+    <h2><span class="n">2</span>What was tested</h2>
+    <p>Fifteen setups, each traded long and short, plus an opening-range breakout as a trend-following reference. The drawings show the long side; the short side mirrors it.</p>
+    <div class="grid3" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+      <div class="tile"><span class="tg mixed">Reversal</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[62,64,50,52],[52,54,38,41],[41,49,40,47],[47,50,43,44],[44,46,32,45]],"lines":[{"y":38,"label":"swing support","color":"var(--accent)"},{"y":30,"label":"stop","color":"var(--down)"},{"y":75,"label":"2R target","color":"var(--up)"}],"marks":[{"i":4,"y":32,"up":true,"label":"buy"}]}'></div><h4>Pin bar at a swing level</h4><p>A hammer whose low holds the latest swing low. The rule that passed round 2.</p></div>
+      <div class="tile"><span class="tg mixed">Reversal</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[64,66,54,56],[56,58,44,46],[46,52,42,50],[50,52,45,47],[47,54,34,52]],"lines":[{"y":42,"label":"swing low","color":"var(--accent)"}],"marks":[{"i":4,"y":34,"up":true,"label":"reclaim"}]}'></div><h4>Liquidity sweep and reclaim</h4><p>Price runs the stops below a swing low, then closes back above it with a long lower wick.</p></div>
+      <div class="tile"><span class="tg mixed">Reversal</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[66,68,56,58],[58,60,46,48],[48,50,40,42],[41,60,39,58]],"lines":[{"y":40,"label":"swing low","color":"var(--accent)"}],"marks":[{"i":3,"y":39,"up":true,"label":"engulfing"}]}'></div><h4>Engulfing at a swing level</h4><p>A rising candle that covers the previous falling one, within half an ATR of the swing low.</p></div>
+      <div class="tile"><span class="tg mixed">Breakout</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[40,70,36,66],[62,65,48,52],[52,84,50,82]],"zones":[{"from":1,"to":1,"label":"inside"}],"marks":[{"i":2,"y":50,"up":true,"label":"1.5× range"}]}'></div><h4>Small candle, then a big breakout</h4><p>An inside bar, then a candle 1.5 times its range closing beyond it.</p></div>
+      <div class="tile"><span class="tg mixed">Mean reversion</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[76,78,68,70],[70,72,60,62],[62,64,52,54],[54,56,44,46],[45,52,38,50]],"lines":[{"y":80,"label":"VWAP","color":"var(--accent2)"},{"y":58,"label":"VWAP − 2 ATR","color":"var(--faint)"}],"marks":[{"i":4,"y":38,"up":true,"label":"reversal"}]}'></div><h4>Reversal far from VWAP</h4><p>Two ATRs below the day's volume-weighted price, then an engulfing or hammer.</p></div>
+      <div class="tile"><span class="tg mixed">Level</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[60,64,50,54,1],[54,58,46,50,1],[50,56,48,55,1],[55,57,52,53],[53,56,42,55]],"lines":[{"y":46,"label":"previous day low","color":"var(--accent)"}],"zones":[{"from":0,"to":2,"label":"yesterday","color":"var(--surface3)"}],"marks":[{"i":4,"y":42,"up":true,"label":"rejection"}]}'></div><h4>Previous hour, 4-hour or day rejection</h4><p>A dip under the previous period's low that closes back above it with a long lower wick.</p></div>
+    </div>
+    <p style="margin-top:18px">The other setups: morning star at a swing level, outside-bar reversal after three closes, Bollinger band pierce and reclaim, engulfing out of an RSI extreme (RSI below 30), pullback to the 20 EMA in a trend, big-small-big candles, change of character (a close above the last swing high in a falling structure) and the opening-range breakout.</p>
+    <h3>Every setup crossed with</h3>
+    <div class="grid3">
+      <div class="tile"><h4>Stop</h4><p>Beyond the signal candle, 1 or 1.5 ATR, 0.3% or 0.6% (round 1); 0.8%, 1.2%, 1.5 or 2 ATR (round 2).</p></div>
+      <div class="tile"><h4>Target</h4><p>1, 1.5 or 2 times the risk. Trades close after 4 hours (round 1) or 8 hours (round 2).</p></div>
+      <div class="tile"><h4>Trend filter</h4><p>None, or only in the direction of the 8-hour EMA.</p></div>
+      <div class="tile"><h4>Risk</h4><p>1% of the account per trade, a 3% daily loss limit, and a one-hour pause after four losses in a row.</p></div>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2><span class="n">3</span>How it was tested</h2>
+    <figure>
+      <p class="ft">Four tests, four sets of data</p>
+      <p class="fs">Variants are chosen on the first 60 days; only the chosen ones are judged on anything else.</p>
+      <div data-fig="method" data-periods='[{"row":"Selection","from":"2026-06-29","to":"2026-08-28","kind":"sel","label":"60 days"},{"row":"Held out","from":"2026-08-28","to":"2026-09-27","kind":"oos","label":"30 days"},{"row":"Five other coins","from":"2026-06-29","to":"2026-09-27","kind":"unseen","label":"BNB, DOGE, ADA, AVAX, LINK"},{"row":"The 90 days before","from":"2026-03-31","to":"2026-06-29","kind":"unseen","label":"same four coins"}]'></div>
+      <figcaption>BTC, ETH, SOL and XRP for selection and the held-out month. <b>Selected</b>: at least +0.05R a trade over the first 60 days, profitable on 3 of 4 coins, and enough trades. <b>Survived</b>: above 0R a trade in the last 30 days, profitable on 3 of 4 coins.</figcaption>
+    </figure>
+    <ul>
+      <li><b>Fills:</b> signal at a candle's close, market order at the next open; the stop fills first when a candle touches both.</li>
+      <li><b>Costs:</b> futures taker 0.05% fee and 0.01% slippage per fill; spot taker 0.1% and 0.02%. Funding is not included.</li>
+      <li><b>Trend tag:</b> each trade is tagged by the coin's change over the 24 hours before it: above +1.5% is an uptrend, below −1.5% a downtrend, else sideways.</li>
+    </ul>
+  </section>
+
+  <section id="round1">
+    <h2><span class="n">4</span>Round 1: 1, 5 and 15-minute candles</h2>
+    <p>465 variants × 4 coins × 3 timeframes × 2 cost levels: <b>11,160 backtests</b>. Of the 1,395 variant-timeframe combinations under futures costs, 7 averaged above zero in the selection period, and <b>none was selected</b>.</p>
+    <figure>
+      <p class="ft">Where the money went: fees as a multiple of the risk</p>
+      <p class="fs">A round trip costs a fixed share of the price. The closer the stop, the larger that share is of what the trade risks.</p>
+      <div data-fig="fees"></div>
+      <figcaption><b>Reading it:</b> a 0.1% stop with a 0.2% target pays 1.2R a round trip on futures and needs to win 73% of the time just to break even. Circles are the median measured in the study for each fixed stop. Before costs, the best setups averaged only +0.1R to +0.3R.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">Every setup on every timeframe</p>
+      <p class="fs">The median variant's average per trade, under futures costs. Switch to the held-out month or to spot costs.</p>
+      <div data-fig="heatmap" data-study="intraday-reversals"></div>
+      <figcaption>Nearly every cell is red on 1-minute candles and most remain red on 15 minutes. Median fees per trade were 1.38R on 1m, 0.50R on 5m and 0.33R on 15m under futures costs; spot costs roughly double them.</figcaption>
+    </figure>
+  </section>
+
+  <section id="round2">
+    <h2><span class="n">5</span>Round 2: wider stops</h2>
+    <p>Informed only by the cost result: stops of 0.8%, 1.2%, 1.5 ATR, 2 ATR or beyond the signal candle, 5 to 60-minute candles, holds of up to 8 hours, and at least 1.5 trades a day across the four coins together. <b>14,880 backtests.</b></p>
+    <figure>
+      <p class="ft">Every variant, before and after</p>
+      <p class="fs">Each dot is one variant on one timeframe under futures costs. Selected variants should sit in the green corner if their edge were real.</p>
+      <div data-fig="scatter" data-study="intraday-reversals-2" data-clip="1"></div>
+      <figcaption>The cloud sits on the left: most variants lost money in the period they could have been chosen on. Selected ones scatter around zero afterwards; only one stayed above it on 3 of 4 coins.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">Setups by median result</p>
+      <p class="fs">The median variant of each setup, before and after, with the selection-period result before costs for comparison.</p>
+      <div data-fig="groups" data-study="intraday-reversals-2" data-by="family" data-gross="1"></div>
+      <figcaption>Removing costs moves most setups to roughly zero, not to a profit. The setups have no meaningful edge to lose to fees in the first place.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">From 26,040 backtests to one survivor, and then none</p>
+      <div data-fig="funnel1"></div>
+    </figure>
+  </section>
+
+  <section id="survivor">
+    <h2><span class="n">6</span>The survivor on real candles</h2>
+    <p>The one variant that passed both stages: <b>pin bar at a swing level</b>, 15-minute candles, 1.2% stop, 2R target, only with the 8-hour trend. +0.24R a trade in the selection period, +0.11R in the held-out month, profitable there on 3 of 4 coins, about 1.9 trades a day across the four.</p>
+    <figure>
+      <p class="ft">BTC, 15 minutes, 27 to 30 August 2026</p>
+      <p class="fs">Candles from Binance, lines and trades from the engine's own backtest of the rule. Arrows are entries; circles are exits, labelled with the result in R.</p>
+      <div data-fig="example" data-example="pin-level"></div>
+      <figcaption>The rule buys hammers that hold the swing support and sells shooting stars under the swing resistance, in the direction of the 8-hour trend. Its trades by trend: +0.59R in uptrends, +0.15R sideways, −0.09R in downtrends.</figcaption>
+    </figure>
+  </section>
+
+  <section id="confirm">
+    <h2><span class="n">7</span>Confirmation on data it never saw</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Test</th><th class="n">Trades</th><th class="n">Average</th><th class="n">Coins profitable</th><th class="n">A day at 1% risk</th></tr></thead>
+      <tbody>
+        <tr><td>Selection period (60 days)</td><td class="n">109</td><td class="n up">+0.24R</td><td class="n">4 of 4</td><td class="n up">+0.47%</td></tr>
+        <tr><td>Held-out month</td><td class="n">66</td><td class="n up">+0.11R</td><td class="n">3 of 4</td><td class="n up">+0.21%</td></tr>
+        <tr class="hl"><td>Five other coins, same 90 days</td><td class="n">225</td><td class="n down">−0.06R</td><td class="n">1 of 5</td><td class="n down">−0.15%</td></tr>
+        <tr class="hl"><td>Same four coins, the 90 days before</td><td class="n">182</td><td class="n down">−0.14R</td><td class="n">1 of 4</td><td class="n down">−0.28%</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout warn"><b class="t">The survivor was luck</b><p>With 1,860 combinations judged on the same month, one passing by chance is expected. It failed both independent tests.</p></div>
+  </section>
+
+  <section id="conclusions">
+    <h2><span class="n">8</span>Conclusions</h2>
+    <ul>
+      <li><b>Don't scalp at taker fees.</b> No candle pattern here had an edge close to what 1- and 5-minute stops pay in fees.</li>
+      <li><b>Candle reversals at support and resistance showed no reliable edge</b> on these coins in these months, even with wide stops and before costs.</li>
+      <li><b>A good backtest isn't evidence until it repeats</b> on data it wasn't chosen on. A study that tests thousands of variants will always find some that look good.</li>
+      <li><b>What follows:</b> fewer, longer trades where costs are a small share of the risk. That is where <a href="study-2.html">Study 2</a> goes.</li>
+    </ul>
+    <h3>Limitations</h3>
+    <p>Ninety days is a short window, and one market regime. Limit orders at the maker fee, which would lower costs, were not tested. The four coins are the largest and most efficient; smaller coins may behave differently.</p>
+  </section>
+
+  <section id="reproduce">
+    <h2><span class="n">9</span>Reproduce</h2>
+<pre>candlerail study research/intraday-reversals.json --digest round1.json
+candlerail study research/intraday-reversals-2.json --digest round2.json
+candlerail study research/confirm-other-coins.json
+candlerail study research/confirm-earlier-period.json
+candlerail backtest research/pin-level-survivor.json --symbol BTCUSDT --interval 15m</pre>
+    <p>The study files list every setup and setting. Candles are downloaded on first use; months of 1-minute data take a few minutes.</p>
+    <div class="prevnext"><a href="./">← Overview</a><a href="study-2.html">Study 2: Swing and trend trading →</a></div>
+  </section>
+
+  </article>
+</main>
+<footer><a href="../">Candlerail</a> Research · Data from Binance's public API · Backtested results are not a guarantee of future returns. · <a href="https://github.com/upendrx/candlerail">Source on GitHub</a></footer>
+</body>
+</html>
