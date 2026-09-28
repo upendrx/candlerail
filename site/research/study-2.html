@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study 2: Swing and Trend</title>
+<meta name="description" content="Which swing and trend-following strategies made money on Binance coins month by month? 7,440 backtests chosen on two years, judged on a falling year and re-tested on the three years before.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%235b5bd6'/%3E%3Cpath d='M10 8v16M16 6v20M22 10v12' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/research.css">
+<script src="vendor/lightweight-charts.js" defer></script>
+<script src="assets/research.js" defer></script>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="./">candlerail <small>Research</small></a>
+  <nav><a class="opt" href="./">Overview</a><a href="study-1.html">Study 1</a><a class="on" href="study-2.html">Study 2</a><a href="study-3.html">Study 3</a><a href="study-4.html">Study 4</a><a class="opt" href="https://github.com/upendrx/candlerail">GitHub</a></nav>
+</div></header>
+
+<div class="hero"><div class="in">
+  <div>
+    <div class="kicker">Study 2 · Swing and trend trading</div>
+    <h1>Monthly profit from swing and trend trading</h1>
+    <p class="lede">For a small account trading most days but judged by the month, which well-known strategies on Binance coins actually made money, and how much?</p>
+    <div class="chips"><span>7,440 backtests</span><span>11 strategies</span><span>10 coins</span><span>1h, 4h, 1d</span><span>Sep 2020 to Sep 2026</span></div>
+  </div>
+  <div class="verdict">
+    <span class="tag yes">Verdict: yes, modestly</span>
+    <h2>Trend following on 4-hour candles held up in three different markets.</h2>
+    <p>The variants that survived a falling year also made money on the three years before, which none of them had seen.</p>
+    <div class="kpis">
+      <div><b class="up">44</b><span>survivors out of 230 selected</span></div>
+      <div><b class="up">44 of 44</b><span>profitable on 2020 to 2023</span></div>
+      <div><b class="up">+2.5%</b><span>average month, futures pick, 73 months</span></div>
+      <div><b class="down">−17.8%</b><span>its largest fall from a peak</span></div>
+    </div>
+  </div>
+</div></div>
+
+<main class="page">
+  <nav class="toc" aria-label="On this page"></nav>
+  <article>
+
+  <section id="case">
+    <h2><span class="n">1</span>The case</h2>
+    <p class="big"><a href="study-1.html">Study 1</a> showed that intraday setups lose to fees. The natural next step is fewer, longer trades, where a round trip costs a small share of what each trade risks.</p>
+    <p>Swing and trend strategies hold for days or weeks. They are old, public and simple, which is a reason for doubt: if they worked, would the edge not be gone? This study tests them the same way as Study 1, on a period long enough to include a rising market, a falling one and a crash.</p>
+    <div class="callout key"><b class="t">Hypothesis</b><p>Some well-known trend or mean-reversion rules average at least +0.05R a trade on most of ten coins, keep a profit in a held-out year, and keep it again on years they never saw.</p></div>
+  </section>
+
+  <section id="strategies">
+    <h2><span class="n">2</span>What was tested</h2>
+    <p>Eleven strategies in three kinds. The drawings show the long side of six of them.</p>
+    <div class="grid3" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+      <div class="tile"><span class="tg yes">Trend</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[60,62,52,54],[54,56,48,50],[50,58,49,57],[57,63,56,62],[62,66,60,65],[65,70,63,69],[69,72,64,66],[66,74,65,73]],"paths":[{"pts":[[0,68],[1,66],[2,66],[3,52],[4,55],[5,58],[6,58],[7,62]],"color":"var(--accent)","label":"SuperTrend"}],"marks":[{"i":3,"y":56,"up":true,"label":"flip up"}]}'></div><h4>SuperTrend flip</h4><p>A trailing line an ATR multiple from price. Long when price closes above it, short when below.</p></div>
+      <div class="tile"><span class="tg yes">Trend</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[50,56,48,54],[54,58,50,52],[52,57,49,55],[55,58,51,53],[53,57,50,56],[56,66,55,65],[65,70,63,68]],"lines":[{"y":58,"label":"20-candle high","color":"var(--accent)"},{"y":48,"label":"10-candle low","color":"var(--faint)"}],"marks":[{"i":5,"y":55,"up":true,"label":"breakout"}]}'></div><h4>Donchian breakout</h4><p>Buy a close above the highest high of 20 (or 55) candles; exit at the lowest low of 10 (or 20).</p></div>
+      <div class="tile"><span class="tg yes">Trend</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[50,53,48,52],[52,54,49,50],[50,53,48,52],[52,55,50,54],[54,63,53,62],[62,66,60,65]],"paths":[{"pts":[[0,58],[1,58],[2,58],[3,59],[4,60],[5,62]],"color":"var(--accent)","label":"upper"},{"pts":[[0,51],[1,51],[2,51],[3,52],[4,53],[5,55]],"color":"var(--faint)","dash":"4 3","label":"20 EMA"}],"marks":[{"i":4,"y":53,"up":true,"label":"close above"}]}'></div><h4>Keltner channel breakout</h4><p>Buy a close above the 20 EMA plus 2 ATR; exit below the middle line. The spot pick.</p></div>
+      <div class="tile"><span class="tg yes">Trend</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[60,61,54,55],[55,56,50,51],[51,54,49,53],[53,58,52,57],[57,62,56,61],[61,66,60,65]],"paths":[{"pts":[[0,60],[1,57],[2,55],[3,55],[4,57],[5,60]],"color":"var(--accent)","label":"fast"},{"pts":[[0,57],[1,56],[2,55.5],[3,55],[4,55],[5,55.5]],"color":"#f59e0b","label":"slow"}],"marks":[{"i":3,"y":52,"up":true,"label":"cross"}]}'></div><h4>Moving average crossover</h4><p>Long while the fast EMA is above the slow one: 10/30, 20/50 or 50/200.</p></div>
+      <div class="tile"><span class="tg mixed">Mean reversion</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[50,55,49,54],[54,59,53,58],[58,59,52,53],[53,54,48,49],[49,55,48,54],[54,60,53,59]],"paths":[{"pts":[[0,44],[1,45],[2,46],[3,47],[4,48],[5,49]],"color":"var(--faint)","dash":"4 3","label":"200 average"}],"marks":[{"i":3,"y":48,"up":true,"label":"RSI(2) < 10"}]}'></div><h4>RSI(2) pullback</h4><p>Above the 200-candle average, buy when the 2-period RSI falls under 10 (or 5); sell on a bounce.</p></div>
+      <div class="tile"><span class="tg mixed">Mean reversion</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[54,56,51,52],[52,53,48,49],[49,50,44,45],[45,50,44,49],[49,54,48,53],[53,55,51,54]],"lines":[{"y":58,"label":"upper band","color":"var(--faint)"},{"y":52,"label":"middle","color":"var(--accent)"},{"y":46,"label":"lower band","color":"var(--faint)"}],"marks":[{"i":3,"y":44,"up":true,"label":"ADX < 20"}]}'></div><h4>Bollinger reversion</h4><p>In quiet markets (ADX under 20), buy under the lower band and sell at the middle.</p></div>
+    </div>
+    <p style="margin-top:18px">Also tested: price crossing its 50, 100 or 200-candle average, the weekly high breakout, a MACD cross with the 200 EMA, an RSI(14) pullback in a trend, and Study 1's pin bar at a swing level with a 2R target.</p>
+    <h3>Every strategy crossed with</h3>
+    <div class="grid3">
+      <div class="tile"><h4>Side</h4><p>Long only (a spot account) or long and short (futures at 1×, no leverage).</p></div>
+      <div class="tile"><h4>Stop</h4><p>2 or 3 ATR from the entry, with or without a 3 ATR trailing stop.</p></div>
+      <div class="tile"><h4>Markets</h4><p>BTC, ETH, SOL, XRP, BNB, DOGE, ADA, AVAX, LINK and LTC on 1h, 4h and 1d candles.</p></div>
+      <div class="tile"><h4>Risk</h4><p>Each coin trades a tenth of the account and risks 2% of that tenth per trade.</p></div>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2><span class="n">3</span>How it was tested</h2>
+    <figure>
+      <p class="ft">Chosen on two years, judged on a falling year, re-tested on three earlier years</p>
+      <p class="fs">The confirmation run uses the 44 survivors exactly as they were, on the same ten coins.</p>
+      <div data-fig="method" data-periods='[{"row":"Selection","from":"2023-09-27","to":"2025-09-27","kind":"sel","label":"choose variants"},{"row":"Held out","from":"2025-09-27","to":"2026-09-27","kind":"oos","label":"holding lost 41%"},{"row":"Never seen","from":"2020-09-27","to":"2023-09-27","kind":"unseen","label":"2021 bull market and 2022 crash"}]'></div>
+      <figcaption><b>Selected:</b> at least +0.05R a trade on the first two years, profitable on at least 6 of 10 coins, and at least 0.3 trades a day across them. <b>Survived:</b> above 0R a trade on the held-out year, profitable on at least 6 coins.</figcaption>
+    </figure>
+    <p>Costs are the same as in Study 1: spot taker 0.1% plus 0.02% slippage, futures taker 0.05% plus 0.01%. Funding payments on futures are not included; <a href="#carry">section 7</a> measures them on their own.</p>
+  </section>
+
+  <section id="results">
+    <h2><span class="n">4</span>Results: 230 selected, 44 survived</h2>
+    <figure>
+      <p class="ft">Every strategy on every timeframe</p>
+      <p class="fs">The median variant's average per trade. Switch between the selection period and the held-out year, and between spot and futures costs.</p>
+      <div data-fig="heatmap" data-study="swing-trend"></div>
+      <figcaption>Trend and breakout rules on 4-hour and daily candles are green in the selection period; mean reversion and the pin bar are red everywhere. In the held-out year, when the market fell, the median 1-hour variant lost money and the median long-and-short variant on daily candles earned most (+0.27R). Of the 44 survivors, 27 trade 4-hour candles and 28 go long and short.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">Every variant, before and after, futures costs</p>
+      <p class="fs">Each dot is one variant on one timeframe.</p>
+      <div data-fig="scatter" data-study="swing-trend" data-cost="1" data-clip="1.5"></div>
+      <figcaption>Unlike Study 1, a cluster of selected variants sits in the green corner: under futures costs 132 were selected and 29 survived (230 and 44 across both cost levels). That alone does not prove an edge; among 372 combinations some would land there by chance. The next test does.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">Strategies by median result, futures costs</p>
+      <div data-fig="groups" data-study="swing-trend" data-by="family" data-cost="1"></div>
+      <figcaption>The trend and breakout families lead before the split and most stay positive after it; mean reversion and the pin bar are negative in both periods. These are medians across all settings and timeframes, so the best settings do better than shown.</figcaption>
+    </figure>
+  </section>
+
+  <section id="confirm">
+    <h2><span class="n">5</span>The survivors on 2020 to 2023</h2>
+    <p>All 44 survivors, unchanged, on the same coins over the three years before the study began: the 2021 bull market and the 2022 crash.</p>
+    <figure>
+      <p class="ft">Held-out year against three unseen years</p>
+      <p class="fs">Each dot is one survivor. Above the line means it made money on data it was never chosen on.</p>
+      <div data-fig="confirm2"></div>
+      <figcaption><b>Every one made money</b>, on 6 to 10 of the 10 coins. Buying and holding made far more in those years (its monthly returns summed to about +438%); the rules earned their place by losing little when the market fell.</figcaption>
+    </figure>
+  </section>
+
+  <section id="picks">
+    <h2><span class="n">6</span>The two picks</h2>
+    <p>Among variants positive in all three periods and at most 18 months below a previous peak, the best ratio of average month to largest fall, one for each kind of account.</p>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Futures, long and short</th><th>Spot, long only</th></tr></thead>
+      <tbody>
+        <tr><td>Rule, on 4-hour candles</td><td>SuperTrend (10, 3) flips: long when it turns up, short when it turns down; 2 ATR stop</td><td>Close above the upper Keltner channel (20 EMA + 2 × ATR 10); exit below the middle line; 3 ATR stop</td></tr>
+        <tr><td>Average month, 73 months</td><td class="up">+2.5%</td><td class="up">+1.2%</td></tr>
+        <tr><td>Months that made money</td><td>40 of 73</td><td>35 of 73</td></tr>
+        <tr><td>Worst month</td><td class="down">−9.1%</td><td class="down">−4.0%</td></tr>
+        <tr><td>Largest fall from a peak</td><td class="down">−17.8%</td><td class="down">−14.4%</td></tr>
+        <tr><td>Longest below a peak</td><td>13 months</td><td>10 months</td></tr>
+        <tr><td>Trades a month, 10 coins</td><td>about 28</td><td>about 20</td></tr>
+      </tbody>
+    </table></div>
+    <figure>
+      <p class="ft">The futures pick, month by month, 2020 to 2026</p>
+      <p class="fs">The three unseen years, the two selection years, then the held-out year, against buying and holding the same ten coins.</p>
+      <div data-fig="months" data-study="swing-trend" data-confirm="swing-trend-confirm" data-family="supertrend" data-interval="4h" data-cost="1" data-params='{"mult":"3","side":"long and short","stop":"2 ATR","trail":"none"}' data-split-label="held-out year →"></div>
+      <figcaption>The rule gives back less in falling markets than holding does, and makes most of its money in a few strong trending months. In the 2022 crash and the held-out year its short side kept it near flat or up.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">The futures pick on real candles: ETH, 4 hours, June to October 2025</p>
+      <p class="fs">The engine's own backtest. The line is SuperTrend; arrows are entries, circles are exits labelled in R.</p>
+      <div data-fig="example" data-example="supertrend"></div>
+      <figcaption><b>A losing window, shown on purpose:</b> 13 trades, 4 winners, about −5.5R in total on ETH. Trend rules lose small and often in choppy stretches like June and September, and earn in long trends like July and August. The monthly chart above shows how such stretches add up across ten coins.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">The spot pick, month by month</p>
+      <p class="fs">Keltner channel breakout, long only, 4 hours, spot costs.</p>
+      <div data-fig="months" data-study="swing-trend" data-confirm="swing-trend-confirm" data-family="keltner-break" data-interval="4h" data-cost="0" data-params='{"side":"long only","stop":"3 ATR","trail":"none"}' data-split-label="held-out year →"></div>
+    </figure>
+    <div class="callout"><b class="t">In account terms</b><p>On a $500 account the futures pick's average month is about $12, and its worst month about −$45. Returns and losses scale roughly with the risk per trade.</p></div>
+  </section>
+
+  <section id="carry">
+    <h2><span class="n">7</span>Funding-rate carry</h2>
+    <p>A different kind of return: buy spot and short the same amount of the perpetual future, half the account in each leg. Price moves cancel; the short collects the funding that long traders pay every eight hours. Fees and slippage are charged on both legs.</p>
+    <div class="grid2">
+      <figure style="margin:0"><p class="ft">Sep 2023 to Sep 2026</p><div data-fig="carry" data-carry="carry-recent"></div></figure>
+      <figure style="margin:0"><p class="ft">Sep 2020 to Sep 2023</p><div data-fig="carry" data-carry="carry-earlier"></div></figure>
+    </div>
+    <p style="margin-top:18px">Steady but small: about +3% a year recently and +6% to +7% in 2020 to 2023, when leveraged longs paid more to borrow. Holding only while the 7-day funding rate was positive did not help recently. Funding history comes from Binance's public futures API.</p>
+  </section>
+
+  <section id="conclusions">
+    <h2><span class="n">8</span>Conclusions</h2>
+    <ul>
+      <li><b>Trend following on 4-hour candles is the one family that held up</b> across a bull market, a crash and a falling year, on data it wasn't chosen on.</li>
+      <li><b>The edge is modest and lumpy:</b> about +2.5% a month on average, with long flat stretches and months of −9%.</li>
+      <li><b>Long and short beat long only</b> in the falling year; on spot, the Keltner breakout lost the least.</li>
+      <li><b>Carry is steady but small</b>, a few percent a year: a place to park money, not a way to grow it.</li>
+    </ul>
+    <h3>Limitations</h3>
+    <p>The ten coins are ones that still trade today; coins that collapsed (LUNA, FTT) aren't included, which flatters every strategy, buying and holding included. <a href="study-3.html">Study 3</a> and <a href="study-4.html">Study 4</a> add dead coins. Futures funding costs are not included in the directional backtests.</p>
+  </section>
+
+  <section id="reproduce">
+    <h2><span class="n">9</span>Reproduce</h2>
+<pre>candlerail study research/swing-trend.json --digest swing-trend.json
+candlerail study research/swing-trend-confirm.json --digest swing-trend-confirm.json
+candlerail backtest research/supertrend-pick.json --symbol ETHUSDT --interval 4h
+candlerail carry --days 1095 -o carry.json
+candlerail carry --days 1095 --offset-days 1095</pre>
+    <div class="prevnext"><a href="study-1.html">← Study 1: Intraday reversals</a><a href="study-3.html">Study 3: How quants scale up →</a></div>
+  </section>
+
+  </article>
+</main>
+<footer><a href="../">Candlerail</a> Research · Data from Binance's public API · Backtested results are not a guarantee of future returns. · <a href="https://github.com/upendrx/candlerail">Source on GitHub</a></footer>
+</body>
+</html>
