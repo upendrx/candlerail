@@ -36,6 +36,11 @@ All notable changes are recorded here. The format follows
 - Study 3: those four studies, how position size changes returns and
   drawdowns (with simulated years), and combining the trend rule with coin
   rotation, with `GET /api/quant/{id}`.
+- A published research site (`site/research/`, deployed with the quick-start
+  page): an overview and one illustrated case study per study, with pattern
+  diagrams, every variant before and after selection, monthly results and
+  real trades on real candles, all drawn from `research/results/`.
+  `scripts/research_examples.py` regenerates the real-trade examples.
 - Numbered research pages (`research/index.json`, `GET /api/research`,
   `GET /api/carry/{id}`); studies record monthly portfolio results and a
   buy-and-hold benchmark, grid values can hold placeholders, and families

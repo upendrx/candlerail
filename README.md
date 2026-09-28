@@ -67,14 +67,15 @@ candlerail understands, and you read the summary before anything runs.
 - **Sharing:** export a strategy with its real result; anyone can re-run it
   to check. [Sharing](docs/sharing.md).
 - **Research studies:** test hundreds of variants of a setup across coins and
-  timeframes, chosen on one period and judged on another.
-  [Two recorded studies](docs/research.md): 15 intraday setups (none gave
-  a repeatable profit after fees) and 11 swing and trend strategies on ten
-  coins over six years (4-hour trend following held up in three different
-  markets), plus the funding-rate carry trade, and a third on coin rotation,
-  sentiment, time of day, pairs and combining strategies, and a fourth on
-  weekly patterns with a BTC filter, market-open intraday trades and early
-  entries, replayed through one account.
+  timeframes, chosen on one period and judged on another. Four recorded
+  studies are published at
+  [upendrx.github.io/candlerail/research](https://upendrx.github.io/candlerail/research/)
+  with their charts and real trades: day-trading setups (none gave a
+  repeatable profit after fees), swing and trend trading (4-hour trend
+  following held up in three different markets), portfolios and signals
+  (coin rotation, sentiment, time of day, pairs, combining strategies), and
+  weekly candle patterns with a BTC filter, replayed through one account.
+  Method and numbers: [docs/research.md](docs/research.md).
 
 ## Honest backtests
 

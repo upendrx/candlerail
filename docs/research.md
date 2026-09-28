@@ -6,6 +6,13 @@ rule fixed in advance, and then checks them on data they never saw. The
 app's **Research** tab shows every study with the same numbering and an
 explorer for every variant.
 
+The studies are also published as illustrated case studies, with every
+figure drawn from the result files in [`research/results/`](../research/results):
+[upendrx.github.io/candlerail/research](https://upendrx.github.io/candlerail/research/).
+The pages live in [`site/research/`](../site/research), and
+`python3 scripts/research_examples.py` regenerates the real-trade examples
+they show.
+
 ![The Research tab](images/research.png)
 
 | Page | Question or test | Result |
