@@ -15,12 +15,12 @@ explorer for every variant.
 | 1.2 | Round 2: wider stops | 10 selected, 1 survived the held-out month |
 | 1.3 | Survivor on five other coins | −0.06R a trade |
 | 1.4 | Survivor on the 90 days before | −0.14R a trade |
-| **2** | Monthly profit from swing and trend trading with $500 to $1,000 | **Trend following on 4h held up in three different markets** |
+| **2** | Monthly profit from swing and trend trading on a small account | **Trend following on 4h held up in three different markets** |
 | 2.1 | 11 strategies, 10 coins, 1h/4h/1d, 3 years | 230 selected, 44 survived a year when holding lost 41% |
 | 2.2 | The survivors on 2020 to 2023 | All 44 made money on data they never saw |
 | 2.3 | Funding-rate carry | About 3% a year recently, 6% to 7% in 2020 to 2023 |
 | 2.4 | How traders use AI, for free | Search and honest testing, not predictions |
-| **3** | How quants scale up, and what a lone trader with a bot can use | **Trend plus coin rotation: about +4% a month, largest fall about 20%** |
+| **3** | How quants scale up, and what a single account can use | **Trend plus coin rotation: about +4% a month, largest fall about 20%** |
 | 3.1 | How much to risk | Returns and drawdowns scale together |
 | 3.2 | Coin rotation across 43 coins | 204 of 540 selected, 138 survived |
 | 3.3 | Fear & Greed sentiment | Survivors are mostly the trend filter |
@@ -148,7 +148,7 @@ The survivor was luck.
 
 # Study 2: monthly profit from swing and trend trading
 
-With $500 to $1,000, trading most days but judged by the month, which
+For a small account of $500 to $1,000, trading most days but judged by the month, which
 strategies on Binance coins actually made money, and how much?
 
 **Short answer: trend following on 4-hour candles did, modestly.** The
@@ -236,7 +236,7 @@ it.
 Where do the big algorithmic profits come from, which other signals help,
 and what can one account running a bot realistically do?
 
-Most large daily profits in crypto come from businesses a lone trader can't
+Most large daily profits in crypto come from businesses a single trader can't
 copy: market making with fee rebates, speed arbitrage between exchanges,
 and funding and basis trades run with millions at the lowest fee tiers.
 What one account can use is the professional method: several uncorrelated

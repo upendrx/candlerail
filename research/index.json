@@ -46,14 +46,14 @@
     {
       "number": "2",
       "title": "Monthly profit from swing and trend trading",
-      "question": "With $500 to $1,000, trading most days but judged by the month, which strategies on Binance coins actually made money, and how much?",
+      "question": "For a small account of $500 to $1,000, trading most days but judged by the month, which strategies on Binance coins actually made money, and how much?",
       "answer": "Trend following on 4-hour candles did. Chosen on 2023 to 2025, the survivors made money in the year to September 2026 while buying and holding the same coins lost 41%, and every one of them also made money, unchanged, on 2020 to 2023. The best rule for a futures account averaged about +2.5% of the account a month, with 40 of 73 months profitable and a largest fall of about 18%. Long-only rules on spot earned less and waited longer to recover. Losing months are common, buying and holding beat every rule in the bull years, and the funding-rate carry trade earned a steadier 3% a year recently.",
       "verdict": "yes",
       "pages": [
         {
           "number": "2.0",
           "kind": "plan",
-          "title": "Summary and a plan for $500",
+          "title": "Summary and a plan for a small account",
           "result": "SuperTrend on 4h, long and short: about +2.5% a month"
         },
         {
@@ -91,8 +91,8 @@
     {
       "number": "3",
       "title": "Beyond one strategy: how quants scale up",
-      "question": "How do algorithmic traders make much more, which other instruments or signals help, and what can a lone trader running a bot on Binance realistically do?",
-      "answer": "Most of the big daily profits in crypto come from businesses a lone trader can't copy: market making with fee rebates, speed arbitrage between exchanges, and funding and basis trades run with millions and the lowest fee tiers. What a single account can use is the professional method: several uncorrelated edges, sized together. Of the new ideas tested on six years of data, rotating into the five strongest of 43 coins each week (only while BTC is above its 100-day average) held up out of sample; sentiment added little beyond a trend filter; time-of-day and pairs trading didn't survive costs. Combining the Study 2 trend rule with coin rotation roughly doubled the average month at a similar worst fall, about +4% a month with a largest fall of about 20% over six years, and about +3% a month in the two held-out years. That is still a risky strategy with long flat and losing stretches, not a daily income.",
+      "question": "How do algorithmic traders make much more, which other instruments or signals help, and what can a single account running an automated strategy on Binance realistically do?",
+      "answer": "Most of the big daily profits in crypto come from businesses a single trader can't copy: market making with fee rebates, speed arbitrage between exchanges, and funding and basis trades run with millions and the lowest fee tiers. What a single account can use is the professional method: several uncorrelated edges, sized together. Of the new ideas tested on six years of data, rotating into the five strongest of 43 coins each week (only while BTC is above its 100-day average) held up out of sample; sentiment added little beyond a trend filter; time-of-day and pairs trading didn't survive costs. Combining the Study 2 trend rule with coin rotation roughly doubled the average month at a similar worst fall, about +4% a month with a largest fall of about 20% over six years, and about +3% a month in the two held-out years. That is still a risky strategy with long flat and losing stretches, not a daily income.",
       "verdict": "yes",
       "pages": [
         {
