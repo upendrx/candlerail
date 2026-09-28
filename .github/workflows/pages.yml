@@ -3,7 +3,7 @@ name: Site
 on:
   push:
     branches: [main]
-    paths: ["site/**", "docs/images/**", ".github/workflows/pages.yml"]
+    paths: ["site/**", "docs/images/**", "research/**", "ui/vendor/**", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -25,9 +25,12 @@ jobs:
       - uses: actions/checkout@v5
       - name: Assemble
         run: |
-          mkdir -p _site/images
+          mkdir -p _site/images _site/research/data _site/research/vendor
           cp site/index.html _site/
           cp docs/images/*.png _site/images/
+          cp -R site/research/. _site/research/
+          cp research/results/*.json research/index.json research/examples.json _site/research/data/
+          cp ui/vendor/lightweight-charts.js _site/research/vendor/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
