@@ -615,6 +615,110 @@ FIG.walk = async el => {
   el.innerHTML = `<ol class="walk">${steps.map(([h, t]) => `<li><b>${esc(h)}</b><span>${t}</span></li>`).join("")}</ol>`;
 };
 
+/* ---------- real examples, one click each ---------- */
+const REASON = { stop_loss: "stop hit", take_profit: "target hit", max_bars: "time limit reached", exit_rule: "exit signal", end_of_data: "still open when the data ended" };
+const tf = { "15m": "15-minute", "4h": "4-hour", "1d": "daily" };
+const ptxt = v => v == null ? "–" : Math.abs(v) >= 100 ? fmt(v, 2) : Math.abs(v) >= 1 ? fmt(v, 4) : fmt(v, 6);
+const when = (ts, iv) => iv === "1d" ? day(ts) : new Date(ts).toISOString().slice(0, 16).replace("T", " ") + " UTC";
+FIG.cases = async el => {
+  const d = await load(el.dataset.cases);
+  const groups = d.groups || [d];
+  el.innerHTML = `<div class="callout"><b class="t">How to check any example on Binance</b><ol class="howto">
+      <li>Open the pair from the example's link (or search it on Binance or TradingView).</li>
+      <li>Pick the same timeframe: ${[...new Set(groups.map(g => tf[g.interval] || g.interval))].join(", ")}.</li>
+      <li>Set the chart's time zone to <b>UTC</b> (on Binance, click the time zone at the bottom right of the chart). All times here are UTC.</li>
+      <li>Scroll to the date and find the highlighted candle. Its open, high, low and close are listed so you can match it exactly.</li></ol></div>` +
+    groups.map((g, gi) => {
+      const won = g.cases.filter(c => (c.trade ? c.trade.r : c.week_avg) > 0).length;
+      return `<h3>${esc(g.rule)}</h3><p class="fs" style="font-size:14px">${g.cases.length} of ${g.total.toLocaleString()} ${g.cases[0].trade ? "trades" : "rebalances"}, ${esc(g.period)}, spread evenly in date order and not picked by result: ${won} made money, ${g.cases.length - won} didn't.</p>
+        <div class="cases">${g.cases.map((c, ci) => c.trade ? caseRow(c, gi, ci) : rotRow(c, gi, ci)).join("")}</div>`;
+    }).join("");
+  $$("details.case", el).forEach(det => det.addEventListener("toggle", () => {
+    if (!det.open || det.dataset.done) return;
+    det.dataset.done = 1;
+    const c = groups[+det.dataset.g].cases[+det.dataset.c];
+    c.trade ? caseBody(det.querySelector(".cb"), c) : rotBody(det.querySelector(".cb"), c);
+  }));
+};
+function caseRow(c, gi, ci) {
+  const t = c.trade;
+  return `<details class="case" data-g="${gi}" data-c="${ci}"><summary>
+    <span class="cn">${c.n}</span><span class="cs"><b>${esc(c.binance.pair)}</b> · ${esc(c.interval)}</span>
+    <span class="ct">${esc(when(c.signal_ts, c.interval))}</span><span class="cside ${t.side}">${t.side === "long" ? "long" : "short"}</span>
+    <span class="cr ${cls(t.r)}">${rf(t.r)} <small>${esc(REASON[t.reason] || t.reason)}</small></span></summary><div class="cb"></div></details>`;
+}
+function caseBody(el, c) {
+  const t = c.trade, s = c.signal;
+  el.innerHTML = `${c.weekly ? `<p class="ft" style="margin:14px 0 2px;font-size:14px">1. The weekly chart: the pattern</p><div class="wk"></div><p class="ft" style="margin:12px 0 4px;font-size:14px">2. The daily chart: the trigger, the trade and its exit</p>` : ""}
+    <div class="chart big"></div>
+    <div class="legend"><span><i style="background:#f59e0b"></i>the signal candle</span>${c.lines.map(l => `<span><i style="background:${lineColor(l.color)}"></i>${esc(l.label)}</span>`).join("")}<span><i style="background:none;border-top:2px dashed var(--ink2);height:0;border-radius:0"></i>entry</span><span><i style="background:none;border-top:2px dashed var(--down);height:0;border-radius:0"></i>stop</span>${t.target ? `<span><i style="background:none;border-top:2px dashed var(--up);height:0;border-radius:0"></i>target</span>` : ""}<span>Drag or scroll the chart to see more.</span></div>
+    <div class="cinfo">
+      <div><h4>${esc(c.setup)}</h4>
+        <p class="fs" style="margin:0 0 8px">Why the rule took this trade. Every check was recomputed from the candles:</p>
+        <ul class="checks">${c.checks.map(x => `<li class="${x.ok ? "ok" : "no"}">${esc(x.text)}</li>`).join("")}</ul></div>
+      <div><table class="mini"><tbody>
+        <tr><td>Signal candle</td><td>${esc(when(c.signal_ts, c.interval))}<br><span class="fs">Open ${ptxt(s[0])} · High ${ptxt(s[1])} · Low ${ptxt(s[2])} · Close ${ptxt(s[3])}</span></td></tr>
+        <tr><td>Entry</td><td>${ptxt(t.entry)}: the next candle's open (${esc(when(t.entry_ts, c.interval))}) plus slippage</td></tr>
+        <tr><td>Stop</td><td>${ptxt(t.stop)}</td></tr>${t.target ? `<tr><td>Target</td><td>${ptxt(t.target)} (2R)</td></tr>` : ""}
+        <tr><td>Exit</td><td>${ptxt(t.exit)} on ${esc(when(t.exit_ts, c.interval))}: ${esc(REASON[t.reason] || t.reason)}</td></tr>
+        <tr><td>Result</td><td class="${cls(t.r)}"><b>${rf(t.r)}</b> after fees</td></tr></tbody></table>
+        <p class="fs" style="margin:12px 0 6px"><b>Check it yourself.</b> ${esc(c.how)}</p>
+        <p class="links"><a href="${c.binance.url}" target="_blank" rel="noopener">Open on Binance ↗</a><a href="${c.binance.tradingview}" target="_blank" rel="noopener">Open on TradingView ↗</a></p></div>
+    </div>`;
+  if (c.weekly) {
+    const wk = c.weekly, pi = c.pattern_weeks.map(p => wk.findIndex(w => w[0] === p));
+    el.querySelector(".wk").innerHTML = candles(wk.map(w => [w[1], w[2], w[3], w[4]]), { w: 640, h: 170, x0: 6, zones: [{ from: pi[0], to: pi[0], color: "var(--down-soft)" }, { from: pi[1], to: pi[1], color: "var(--up-soft)" }], marks: [{ i: pi[0], y: wk[pi[0]][2], up: false, label: "falling week", color: "var(--down)" }, { i: pi[1], y: wk[pi[1]][2], up: false, label: "engulfing week", color: "var(--up)" }], labels: wk.map(w => day(w[0]).slice(5)), label: "Weekly candles" });
+  }
+  if (!window.LightweightCharts) return;
+  const box = el.querySelector(".chart");
+  const chart = LightweightCharts.createChart(box, { autoSize: true, layout: { background: { color: css("--surface") }, textColor: css("--muted"), fontFamily: "Inter, sans-serif", fontSize: 11 },
+    grid: { vertLines: { visible: false }, horzLines: { color: css("--line") } }, rightPriceScale: { borderVisible: false }, timeScale: { borderVisible: false, timeVisible: c.interval !== "1d", secondsVisible: false }, localization: { timeFormatter: x => when(x * 1000, c.interval) } });
+  const T = x => Math.floor(x / 1000), hl = "#f59e0b";
+  const ser = chart.addCandlestickSeries({ upColor: css("--up"), downColor: css("--down"), wickUpColor: css("--up"), wickDownColor: css("--down"), borderVisible: false, priceFormat: { type: "price", precision: Math.abs(s[3]) >= 100 ? 2 : Math.abs(s[3]) >= 1 ? 4 : 6, minMove: Math.abs(s[3]) >= 100 ? 0.01 : Math.abs(s[3]) >= 1 ? 0.0001 : 0.000001 } });
+  ser.setData(c.candles.map(k => k[0] === c.signal_ts ? { time: T(k[0]), open: k[1], high: k[2], low: k[3], close: k[4], color: hl, wickColor: hl, borderColor: hl } : { time: T(k[0]), open: k[1], high: k[2], low: k[3], close: k[4] }));
+  for (const l of c.lines) { const ls = chart.addLineSeries({ color: lineColor(l.color), lineWidth: 2, lineType: /swing/.test(l.label) ? 1 : 0, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false }); ls.setData(c.candles.map((k, i) => l.values[i] == null ? { time: T(k[0]) } : { time: T(k[0]), value: l.values[i] })); }
+  const pl = (price, color, title) => price != null && ser.createPriceLine({ price, color, lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title });
+  pl(t.entry, css("--ink2"), "entry"); pl(t.stop, css("--down"), "stop"); pl(t.target, css("--up"), "target");
+  const long = t.side === "long", inWin = x => x >= c.candles[0][0] && x <= c.candles[c.candles.length - 1][0];
+  const marks = (c.marks || []).filter(m => inWin(m.ts) && m.kind !== "confirm").map(m => m.kind === "week"
+    ? { time: T(m.ts), position: "aboveBar", color: m.text.startsWith("falling") ? css("--down") : css("--up"), shape: "square", text: m.text + " starts" }
+    : { time: T(m.ts), position: long ? "belowBar" : "aboveBar", color: m.kind === "signal" ? hl : css("--accent"), shape: m.kind === "signal" ? (long ? "arrowUp" : "arrowDown") : "circle", text: m.text });
+  if (inWin(t.exit_ts)) marks.push({ time: T(t.exit_ts), position: long ? "aboveBar" : "belowBar", color: t.r >= 0 ? css("--up") : css("--down"), shape: "circle", text: "exit " + rf(t.r) });
+  const seen = new Set(); ser.setMarkers(marks.sort((a, b) => a.time - b.time).filter(m => { const k = m.time + m.text; if (seen.has(k)) return false; seen.add(k); return true; }));
+  // Frame the setup: from a little before the first marked candle to just after the exit.
+  const idx = ts => c.candles.findIndex(k => k[0] >= ts);
+  const first = Math.min(...(c.marks || []).filter(m => inWin(m.ts)).map(m => idx(m.ts)), idx(c.signal_ts));
+  const last = inWin(t.exit_ts) ? idx(t.exit_ts) : c.candles.length - 1;
+  chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, first - 12), to: Math.min(c.candles.length - 1, last + 6) });
+}
+const lineColor = k => ({ up: css("--up"), down: css("--down"), amber: "#f59e0b", accent: css("--accent"), faint: css("--faint") }[k] || css("--accent"));
+function rotRow(c, gi, ci) {
+  return `<details class="case" data-g="${gi}" data-c="${ci}"><summary>
+    <span class="cn">${c.n}</span><span class="cs"><b>${esc(c.date)}</b> · weekly rebalance</span>
+    <span class="ct">${c.filter_on ? `held ${c.held.map(x => x.replace("USDT", "")).join(", ")}` : "BTC below its 100-day average: in cash"}</span><span class="cside">${c.filter_on ? "5 coins" : "cash"}</span>
+    <span class="cr ${cls(c.week_avg)}">${pct(c.week_avg)} <small>next 7 days</small></span></summary><div class="cb"></div></details>`;
+}
+function rotBody(el, c) {
+  el.innerHTML = `<p class="ft" style="margin:14px 0 2px;font-size:14px">1. The filter: bitcoin against its 100-day average</p><div class="chart small"></div><div class="legend"><span><i style="background:${css("--accent")}"></i>BTC daily close</span><span><i style="background:#f59e0b"></i>100-day average</span><span>The dot marks ${esc(c.date)}.</span></div>
+    <div class="cinfo"><div><h4>${c.filter_on ? "BTC was above its 100-day average: hold the top 5" : "BTC was below its 100-day average: hold nothing"}</h4>
+      <ul class="checks"><li class="ok">On ${esc(c.date)} BTC closed at ${ptxt(c.btc.close)}; its 100-day average was ${ptxt(c.btc.sma100)}. ${c.filter_on ? "Above it, so the rule buys." : "Below it, so the account stays in cash for the week."}</li>
+      <li class="ok">Each coin's 30-day return is its close on ${esc(c.date)} divided by its close on ${esc(c.from_date)}, minus 1. The ten strongest are listed.</li></ul>
+      </div><div><p class="fs" style="margin:0">In the next 7 days, to ${esc(c.next)}: the held coins averaged <b class="${cls(c.week_avg)}">${pct(c.week_avg)}</b>; BTC moved ${pct(c.btc_week)}.</p></div></div>
+    <p class="ft" style="margin:16px 0 2px;font-size:14px">2. The ranking on ${esc(c.date)}</p>
+    <div class="tw" style="margin-top:6px"><table><thead><tr><th>Rank</th><th>Coin</th><th class="n">Close ${esc(c.from_date)}</th><th class="n">Close ${esc(c.date)}</th><th class="n">30-day return</th><th class="n">Held</th><th class="n">Next 7 days</th></tr></thead><tbody>
+      ${c.ranking.map((r, i) => `<tr${r.held ? ` class="hl"` : ""}><td>${i + 1}</td><td>${esc(r.symbol.replace("USDT", "/USDT"))}</td><td class="n">${ptxt(r.then)}</td><td class="n">${ptxt(r.now)}</td><td class="n ${cls(r.ret30)}">${pct(r.ret30)}</td><td class="n">${r.held ? "yes" : "–"}</td><td class="n ${cls(r.week)}">${pct(r.week)}</td></tr>`).join("")}</tbody></table></div>
+    <p class="fs" style="margin:10px 0 0"><b>Check it yourself.</b> On Binance, open each coin's 1D chart with the time zone set to UTC and read the closing price on the two dates. For the filter, open BTC/USDT on 1D and add a 100-day simple moving average.</p>`;
+  if (!window.LightweightCharts) return;
+  const chart = LightweightCharts.createChart(el.querySelector(".chart"), { autoSize: true, layout: { background: { color: css("--surface") }, textColor: css("--muted"), fontFamily: "Inter, sans-serif", fontSize: 11 }, grid: { vertLines: { visible: false }, horzLines: { color: css("--line") } }, rightPriceScale: { borderVisible: false }, timeScale: { borderVisible: false } });
+  const T = x => Math.floor(x / 1000);
+  const a = chart.addLineSeries({ color: css("--accent"), lineWidth: 2, priceLineVisible: false, lastValueVisible: false });
+  a.setData(c.btc_chart.map(k => ({ time: T(k[0]), value: k[1] })));
+  chart.addLineSeries({ color: "#f59e0b", lineWidth: 2, priceLineVisible: false, lastValueVisible: false }).setData(c.btc_chart.map(k => ({ time: T(k[0]), value: k[2] })));
+  const t0 = c.btc_chart.find(k => day(k[0]) === c.date);
+  if (t0) a.setMarkers([{ time: T(t0[0]), position: "inBar", color: c.filter_on ? css("--up") : css("--down"), shape: "circle", text: c.date }]);
+  chart.timeScale().fitContent();
+}
+
 /* ---------- page chrome ---------- */
 function toc() {
   const toc = document.querySelector(".toc"); if (!toc) return;
