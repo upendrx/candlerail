@@ -1,0 +1,46 @@
+{
+  "name": "Keltner channel breakout (side long only, stop 3 ATR, trail none)",
+  "market": {
+    "interval": "4h"
+  },
+  "indicators": {
+    "atr": {
+      "period": 14,
+      "type": "atr"
+    },
+    "kc": {
+      "atr_period": 10,
+      "multiplier": 2,
+      "period": 20,
+      "type": "keltner"
+    }
+  },
+  "entry": {
+    "long": {
+      "left": "close",
+      "op": "crosses_above",
+      "right": "kc.upper"
+    }
+  },
+  "exit": {
+    "long": {
+      "left": "close",
+      "op": "<",
+      "right": "kc.middle"
+    },
+    "stop_loss": {
+      "atr": 3.0,
+      "indicator": "atr"
+    }
+  },
+  "sizing": {
+    "type": "risk_percent",
+    "value": 2.0
+  },
+  "leverage": 1.0,
+  "costs": {
+    "fee_bps": 10.0,
+    "slippage_bps": 2.0,
+    "maintenance_margin_percent": 0.5
+  }
+}
