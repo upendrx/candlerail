@@ -1,0 +1,128 @@
+{
+ "generated": "2026-09-29",
+ "intraday": {
+  "symbols": [
+   "BTCUSDT",
+   "ETHUSDT",
+   "SOLUSDT",
+   "XRPUSDT"
+  ],
+  "interval": "15m",
+  "from": "2026-06-29",
+  "to": "2026-09-27",
+  "costs": "futures taker",
+  "steps": [
+   {
+    "label": "The candle anywhere",
+    "detail": "A hammer or shooting star, wherever it forms.",
+    "trades": 1113,
+    "wins": 433,
+    "avg_r": -0.106,
+    "sum_r": -118.36
+   },
+   {
+    "label": "At a swing level",
+    "detail": "Its wick touches the latest swing low (or high) within 0.3 ATR and it closes back beyond the level.",
+    "trades": 613,
+    "wins": 260,
+    "avg_r": -0.082,
+    "sum_r": -50.34
+   },
+   {
+    "label": "At a level, with the trend",
+    "detail": "Also only in the direction of the 8-hour EMA: longs above it, shorts below.",
+    "trades": 176,
+    "wins": 92,
+    "avg_r": 0.181,
+    "sum_r": 31.87
+   }
+  ]
+ },
+ "weekly": {
+  "coins": 43,
+  "costs": "spot taker",
+  "rows": [
+   {
+    "entry": "at the week's open",
+    "btc": "none",
+    "trades": 939,
+    "wins": 350,
+    "avg_r": 0.613,
+    "after_trades": 351,
+    "after_avg_r": 0.46
+   },
+   {
+    "entry": "daily close above the previous day's high",
+    "btc": "none",
+    "trades": 807,
+    "wins": 312,
+    "avg_r": 0.725,
+    "after_trades": 281,
+    "after_avg_r": 0.802
+   },
+   {
+    "entry": "pullback to mid-week, then a green day",
+    "btc": "none",
+    "trades": 361,
+    "wins": 124,
+    "avg_r": 0.377,
+    "after_trades": 146,
+    "after_avg_r": 0.228
+   },
+   {
+    "entry": "at the week's open",
+    "btc": "BTC above its 50-day average",
+    "trades": 673,
+    "wins": 287,
+    "avg_r": 0.992,
+    "after_trades": 276,
+    "after_avg_r": 0.626
+   },
+   {
+    "entry": "daily close above the previous day's high",
+    "btc": "BTC above its 50-day average",
+    "trades": 640,
+    "wins": 288,
+    "avg_r": 1.089,
+    "after_trades": 224,
+    "after_avg_r": 1.253
+   },
+   {
+    "entry": "pullback to mid-week, then a green day",
+    "btc": "BTC above its 50-day average",
+    "trades": 252,
+    "wins": 108,
+    "avg_r": 0.819,
+    "after_trades": 99,
+    "after_avg_r": 0.731
+   },
+   {
+    "entry": "at the week's open",
+    "btc": "BTC above its 20-week average",
+    "trades": 599,
+    "wins": 235,
+    "avg_r": 0.841,
+    "after_trades": 248,
+    "after_avg_r": 0.738
+   },
+   {
+    "entry": "daily close above the previous day's high",
+    "btc": "BTC above its 20-week average",
+    "trades": 562,
+    "wins": 249,
+    "avg_r": 1.037,
+    "after_trades": 207,
+    "after_avg_r": 1.196
+   },
+   {
+    "entry": "pullback to mid-week, then a green day",
+    "btc": "BTC above its 20-week average",
+    "trades": 242,
+    "wins": 84,
+    "avg_r": 0.512,
+    "after_trades": 98,
+    "after_avg_r": 0.503
+   }
+  ]
+ }
+}
