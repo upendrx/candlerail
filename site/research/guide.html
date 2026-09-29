@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reading the Research</title>
+<meta name="description" content="A plain-language guide to the research: how to read a candle, what R means, why a candle pattern only counts in the right place on the chart, how the studies filter for that place, and a real trade step by step.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%235b5bd6'/%3E%3Cpath d='M10 8v16M16 6v20M22 10v12' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/research.css">
+<script src="vendor/lightweight-charts.js" defer></script>
+<script src="assets/research.js" defer></script>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="./">candlerail <small>Research</small></a>
+  <nav><a class="opt" href="./">Overview</a><a class="on" href="guide.html">Guide</a><a href="study-1.html">Study 1</a><a href="study-2.html">Study 2</a><a href="study-3.html">Study 3</a><a href="study-4.html">Study 4</a><a class="opt" href="https://github.com/upendrx/candlerail">GitHub</a></nav>
+</div></header>
+
+<div class="hero"><div class="in">
+  <div>
+    <div class="kicker">Start here · no trading knowledge needed</div>
+    <h1>How to read this research</h1>
+    <p class="lede">What a candle shows, what "R" means, why a candle pattern alone is not a strategy, how the studies decide where on the chart a pattern counts, and one real trade from start to finish.</p>
+    <div class="chips"><span>10-minute read</span><span>Tap any ⓘ for a definition</span><span>Every number is from the studies</span></div>
+  </div>
+  <div class="verdict">
+    <span class="tag mixed">The one idea to take away</span>
+    <h2>A pattern is only a signal in the right place, in the right market.</h2>
+    <p>The same hammer candle lost money when it was traded anywhere, and made money only at a support level in the direction of the trend. Every strategy in these studies is a checklist: pattern, place, trend, trigger, stop, target and size.</p>
+  </div>
+</div></div>
+
+<main class="page">
+  <nav class="toc" aria-label="On this page"></nav>
+  <article>
+
+  <section id="backtest">
+    <h2><span class="n">1</span>What these studies do</h2>
+    <p class="big">A strategy is a set of exact rules: when to buy, where to give up, where to take profit, and how much to put in. A backtest runs those rules on years of real prices, as if they had been traded then, and pays the exchange's fees on every trade.</p>
+    <p>Because a computer does it, one study can test hundreds of versions of an idea on dozens of coins. The catch is that some versions will look good by pure luck, so every study keeps part of the data aside and only trusts rules that also worked there. <a href="#method">Section 8</a> explains how.</p>
+  </section>
+
+  <section id="candle">
+    <h2><span class="n">2</span>Reading a candle</h2>
+    <p>Each candle is one period: one minute, 15 minutes, 4 hours, a day or a week, depending on the chart. It shows four prices.</p>
+    <figure>
+      <div class="anatomy">
+        <svg viewBox="0 0 420 300" role="img" aria-label="A green candle and a red candle with their open, close, high, low, body and wicks labelled">
+          <g font-size="13" fill="currentColor">
+            <line x1="110" x2="110" y1="30" y2="270" stroke="var(--up)" stroke-width="3"/><rect x="80" y="80" width="60" height="130" rx="4" fill="var(--up)"/>
+            <line x1="310" x2="310" y1="40" y2="260" stroke="var(--down)" stroke-width="3"/><rect x="280" y="90" width="60" height="110" rx="4" fill="var(--down)"/>
+            <g stroke="currentColor" opacity=".5"><line x1="115" x2="190" y1="30" y2="30"/><line x1="145" x2="190" y1="80" y2="80"/><line x1="145" x2="190" y1="210" y2="210"/><line x1="115" x2="190" y1="270" y2="270"/></g>
+            <text x="196" y="34">High</text><text x="196" y="84" font-weight="700">Close</text><text x="196" y="214" font-weight="700">Open</text><text x="196" y="274">Low</text>
+            <text x="60" y="58" text-anchor="end" opacity=".75">upper wick</text><text x="72" y="150" text-anchor="end" opacity=".75">body</text><text x="60" y="244" text-anchor="end" opacity=".75">lower wick</text>
+            <text x="110" y="296" text-anchor="middle" font-weight="700" fill="var(--up)">closed higher</text>
+            <text x="310" y="296" text-anchor="middle" font-weight="700" fill="var(--down)">closed lower</text>
+            <text x="352" y="94" opacity=".75">open</text><text x="352" y="204" opacity=".75">close</text>
+          </g>
+        </svg>
+        <div>
+          <p><b>The body</b> runs from the opening price to the closing price. Green means it closed higher than it opened; red means lower.</p>
+          <p><b>The wicks</b> are the highest and lowest prices during the period. A long lower wick means price fell during the period but buyers pushed it back up before the close.</p>
+          <p><b>A pattern</b> is a recognisable shape of one to three candles, like a hammer (long lower wick, small body) or an engulfing candle (a body that covers the previous one). The studies define each shape exactly, so a computer can find every one.</p>
+        </div>
+      </div>
+    </figure>
+  </section>
+
+  <section id="r">
+    <h2><span class="n">3</span>What "R" means</h2>
+    <p class="big">R is the amount you risk on one trade: what you lose if the stop is hit. Results are measured in R so that they mean the same thing on any account size.</p>
+    <ul>
+      <li><b>−1R</b>: the stop was hit and you lost what you risked.</li>
+      <li><b>+2R</b>: the trade won twice what it risked.</li>
+      <li><b>+0.2R a trade on average</b>: over 100 trades you gain 20 times your risk. If you risk $5 a trade, that is $100 over 100 trades.</li>
+    </ul>
+    <p>You choose R yourself by choosing the stop and the position size. Change the numbers below to see how it works.</p>
+    <figure>
+      <p class="ft">From risk to position size</p>
+      <p class="fs">The position is sized so that hitting the stop loses exactly 1R, wherever the stop is.</p>
+      <div data-fig="rcalc"></div>
+      <figcaption><b>Why this matters:</b> with a 2R target you only need to win one trade in three to break even, before fees. Winning 40% of trades at 2R averages 0.4 × 2 − 0.6 × 1 = +0.2R a trade. A low win rate is not a problem if the winners are bigger than the losers.</figcaption>
+    </figure>
+    <div class="callout warn"><b class="t">Fees are measured in R too</b><p>A market order on Binance futures costs about 0.06% each way with slippage, so about 0.12% a round trip. With a stop 0.1% away, that is 1.2R of fees on every trade: you lose more than your whole risk on fees alone. This is why the day-trading setups in <a href="study-1.html#round1">Study 1</a> failed.</p></div>
+  </section>
+
+  <section id="place">
+    <h2><span class="n">4</span>Why a candle alone is not a strategy</h2>
+    <p class="big">A hammer says "sellers pushed price down and buyers pushed it back". That only means something where buyers had a reason to be: at a level where price turned before, and in a market that is rising.</p>
+    <div class="grid3" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+      <div class="tile"><span class="tg no">Ignored</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[52,56,49,54],[54,57,51,52],[52,55,49,53],[53,56,50,51],[50,52,43,51],[51,55,49,54]],"marks":[{"i":4,"y":43,"up":true,"label":"hammer"}]}'></div><h4>In the middle of nowhere</h4><p>A hammer in a sideways drift, far from any level. Nothing to bounce from: it's noise. Traded like this, hammers lost money.</p></div>
+      <div class="tile"><span class="tg yes">Traded</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[40,48,39,47],[47,56,46,55],[55,57,49,50],[50,52,45,46],[46,49,40,48],[48,55,47,54]],"lines":[{"y":40,"label":"swing low","color":"var(--accent)"}],"paths":[{"pts":[[0,36],[1,37.5],[2,39],[3,39.5],[4,40.5],[5,42]],"color":"#f59e0b","dash":"4 3","label":"trend"}],"marks":[{"i":4,"y":40,"up":true,"label":"hammer at the level"}]}'></div><h4>At support, with the trend</h4><p>Price pulls back to where it turned up before, while the trend line rises beneath it. The hammer shows buyers defending that level.</p></div>
+      <div class="tile"><span class="tg no">Filtered out</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[64,65,56,57],[57,59,50,51],[51,56,50,55],[55,56,48,49],[49,51,44,50],[50,52,45,46]],"lines":[{"y":44,"label":"swing low","color":"var(--accent)"}],"paths":[{"pts":[[0,66],[1,63],[2,61],[3,59],[4,57],[5,55]],"color":"#f59e0b","dash":"4 3","label":"trend"}],"marks":[{"i":4,"y":44,"up":true,"label":"hammer at the level"}]}'></div><h4>At support, against the trend</h4><p>The same hammer at the same kind of level, but the trend line is falling above price. Bounces in a falling market tend to fail; the trend filter skips it.</p></div>
+    </div>
+  </section>
+
+  <section id="filters">
+    <h2><span class="n">5</span>How the studies find the right place</h2>
+    <p>"At support" has to be exact for a computer to test it. These are the rules the studies used, in the order a trade has to pass them.</p>
+
+    <h3>1. Find the swing levels</h3>
+    <figure>
+      <div data-fig="candles" data-spec='{"w":900,"h":230,"bars":[[62,64,57,58],[58,60,54,55],[55,58,52,56],[56,57,50,51],[51,53,47,49],[49,52,42,50],[50,55,48,54],[54,58,52,57],[57,59,53,55]],"zones":[{"from":0,"to":4,"label":"5 candles before: all with higher lows","color":"var(--surface3)"},{"from":6,"to":7,"label":"2 after: confirm it","color":"var(--accent-soft)"}],"lines":[{"y":42,"label":"swing low = support","color":"var(--accent)"}],"marks":[{"i":5,"y":42,"up":true,"label":"swing low"}]}'></div>
+      <figcaption><b>A swing low</b> is a candle whose low is lower than the lows of the 5 candles before it and is not broken by the 2 after it. Its price becomes the support level. Because it takes 2 more candles to confirm, the test only learns about it 2 candles later, just as you would on a live chart. A swing high, mirrored, gives resistance.</figcaption>
+    </figure>
+
+    <h3>2. The pattern must form at that level</h3>
+    <figure>
+      <div data-fig="candles" data-spec='{"w":900,"h":230,"bars":[[60,62,54,55],[55,57,50,51],[51,53,47,52],[52,56,51,55],[55,57,52,53],[53,54,48,54],[54,56,51,52],[51,53,41.5,52.2],[52.2,58,51,57]],"lines":[{"y":44,"label":"support + 0.3 ATR","color":"var(--faint)"},{"y":41,"label":"swing low (support)","color":"var(--accent)"}],"marks":[{"i":5,"y":54,"up":false,"label":"hammer far above the level: skip"},{"i":7,"y":41.5,"up":true,"label":"low in the zone, closes above: counts"}]}'></div>
+      <figcaption><b>The pin-bar rule</b> needs the hammer's low within 0.3 ATR of the support (a small zone scaled to how much the coin moves) and its close back above the support. The engulfing rule allows half an ATR above to one ATR below. Other setups use other levels: the previous hour's, 4 hours' or day's low; two ATRs below the day's VWAP; or an RSI below 30.</figcaption>
+    </figure>
+
+    <h3>3. Only in the direction of the bigger trend</h3>
+    <p>For day trades: longs only while price is above its 8-hour EMA, shorts only below it. For swing trades: above the 200-candle average. For the weekly strategy, the filter looks at bitcoin, not the coin itself: longs only while bitcoin's daily close is above its 50-day average, because most coins fall when bitcoin does.</p>
+
+    <h3>4. A pattern on a bigger chart, a trigger on a smaller one</h3>
+    <p>The strongest result used two timeframes. The weekly chart gives the context (a bullish engulfing week), and the daily chart gives the moment (the first day that closes green above the previous day's high). The trade waits for price to confirm the weekly signal instead of buying blindly at the week's open.</p>
+    <figure>
+      <div data-fig="candles" data-spec='{"w":900,"h":250,"bars":[[60,62,44,46],[46,48,40,42],[42,50,41,49],[49,53,47,48],[48,55,47,54],[54,62,53,61],[61,63,58,59],[59,60,55,57],[57,58,53,55],[55,61,54,60],[60,66,59,65],[65,70,64,69]],"zones":[{"from":0,"to":1,"label":"falling week","color":"var(--down-soft)"},{"from":2,"to":6,"label":"engulfing week","color":"var(--up-soft)"},{"from":7,"to":11,"label":"next week: wait for the trigger","color":"var(--accent-soft)"}],"lines":[{"y":58,"label":"previous day high","color":"var(--accent)"}],"marks":[{"i":9,"y":54,"up":true,"label":"close above → buy next open"}]}'></div>
+      <figcaption>Daily candles drawn schematically. Each shaded group is one week.</figcaption>
+    </figure>
+
+    <h3>5. Then the exit and the size</h3>
+    <p>Every trade has a stop fixed at entry (for example 2 ATR below, or just beyond the signal candle), a target or a time limit, and a size set so the stop loses 1R. Without these, a pattern is an opinion, not a strategy.</p>
+    <div class="callout key"><b class="t">The checklist every strategy here follows</b><p>Pattern → at the right place → with the trend → confirmed by a trigger → stop, target and size decided before entry. A trade happens only when every item is true.</p></div>
+  </section>
+
+  <section id="measured">
+    <h2><span class="n">6</span>What the filters did, measured</h2>
+    <p>The same pin-bar rule from Study 1 on Bitcoin, Ethereum, Solana and XRP, on 15-minute candles over 90 days with futures fees, run three times with more of the checklist switched on each time.</p>
+    <figure>
+      <p class="ft">The same candle, three ways</p>
+      <div data-fig="filters" data-part="intraday"></div>
+      <figcaption><b>Location and trend turned a losing pattern into a winning one on this data.</b> But this is the period the rule was chosen on. On five other coins and on the three months before, the full rule lost money (−0.06R and −0.14R a trade; see <a href="study-1.html#confirm">Study 1</a>). Filters are necessary, but they don't guarantee an edge.</figcaption>
+    </figure>
+    <figure>
+      <p class="ft">The weekly engulfing pattern with each filter, 43 coins, 2020 to 2026</p>
+      <p class="fs">Long only, 2 ATR stop, held up to four weeks, spot fees. Average result per trade.</p>
+      <div data-fig="filters" data-part="weekly"></div>
+      <figcaption><b>Both filters helped, and kept helping after the split.</b> Buying every engulfing week at the open averaged +0.61R. Waiting for the daily trigger raised it to +0.73R; adding the bitcoin filter raised it to +1.09R, with fewer trades. That last cell is the rule used in <a href="study-4.html#pick">Study 4</a>.</figcaption>
+    </figure>
+  </section>
+
+  <section id="trade">
+    <h2><span class="n">7</span>One real trade, step by step</h2>
+    <p>The first trade of the weekly strategy on Solana in the Study 4 example, with a $200 account risking 0.5% a trade, as in the one-account replay.</p>
+    <figure>
+      <div data-fig="walk" data-example="weekly-engulf" data-trade="0" data-account="200" data-risk="0.5"></div>
+    </figure>
+    <figure>
+      <p class="ft">That trade and the ones after it on the chart</p>
+      <p class="fs">SOL daily candles from Binance. Arrows are entries, circles are exits labelled in R.</p>
+      <div data-fig="example" data-example="weekly-engulf"></div>
+    </figure>
+  </section>
+
+  <section id="method">
+    <h2><span class="n">8</span>How a study decides what works</h2>
+    <p class="big">Imagine picking a student by giving them last year's exam with the answers. They would score perfectly and learn nothing. Testing a trading rule on the same data it was chosen on is the same mistake.</p>
+    <div class="grid2">
+      <div class="tile"><span class="tg mixed">Step 1</span><h4>Choose on the first part</h4><p>Every variant is tested on the first two-thirds of the data. Only those that pass a bar written down in advance are "selected".</p></div>
+      <div class="tile"><span class="tg yes">Step 2</span><h4>Check on the rest</h4><p>Selected variants are then run on the last third, which played no part in choosing them. Those still profitable on most coins "survived".</p></div>
+      <div class="tile"><span class="tg yes">Step 3</span><h4>Check again elsewhere</h4><p>The best survivors are run unchanged on coins or years they never saw. Study 1's survivor failed here; Study 2's and Study 4's held up.</p></div>
+      <div class="tile"><span class="tg no">What it can't do</span><h4>Promise the future</h4><p>A rule that worked on six years of unseen data can still stop working. It is evidence, not a guarantee.</p></div>
+    </div>
+  </section>
+
+  <section id="charts">
+    <h2><span class="n">9</span>How to read the charts</h2>
+    <div class="grid2">
+      <div class="tile"><h4>Dot charts ("every variant, before and after")</h4><p>Each dot is one version of a strategy. Left to right: how it did in the period it was chosen on. Bottom to top: how it did afterwards. Dots in the green corner made money in both. If the dots in that corner are few and scattered, the good results were luck.</p></div>
+      <div class="tile"><h4>Colour grids (heatmaps)</h4><p>Rows are strategies, columns are timeframes. Green cells made money per trade, red lost. The number is the middle (median) result of all its versions.</p></div>
+      <div class="tile"><h4>Paired bars</h4><p>Purple is the period the strategies were chosen on, green is afterwards. A strategy that is real keeps its green bar on the same side as its purple one.</p></div>
+      <div class="tile"><h4>Monthly bars and growth lines</h4><p>Each bar is one month's gain or loss of the account. The shaded part is data the rule was never chosen on. The growth line shows what 1 dollar would have become, on a log scale.</p></div>
+    </div>
+  </section>
+
+  <section id="glossary">
+    <h2><span class="n">A–Z</span>Glossary</h2>
+    <p>Every term marked with ⓘ on these pages.</p>
+    <div class="glossary"></div>
+    <div class="prevnext"><a href="./">← Overview</a><a href="study-1.html">Study 1: Intraday reversals →</a></div>
+  </section>
+
+  </article>
+</main>
+<footer><a href="../">Candlerail</a> Research · Data from Binance's public API · Backtested results are not a guarantee of future returns. · <a href="https://github.com/upendrx/candlerail">Source on GitHub</a></footer>
+</body>
+</html>
