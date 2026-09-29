@@ -459,6 +459,162 @@ async function draw() {
   for (const el of $$("[data-val]")) el.textContent = el.dataset.val;
 }
 
+/* ---------- glossary: an ⓘ next to terms ---------- */
+// [key, pattern, title, plain-language definition]. Each term is marked once per
+// section; the popover links to the full entry in the guide.
+const TERMS = [
+  ["r", /[+−-]?\d+(?:\.\d+)?R\b|\bR multiples?\b/, "R (the risk unit)", "R is the amount you risk on one trade: the loss if the stop is hit. +1R means the trade won as much as it risked; −1R means it lost that amount; +2R means it won twice the risk. If you risk $5 a trade, +0.2R a trade on average is $1 a trade."],
+  ["stop", /\bstop(?:-loss| loss)?s?\b/i, "Stop (stop-loss)", "The price where a losing trade is closed automatically. Its distance from the entry sets the risk, and so what 1R is."],
+  ["target", /\b(?:take-profit|target)s?\b/i, "Target (take-profit)", "The price where a winning trade is closed. A 2R target is twice as far from the entry as the stop."],
+  ["atr", /\bATRs?\b/, "ATR (average true range)", "How far price typically moves in one candle, averaged over 14 candles. A stop '2 ATR' away adapts to how volatile the coin is right now."],
+  ["backtest", /\bbacktests?\b/i, "Backtest", "Running a rule on past prices as if it had been traded then, with fees, to see what it would have made. It shows the past, not the future."],
+  ["variant", /\bvariants?\b/i, "Variant", "One exact version of a strategy: one setup with one choice of stop, target, filter and timeframe. Studies test hundreds of variants of each idea."],
+  ["selection", /\bselection period\b|\bselected\b|\bchosen on\b/i, "Selection period / selected", "The first part of the data, used to choose variants. A variant is 'selected' if it passed a bar fixed before the test, on that part only."],
+  ["heldout", /\bheld[- ]out\b|\bafter the split\b|\bunseen\b|\bnever saw\b|\bnever seen\b/i, "Held-out data", "Data kept aside and not used to choose anything. A rule that only worked on the data it was chosen on was probably luck; held-out data checks that."],
+  ["survived", /\bsurviv(?:ed|ors?|al)\b/i, "Survived", "A selected variant that also made money on the held-out data, on most of the coins."],
+  ["winrate", /\bwin(?:s|ning)? (?:rate|\d+% of trades)\b|\bwinners?\b/i, "Win rate", "The share of trades that made money. A low win rate can still be profitable if winners are larger than losers: at a 2R target, winning 40% of trades gives +0.2R a trade."],
+  ["fees", /\b(?:taker|maker) fees?\b|\bfees\b/i, "Fees and slippage", "What the exchange charges on each buy and sell (0.1% on Binance spot, 0.05% on futures, for market orders), plus slippage: getting a slightly worse price than the last one."],
+  ["spot", /\bspot\b/i, "Spot", "Buying the coin itself with your own money. You can only profit when price rises, and you can't lose more than you put in."],
+  ["futures", /\bfutures\b|\bperpetuals?\b/i, "Futures", "Contracts that follow a coin's price. They let you profit from falls (going short) and use leverage, and they charge or pay a funding fee every eight hours."],
+  ["long", /\blong and short\b|\blong only\b|\blong-only\b|\bshort side\b|\bgo(?:es|ing)? short\b/i, "Long and short", "Long: buy, profit if price rises. Short: sell first, profit if price falls (needs futures). 'Long only' never shorts."],
+  ["leverage", /\bleverage\b/i, "Leverage", "Borrowing to trade a larger position than your money. It multiplies gains and losses alike. These studies size positions from the stop, so leverage only makes a position fit; it doesn't raise the risk."],
+  ["drawdown", /\blargest fall\b|\bdrawdowns?\b|\bbelow a (?:previous )?peak\b/i, "Largest fall (drawdown)", "The biggest drop of the account from its highest point to a later low. −20% means at the worst moment the account was 20% below its best."],
+  ["sharpe", /\bSharpe(?: ratio)?s?\b/, "Sharpe ratio", "Return divided by how much returns swing, per year. Above 1 is good for a strategy, above 2 is rare. It rewards steady gains over bumpy ones."],
+  ["ema", /\bEMAs?\b|\bmoving averages?\b|\b\d+-(?:day|week|candle|hour) average\b/, "Moving average (EMA / SMA)", "The average closing price over the last N candles, drawn as a line. Price above a rising average is the simplest definition of an uptrend. An EMA gives recent candles more weight."],
+  ["trendfilter", /\btrend filter\b|\bwith the (?:8-hour |8h )?trend\b|\bBTC filter\b|\bBTC's trend\b|\bbitcoin's trend\b/i, "Trend filter", "A condition that only allows trades in the direction of the bigger trend: for example longs only while price, or bitcoin, is above its moving average. Most coins fall when bitcoin falls."],
+  ["swing", /\bswing (?:level|low|high|support|resistance)s?\b|\bsupport and resistance\b/i, "Swing levels (support and resistance)", "A swing low is a candle whose low is lower than the 5 candles before it and the 2 after it: a place buyers stepped in. Its price is 'support'. A swing high, mirrored, is 'resistance'. It is only known 2 candles later, so the test never uses hindsight."],
+  ["engulfing", /\bengulfing\b/i, "Engulfing candle", "A candle whose body covers the whole body of the candle before it, in the other direction. Bullish engulfing: a rising candle after a falling one, opening at or below its close and closing at or above its open."],
+  ["hammer", /\bhammers?\b|\bpin bars?\b|\bshooting stars?\b/i, "Hammer / pin bar", "A candle with a long lower wick (at least twice its body) and little upper wick: sellers pushed price down and buyers pushed it back. A shooting star is the mirror, with a long upper wick."],
+  ["inside", /\binside[- ](?:bar|week|day)s?\b/i, "Inside bar", "A candle whose high and low are both inside the previous candle's range: a pause. The trade is the break out of it."],
+  ["star", /\bmorning (?:or evening )?stars?\b|\bevening stars?\b/i, "Morning star", "Three candles: a big falling one, a small one, then a rising one that closes above the middle of the first. Evening star is the mirror."],
+  ["marubozu", /\bmarubozu\b/i, "Marubozu", "A candle with almost no wicks: its body is at least 90% of its range. One side was in control from open to close."],
+  ["soldiers", /\bthree (?:white |weekly )?soldiers\b|\bthree crows\b/i, "Three soldiers / three crows", "Three strong rising candles in a row, each opening inside the one before and closing higher. Three crows is the falling mirror."],
+  ["vwap", /\bVWAP\b/, "VWAP", "Volume-weighted average price of the day: the average price paid, weighted by how much traded. Price far below it is 'stretched'."],
+  ["rsi", /\bRSI(?:\(\d+\))?\b/, "RSI", "Relative strength index, 0 to 100: how strongly price rose versus fell over the last N candles. Below 30 is often called oversold, above 70 overbought."],
+  ["bollinger", /\bBollinger(?: bands?)?\b/, "Bollinger bands", "Lines two standard deviations above and below a 20-candle average. Price outside them is unusually far from normal."],
+  ["adx", /\bADX\b/, "ADX", "A 0 to 100 measure of how strongly a market is trending, up or down. Below 20 means a quiet, sideways market."],
+  ["supertrend", /\bSuperTrend\b/, "SuperTrend", "A line that trails price by a multiple of the ATR. It flips below price when price closes above it (uptrend) and above price when price closes below it (downtrend)."],
+  ["keltner", /\bKeltner(?: channels?)?\b/, "Keltner channel", "A band around a 20-candle EMA, 2 ATR above and below. A close above the upper band signals a strong move up."],
+  ["donchian", /\bDonchian(?: channels?)?\b/, "Donchian channel", "The highest high and lowest low of the last N candles. A close above the highest high is a breakout."],
+  ["timeframe", /\b(?:1m|5m|15m|30m|1h|4h|1d)\b|\b(?:1|5|15)-minute\b|\b4-hour\b|\btimeframes?\b/, "Timeframe", "How much time one candle covers: 15m is 15 minutes, 4h is 4 hours, 1d is a day. Shorter timeframes give more trades but each one is small next to its fees."],
+  ["candle", /\bcandles?\b|\bcandlesticks?\b/i, "Candle", "One bar on the chart for one period. The body runs from the open to the close (green if it closed higher), and the thin wicks show the high and the low."],
+  ["opening", /\bopening[- ]range\b/i, "Opening range", "The high and low of the first 30 minutes after a market opens. A breakout trades a move beyond it."],
+  ["sweep", /\bliquidity sweep\b|\bsweep\b|\bstop sweep\b/i, "Liquidity sweep", "Price briefly pushes past a swing low (where many stop orders sit), then closes back above it: a false breakdown."],
+  ["funding", /\bfunding(?:-rate)?(?: rates?)?\b|\bcarry\b/i, "Funding and carry", "On perpetual futures, one side pays the other a small fee every eight hours to keep the price near the coin's. The carry trade holds the coin and shorts the future to collect that fee without price risk."],
+  ["rotation", /\bcoin rotation\b|\brotation\b/i, "Coin rotation", "Regularly ranking coins by recent performance and holding only the strongest, switching as the ranking changes."],
+  ["pairs", /\bpairs trading\b/i, "Pairs trading", "Betting that two related coins return to their normal price ratio: short the one that ran ahead, buy the one that lagged."],
+  ["correlation", /\bcorrelat(?:ion|ed)\b/i, "Correlation", "How much two things move together, from −1 (opposite) to +1 (the same). Two strategies with low correlation rarely lose in the same month."],
+  ["volatility", /\bvolatil(?:ity|e)\b/i, "Volatility", "How much returns swing up and down. More volatile means larger gains and larger losses."],
+  ["buyhold", /\bbuy(?:ing)? and hold(?:ing)?\b/i, "Buy and hold", "Buying and doing nothing: the simple benchmark every strategy should beat or be safer than."],
+  ["median", /\bmedians?\b/i, "Median", "The middle value when all results are sorted: half were better, half worse. Unlike the average, one huge result can't move it."],
+  ["logscale", /\blog scale\b/i, "Log scale", "A chart scale where each step up is the same percentage, so doubling from 1 to 2 looks as big as from 10 to 20."],
+  ["replay", /\breplay(?:ed)?\b|\bone account\b/i, "Replay through one account", "Trading every signal on every coin in date order from one pool of money, with a limit on open positions, the way a real account would, instead of testing each coin separately."],
+  ["multiple", /\bmultiple testing\b|\bby chance\b|\bluck\b/i, "Multiple testing", "Test enough random rules and some will look great by luck. The more variants tested, the stricter the check on unseen data has to be."],
+  ["survivorship", /\bsurvivorship\b|\bdead coins?\b|\bdelisted\b/i, "Survivorship bias", "Testing only coins that still exist today ignores the ones that collapsed, which makes past results look better than they were."],
+  ["trendfollow", /\btrend[- ]following\b|\btrend follower\b/i, "Trend following", "Buying what is rising and selling what is falling, and holding while the move lasts. Many small losses, a few large wins."],
+  ["meanrev", /\bmean[- ]reversion\b|\breversal\b/i, "Mean reversion / reversal", "Betting that a move will turn back: buying after a fall, selling after a rise."],
+];
+const TERMMAP = Object.fromEntries(TERMS.map(t => [t[0], t]));
+function terms() {
+  const scope = $$("article > section, .hero .lede, .verdict");
+  const pick = "p, li, td, figcaption, .fs, .tile p, .kpis span, .callout p";
+  // Everyday words are marked once per page; the rest once per section.
+  const once = new Set(["candle", "stop", "target", "fees", "timeframe", "variant", "backtest", "long", "spot", "median"]), seen = new Set();
+  for (const sec of scope) {
+    const done = new Set(seen);
+    const els = sec.matches(pick) ? [sec] : $$(pick, sec).filter(e => !e.closest("[data-fig], .glossary, pre, h2, h3, .prevnext"));
+    for (const el of els) {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest("a, code, button, .term, svg, b.t") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+      const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+      for (let node of nodes) {
+        for (const [key, re] of TERMS) {
+          if (done.has(key)) continue;
+          const m = node.textContent.match(re); if (!m) continue;
+          done.add(key); if (once.has(key)) seen.add(key);
+          const after = node.splitText(m.index), rest = after.splitText(m[0].length);
+          const span = document.createElement("span"); span.className = "term";
+          span.innerHTML = `${esc(m[0])}<button type="button" class="ti" data-t="${key}" aria-label="What is ${esc(TERMMAP[key][2])}?">i</button>`;
+          after.replaceWith(span); node = rest;
+        }
+      }
+    }
+  }
+  const pop = document.createElement("div"); pop.className = "pop"; pop.setAttribute("role", "tooltip"); pop.hidden = true; document.body.appendChild(pop);
+  let open = null;
+  const close = () => { pop.hidden = true; open = null; };
+  const show = b => {
+    const [key, , title, def] = TERMMAP[b.dataset.t];
+    const inGuide = /guide\.html$/.test(location.pathname);
+    pop.innerHTML = `<b>${esc(title)}</b><p>${esc(def)}</p>${inGuide ? "" : `<a href="guide.html#g-${key}">More in the guide →</a>`}`;
+    pop.hidden = false; open = b;
+    const r = b.getBoundingClientRect(), w = Math.min(320, innerWidth - 24);
+    pop.style.width = w + "px";
+    pop.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.left + r.width / 2 - w / 2)) + scrollX + "px";
+    const below = r.bottom + 10 + pop.offsetHeight < innerHeight;
+    pop.style.top = (below ? r.bottom + 8 : r.top - pop.offsetHeight - 8) + scrollY + "px";
+  };
+  document.addEventListener("click", e => { const b = e.target.closest(".ti"); if (b) { e.preventDefault(); open === b ? close() : show(b); } else if (!e.target.closest(".pop")) close(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+  addEventListener("resize", close);
+  // The glossary section on the guide lists every term.
+  const g = document.querySelector(".glossary");
+  if (g) g.innerHTML = [...TERMS].sort((a, b) => a[2].localeCompare(b[2])).map(([key, , title, def]) => `<div class="tile" id="g-${key}"><h4>${esc(title)}</h4><p>${esc(def)}</p></div>`).join("");
+}
+
+/* ---------- guide figures ---------- */
+/** An R calculator: account, risk, entry and stop give position size and results in dollars. */
+FIG.rcalc = el => {
+  const f = (id, label, val, attrs, pre = "", post = "") => `<label><em>${label}</em><div>${pre ? `<span>${pre}</span>` : ""}<input type="number" id="${id}" value="${val}" ${attrs}>${post ? `<span>${post}</span>` : ""}</div></label>`;
+  el.innerHTML = `<div class="calc">${f("c-acc", "Account", 500, 'min="10" step="10"', "$")}${f("c-risk", "Risk per trade", 1, 'min="0.1" max="10" step="0.1"', "", "%")}${f("c-entry", "Entry price", 100, 'min="0.0001" step="any"', "$")}${f("c-stop", "Stop distance", 4, 'min="0.05" max="50" step="0.05"', "", "%")}${f("c-rr", "Target", 2, 'min="0.5" max="10" step="0.5"', "", "R")}</div><div class="calc-out"></div>`;
+  const v = id => +el.querySelector("#" + id).value;
+  const money = x => (x < 0 ? "−$" : "$") + fmt(Math.abs(x), Math.abs(x) < 10 ? 2 : 0);
+  const render = () => {
+    const acc = v("c-acc"), risk = acc * v("c-risk") / 100, entry = v("c-entry"), sp = v("c-stop") / 100, rr = v("c-rr");
+    const stop = entry * (1 - sp), target = entry * (1 + sp * rr), size = risk / (entry * sp), pos = size * entry;
+    const W = 900, H = 170, Y = p => 20 + (entry * (1 + sp * rr) - p) / (entry * sp * (rr + 1)) * (H - 40);
+    const lvl = (p, col, a, b) => `<line x1="40" x2="${W - 250}" y1="${Y(p)}" y2="${Y(p)}" stroke="${col}" stroke-width="2"/>${text(W - 240, Y(p) + 4, a, { fill: col, weight: 700, size: 12.5 })}${text(W - 16, Y(p) + 4, b, { anchor: "end", size: 12.5 })}`;
+    const pic = svg(W, H, `<rect x="40" y="${Y(target)}" width="${W - 290}" height="${Y(entry) - Y(target)}" fill="var(--up-soft)"/><rect x="40" y="${Y(entry)}" width="${W - 290}" height="${Y(stop) - Y(entry)}" fill="var(--down-soft)"/>` +
+      lvl(target, "var(--up)", `Target ${fmt(rr, 1)}R: $${fmt(target, 2)}`, `win ${money(risk * rr)}`) + lvl(entry, "currentColor", `Entry: $${fmt(entry, 2)}`, `position ${money(pos)}`) + lvl(stop, "var(--down)", `Stop −1R: $${fmt(stop, 2)}`, `lose ${money(-risk)}`), "Entry, stop and target");
+    const be = 100 / (1 + rr);
+    el.querySelector(".calc-out").innerHTML = pic + `<div class="kpis" style="margin-top:12px">
+      <div><b>${money(risk)}</b><span>is 1R: what you lose if the stop is hit</span></div>
+      <div><b>${money(pos)}</b><span>position size (${fmt(size, size < 1 ? 4 : 2)} coins), so the stop loses exactly 1R${pos > acc ? `; needs ${fmt(pos / acc, 1)}× leverage` : ""}</span></div>
+      <div><b class="up">${money(risk * rr)}</b><span>won at the target (+${fmt(rr, 1)}R)</span></div>
+      <div><b>${fmt(be, 0)}%</b><span>of trades must win just to break even, before fees</span></div></div>`;
+  };
+  el.querySelectorAll("input").forEach(i => i.oninput = render);
+  render();
+};
+/** What each location and trend filter did to the same candle pattern. */
+FIG.filters = async el => {
+  const d = await load("context-filters");
+  if (el.dataset.part === "intraday") {
+    const s = d.intraday.steps, lim = Math.max(...s.map(x => Math.abs(x.avg_r))) * 1.3;
+    el.innerHTML = `<div class="steps">${s.map((x, i) => `<div class="step"><span class="k">Step ${i + 1}</span><h4>${esc(x.label)}</h4><p>${esc(x.detail)}</p>
+      <div class="bar"><i style="width:${Math.abs(x.avg_r) / lim * 50}%;${x.avg_r >= 0 ? "left:50%" : `right:50%`};background:${x.avg_r >= 0 ? "var(--up)" : "var(--down)"}"></i></div>
+      <div class="nums"><b class="${cls(x.avg_r)}">${rf(x.avg_r)}</b> a trade<br>${x.trades.toLocaleString()} trades · ${fmt(100 * x.wins / x.trades, 0)}% won · <span class="${cls(x.sum_r)}">${rf(x.sum_r)}</span> in total</div></div>`).join(`<div class="arrow" aria-hidden="true">→</div>`)}</div>`;
+    return;
+  }
+  const rows = d.weekly.rows, entries = [...new Set(rows.map(r => r.entry))], btcs = [...new Set(rows.map(r => r.btc))];
+  const cell = r => { const t = Math.max(0, Math.min(1, r.avg_r / 1.2)); return `<td class="n" style="background:rgba(15,159,110,${0.08 + 0.5 * t});color:${t > 0.6 ? "#fff" : "var(--ink)"};font-weight:700">${rf(r.avg_r)}<br><span style="font-weight:500;font-size:12px;opacity:.8">${r.trades} trades<br>after the split ${rf(r.after_avg_r)}</span></td>`; };
+  el.innerHTML = `<div class="tw"><table><thead><tr><th>Entry on the daily chart</th>${btcs.map(b => `<th class="n" style="white-space:normal">${esc(b === "none" ? "No BTC filter" : b.replace("BTC above its", "BTC above its").replace(" average", " avg."))}</th>`).join("")}</tr></thead><tbody>${entries.map(e => `<tr><td>${esc(e)}</td>${btcs.map(b => cell(rows.find(r => r.entry === e && r.btc === b))).join("")}</tr>`).join("")}</tbody></table></div>`;
+};
+/** One real trade from the examples, step by step, in dollars. */
+FIG.walk = async el => {
+  const ex = (await load("examples")).examples.find(e => e.id === el.dataset.example), tr = ex.trades[+(el.dataset.trade || 0)];
+  const risk = +(el.dataset.risk || 1), perUnit = (tr.exit - tr.entry) / tr.r, stop = tr.entry - perUnit;
+  const acc = +(el.dataset.account || 200), dollars = acc * risk / 100, size = dollars / perUnit;
+  const steps = [
+    ["The pattern", `The week before ${day(tr.entry_ts)} closed as a bullish engulfing week on ${ex.symbol.replace("USDT", "")}: its rising body covered the previous week's falling body.`],
+    ["The market filter", `Bitcoin's daily close was above its 50-day average, so long trades were allowed.`],
+    ["The trigger", `A daily candle closed green and above the previous day's high. The rule buys at the next day's open: $${fmt(tr.entry, 2)}.`],
+    ["The stop", `2 ATR below the entry: about $${fmt(stop, 2)}, ${fmt(100 * perUnit / tr.entry, 1)}% away. That distance is 1R.`],
+    ["The size", `On a $${acc} account risking ${risk}%, 1R is $${fmt(dollars, 2)}, so the position is $${fmt(size * tr.entry, 2)} (${fmt(size, 3)} ${ex.symbol.replace("USDT", "")}).`],
+    ["The exit", `${tr.reason === "stop_loss" ? "The stop was hit" : tr.reason === "max_bars" ? "The position was sold after the 28-day limit" : "The position was closed"} on ${day(tr.exit_ts)} at $${fmt(tr.exit, 2)}: <b class="${cls(tr.r)}">${rf(tr.r)}</b>, or <b class="${cls(tr.r)}">${tr.r >= 0 ? "+" : "−"}$${fmt(Math.abs(tr.r * dollars), 2)}</b> before fees.`],
+  ];
+  el.innerHTML = `<ol class="walk">${steps.map(([h, t]) => `<li><b>${esc(h)}</b><span>${t}</span></li>`).join("")}</ol>`;
+};
+
 /* ---------- page chrome ---------- */
 function toc() {
   const toc = document.querySelector(".toc"); if (!toc) return;
@@ -468,5 +624,5 @@ function toc() {
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-40% 0px -55% 0px" });
   secs.forEach(s => io.observe(s));
 }
-document.addEventListener("DOMContentLoaded", () => { toc(); draw(); });
+document.addEventListener("DOMContentLoaded", () => { toc(); terms(); draw(); });
 })();
