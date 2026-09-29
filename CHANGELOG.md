@@ -47,6 +47,11 @@ All notable changes are recorded here. The format follows
   ⓘ on every page, and a short summary at the top of each study.
   `scripts/research_filters.py` measures what each location and trend
   filter did to the same pattern.
+- Real examples on every study page, one click each: the rule's trades on
+  their real candles with the swing level, trend line or bands, every rule
+  condition checked with its values, entry, stop, target and exit, and the
+  UTC time and links to find the same candle on Binance or TradingView.
+  `scripts/research_cases.py` builds them from the engine's backtests.
 - Numbered research pages (`research/index.json`, `GET /api/research`,
   `GET /api/carry/{id}`); studies record monthly portfolio results and a
   buy-and-hold benchmark, grid values can hold placeholders, and families

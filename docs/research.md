@@ -16,7 +16,13 @@ form to count, with what each location and trend filter did measured. The
 pages live in [`site/research/`](../site/research);
 `python3 scripts/research_examples.py` regenerates the real-trade examples
 and `python3 scripts/research_filters.py` the filter measurements
-(`research/results/context-filters.json`).
+(`research/results/context-filters.json`). Each study page also lists ten
+real trades of its rule (twenty for Study 2's two picks), spread evenly
+through all its trades in date order: the candles, levels and lines, every
+rule condition with its values, the entry, stop and exit, and how to find the
+same candle on Binance. `python3 scripts/research_cases.py` rebuilds them
+(`research/results/cases-*.json`) and fails if any example doesn't pass its
+own rule.
 
 ![The Research tab](images/research.png)
 
