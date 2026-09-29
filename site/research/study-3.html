@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="assets/research.css">
+<script src="vendor/lightweight-charts.js" defer></script>
 <script src="assets/research.js" defer></script>
 </head>
 <body>
@@ -179,6 +180,12 @@
       <figcaption><b>1× is the plan as tested.</b> Doubling it roughly doubles the average month and the largest fall. Random years assume months are independent, which understates long losing streaks.</figcaption>
     </figure>
     <div class="callout"><b class="t">In account terms</b><p>On a $500 account the combined plan's average month is about $22, with a worst month of about −$48.</p></div>
+  </section>
+
+  <section id="examples">
+    <h2><span class="n">✓</span>Real examples you can check</h2>
+    <p>Ten real weekly rebalances of the rotation pick: bitcoin against its 100-day average, the ranking of the coins on that day and what was bought. Click one to open it. Every example comes from the engine's own backtest, and every rule check was recomputed from the candles. They are spread evenly through all the rule's trades in date order, so losses appear as often as they happened.</p>
+    <div data-fig="cases" data-cases="cases-3"></div>
   </section>
 
   <section id="conclusions">
