@@ -9,9 +9,14 @@ explorer for every variant.
 The studies are also published as illustrated case studies, with every
 figure drawn from the result files in [`research/results/`](../research/results):
 [upendrx.github.io/candlerail/research](https://upendrx.github.io/candlerail/research/).
-The pages live in [`site/research/`](../site/research), and
+A [guide](https://upendrx.github.io/candlerail/research/guide.html)
+explains the terms (every one also has an ⓘ definition on the pages), what
+R means with a calculator, and where on the chart a candle pattern has to
+form to count, with what each location and trend filter did measured. The
+pages live in [`site/research/`](../site/research);
 `python3 scripts/research_examples.py` regenerates the real-trade examples
-they show.
+and `python3 scripts/research_filters.py` the filter measurements
+(`research/results/context-filters.json`).
 
 ![The Research tab](images/research.png)
 

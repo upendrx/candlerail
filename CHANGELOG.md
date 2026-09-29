@@ -41,6 +41,12 @@ All notable changes are recorded here. The format follows
   diagrams, every variant before and after selection, monthly results and
   real trades on real candles, all drawn from `research/results/`.
   `scripts/research_examples.py` regenerates the real-trade examples.
+- A plain-language research guide (candles, R with a calculator, why a
+  pattern needs a place and a trend, how swing levels and filters are
+  defined, one real trade step by step, a glossary), definitions behind an
+  ⓘ on every page, and a short summary at the top of each study.
+  `scripts/research_filters.py` measures what each location and trend
+  filter did to the same pattern.
 - Numbered research pages (`research/index.json`, `GET /api/research`,
   `GET /api/carry/{id}`); studies record monthly portfolio results and a
   buy-and-hold benchmark, grid values can hold placeholders, and families
