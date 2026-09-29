@@ -16,7 +16,7 @@
 <body>
 <header class="top"><div class="in">
   <a class="brand" href="./">candlerail <small>Research</small></a>
-  <nav><a class="opt" href="./">Overview</a><a class="on" href="study-1.html">Study 1</a><a href="study-2.html">Study 2</a><a href="study-3.html">Study 3</a><a href="study-4.html">Study 4</a><a class="opt" href="https://github.com/upendrx/candlerail">GitHub</a></nav>
+  <nav><a class="opt" href="./">Overview</a><a href="guide.html">Guide</a><a class="on" href="study-1.html">Study 1</a><a href="study-2.html">Study 2</a><a href="study-3.html">Study 3</a><a href="study-4.html">Study 4</a><a class="opt" href="https://github.com/upendrx/candlerail">GitHub</a></nav>
 </div></header>
 
 <div class="hero"><div class="in">
@@ -42,6 +42,7 @@
 <main class="page">
   <nav class="toc" aria-label="On this page"></nav>
   <article>
+  <div class="plain"><b>In plain words</b><ul><li>We tested the classic day-trading patterns (hammers, engulfing candles and others at support and resistance) on Bitcoin, Ethereum, Solana and XRP, on 1-minute to 1-hour charts.</li><li>After Binance's fees, none of them made money reliably. On short charts the fee on each trade is almost as large as what the trade risks.</li><li>The one rule that passed its test then lost money on other coins and earlier months: it was luck.</li><li>For a small account: day trading these patterns with market orders is likely to lose money slowly through fees.</li></ul><p class="more">New to trading terms? Read <a href="guide.html">how to read this research</a>, or tap any <span class="ti" aria-hidden="true">i</span> for a definition.</p></div>
 
   <section id="case">
     <h2><span class="n">1</span>The case</h2>
@@ -61,6 +62,7 @@
       <div class="tile"><span class="tg mixed">Mean reversion</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[76,78,68,70],[70,72,60,62],[62,64,52,54],[54,56,44,46],[45,52,38,50]],"lines":[{"y":80,"label":"VWAP","color":"var(--accent2)"},{"y":58,"label":"VWAP − 2 ATR","color":"var(--faint)"}],"marks":[{"i":4,"y":38,"up":true,"label":"reversal"}]}'></div><h4>Reversal far from VWAP</h4><p>Two ATRs below the day's volume-weighted price, then an engulfing or hammer.</p></div>
       <div class="tile"><span class="tg mixed">Level</span><div data-fig="candles" data-spec='{"w":280,"h":190,"bars":[[60,64,50,54,1],[54,58,46,50,1],[50,56,48,55,1],[55,57,52,53],[53,56,42,55]],"lines":[{"y":46,"label":"previous day low","color":"var(--accent)"}],"zones":[{"from":0,"to":2,"label":"yesterday","color":"var(--surface3)"}],"marks":[{"i":4,"y":42,"up":true,"label":"rejection"}]}'></div><h4>Previous hour, 4-hour or day rejection</h4><p>A dip under the previous period's low that closes back above it with a long lower wick.</p></div>
     </div>
+    <div class="callout key"><b class="t">Where the candle must appear</b><p>No setup trades a candle on its own. Each one also needs a place: the latest swing low or high (within 0.3 to 0.5 ATR of it), the previous hour's, 4 hours' or day's high or low, two ATRs from the day's VWAP, or an RSI extreme; and, in half the variants, the direction of the 8-hour trend. <a href="guide.html#filters">How these places are found, with drawings →</a></p></div>
     <p style="margin-top:18px">The other setups: morning star at a swing level, outside-bar reversal after three closes, Bollinger band pierce and reclaim, engulfing out of an RSI extreme (RSI below 30), pullback to the 20 EMA in a trend, big-small-big candles, change of character (a close above the last swing high in a falling structure) and the opening-range breakout.</p>
     <h3>Every setup crossed with</h3>
     <div class="grid3">
